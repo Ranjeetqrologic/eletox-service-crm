@@ -27,7 +27,13 @@ export const uploadPhotos = multer({
 export const uploadDocs = multer({
   storage: docStorage,
   limits: { fileSize: 10 * 1024 * 1024 },
-}).array("documents", 10);
+}).fields([
+  { name: "photo", maxCount: 1 },
+  { name: "aadharFront", maxCount: 1 },
+  { name: "aadharBack", maxCount: 1 },
+  { name: "pan", maxCount: 1 },
+  { name: "drivingLicense", maxCount: 1 },
+]);
 
 export const uploadSingle = multer({
   storage: photoStorage,

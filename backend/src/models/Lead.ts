@@ -43,6 +43,9 @@ export interface ILead extends Document {
   closedAt?: Date;
   createdBy?: mongoose.Types.ObjectId;
   cancelledReason?: string;
+  followUpDate?: Date;
+  followUpNote?: string;
+  nextCallDate?: Date;
   images: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -99,6 +102,9 @@ const LeadSchema = new Schema<ILead>(
     closedAt: { type: Date },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     cancelledReason: { type: String },
+    followUpDate: { type: Date },
+    followUpNote: { type: String },
+    nextCallDate: { type: Date },
     images: [{ type: String }],
   },
   { timestamps: true }

@@ -40,6 +40,8 @@ router.post(
   [
     body("employeeId").notEmpty(),
     body("name").notEmpty(),
+    body("email").isEmail(),
+    body("password").isLength({ min: 6 }),
     body("mobile").notEmpty(),
     body("address").notEmpty(),
     body("role").isIn(["technician", "manager", "account"]),
@@ -49,25 +51,33 @@ router.post(
     if (!errors.isEmpty()) throw new AppError(errors.array()[0].msg, 400);
 
     const staffData = req.body;
-    const files = (req.files as Express.Multer.File[]) || [];
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
 
-    const docMap: Record<string, string> = {
-      photo: "photo",
-      aadharFront: "aadharFront",
-      aadharBack: "aadharBack",
-      pan: "pan",
-      drivingLicense: "drivingLicense",
-    };
-
-    files.forEach((file) => {
-      const field = docMap[file.fieldname];
-      if (field) staffData[field] = file.path;
+    const docFields = ["photo", "aadharFront", "aadharBack", "pan", "drivingLicense"];
+    docFields.forEach((field) => {
+      if (files?.[field]?.[0]) staffData[field] = files[field][0].path;
     });
 
     const existing = await Staff.findOne({ employeeId: staffData.employeeId });
     if (existing) throw new AppError("Employee ID already exists", 400);
 
-    const staff = await Staff.create(staffData);
+    const existingUser = await User.findOne({ email: staffData.email });
+    if (existingUser) throw new AppError("Email already registered", 400);
+
+    const user = await User.create({
+      name: staffData.name,
+      email: staffData.email,
+      password: staffData.password,
+      role: staffData.role,
+      phone: staffData.mobile,
+    });
+
+    const staff = await Staff.create({
+      ...staffData,
+      user: user._id,
+    });
+
+    await staff.populate("user", "name email role isActive");
     res.status(201).json({ success: true, data: staff });
   })
 );
@@ -91,17 +101,10 @@ router.put(
     const staff = await Staff.findById(req.params.id);
     if (!staff) throw new AppError("Staff not found", 404);
 
-    const files = (req.files as Express.Multer.File[]) || [];
-    const docMap: Record<string, string> = {
-      photo: "photo",
-      aadharFront: "aadharFront",
-      aadharBack: "aadharBack",
-      pan: "pan",
-      drivingLicense: "drivingLicense",
-    };
-    files.forEach((file) => {
-      const field = docMap[file.fieldname];
-      if (field) req.body[field] = file.path;
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+    const docFields = ["photo", "aadharFront", "aadharBack", "pan", "drivingLicense"];
+    docFields.forEach((field) => {
+      if (files?.[field]?.[0]) req.body[field] = files[field][0].path;
     });
 
     Object.assign(staff, req.body);

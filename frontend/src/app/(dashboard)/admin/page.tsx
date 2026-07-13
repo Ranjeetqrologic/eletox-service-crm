@@ -7,7 +7,9 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
-    api.get("/reports/dashboard").then((res) => setStats(res.data.data));
+    api.get("/reports/dashboard")
+      .then((res) => setStats(res.data.data))
+      .catch((err) => console.error("Dashboard fetch failed:", err));
   }, []);
 
   const cards = [

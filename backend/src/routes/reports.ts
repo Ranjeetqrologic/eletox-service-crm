@@ -113,4 +113,36 @@ router.get(
   })
 );
 
+router.get(
+  "/payment-summary",
+  protect,
+  restrictTo("superadmin", "admin", "manager", "account"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { from, to } = req.query;
+    const dateFilter = dateRange(from as string | undefined, to as string | undefined);
+    const match = Object.keys(dateFilter).length ? { createdAt: dateFilter } : {};
+
+    const [byMode, byStatus, total] = await Promise.all([
+      Payment.aggregate([{ $match: match }, { $group: { _id: "$mode", amount: { $sum: "$amount" }, count: { $sum: 1 } } }, { $sort: { amount: -1 } }]),
+      Payment.aggregate([{ $match: match }, { $group: { _id: "$status", amount: { $sum: "$amount" }, count: { $sum: 1 } } }]),
+      Payment.aggregate([{ $match: match }, { $group: { _id: null, total: { $sum: "$amount" } } }]),
+    ]);
+
+    res.json({ success: true, data: { byMode, byStatus, total: total[0]?.total || 0 } });
+  })
+);
+
+router.get(
+  "/pending-payments",
+  protect,
+  restrictTo("superadmin", "admin", "manager", "account"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const jobs = await Job.find({ pendingAmount: { $gt: 0 } })
+      .populate("lead", "customerName mobile leadId")
+      .populate("staff", "name employeeId")
+      .sort({ updatedAt: -1 });
+    res.json({ success: true, count: jobs.length, data: jobs });
+  })
+);
+
 export default router;

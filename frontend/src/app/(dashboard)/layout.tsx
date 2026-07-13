@@ -7,17 +7,13 @@ import { useAuthStore } from "@/store/authStore";
 import { Bars3Icon, XMarkIcon, HomeIcon, UsersIcon, ClipboardDocumentListIcon, CurrencyRupeeIcon, ChartPieIcon, CogIcon, ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, logout, loadFromStorage } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    loadFromStorage();
-  }, [loadFromStorage]);
-
-  useEffect(() => {
-    if (!user && typeof window !== "undefined") {
+    if (!user) {
       router.push("/login");
     }
   }, [user, router]);

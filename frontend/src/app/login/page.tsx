@@ -8,13 +8,12 @@ import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("admin@escm.com");
-  const [password, setPassword] = useState("admin123");
+  const [password, setPassword] = useState("Eletox@Admin2026#");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { setAuth, user } = useAuthStore();
 
   useEffect(() => {
-    useAuthStore.getState().loadFromStorage();
     if (user) {
       router.push(user.role === "technician" ? "/staff" : "/admin");
     }
@@ -64,7 +63,7 @@ export default function LoginPage() {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-500">Default: admin@escm.com / admin123</p>
+        <p className="mt-4 text-center text-sm text-gray-500">Default: admin@escm.com / Eletox@Admin2026#</p>
       </div>
     </div>
   );

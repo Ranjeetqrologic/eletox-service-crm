@@ -7,17 +7,31 @@ export interface User {
   role: "superadmin" | "admin" | "manager" | "technician" | "account";
 }
 
+const readStoredAuth = () => {
+  if (typeof window === "undefined") return { user: null, token: null };
+  try {
+    const token = localStorage.getItem("escm_token");
+    const userStr = localStorage.getItem("escm_user");
+    if (token && userStr) {
+      return { token, user: JSON.parse(userStr) as User };
+    }
+  } catch {
+    localStorage.removeItem("escm_token");
+    localStorage.removeItem("escm_user");
+  }
+  return { user: null, token: null };
+};
+
 interface AuthState {
   user: User | null;
   token: string | null;
   setAuth: (user: User, token: string) => void;
   logout: () => void;
-  loadFromStorage: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: null,
+  user: readStoredAuth().user,
+  token: readStoredAuth().token,
   setAuth: (user, token) => {
     localStorage.setItem("escm_token", token);
     localStorage.setItem("escm_user", JSON.stringify(user));
@@ -27,18 +41,5 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem("escm_token");
     localStorage.removeItem("escm_user");
     set({ user: null, token: null });
-  },
-  loadFromStorage: () => {
-    const token = localStorage.getItem("escm_token");
-    const userStr = localStorage.getItem("escm_user");
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        set({ user, token });
-      } catch {
-        localStorage.removeItem("escm_token");
-        localStorage.removeItem("escm_user");
-      }
-    }
   },
 }));

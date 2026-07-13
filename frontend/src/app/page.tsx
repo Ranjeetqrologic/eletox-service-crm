@@ -67,13 +67,16 @@ export default function Home() {
             <div className="bg-primary-600 text-white w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl">E</div>
             <h1 className="text-2xl font-bold text-primary-700">Eletox</h1>
           </div>
-          <nav className="hidden md:flex gap-6 text-sm font-medium">
-            <a href="#services" className="hover:text-primary-600">Services</a>
-            <a href="#how" className="hover:text-primary-600">How it Works</a>
-            <a href="#book" className="hover:text-primary-600">Book Now</a>
-            <a href="#contact" className="hover:text-primary-600">Contact</a>
-            <Link href="/login" className="text-primary-600 hover:underline">Login</Link>
-          </nav>
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="md:hidden text-primary-600 font-medium text-sm border border-primary-600 px-3 py-1 rounded-lg">Login</Link>
+            <nav className="hidden md:flex gap-6 text-sm font-medium">
+              <a href="#services" className="hover:text-primary-600">Services</a>
+              <a href="#how" className="hover:text-primary-600">How it Works</a>
+              <a href="#book" className="hover:text-primary-600">Book Now</a>
+              <a href="#contact" className="hover:text-primary-600">Contact</a>
+              <Link href="/login" className="text-primary-600 hover:underline">Login</Link>
+            </nav>
+          </div>
         </div>
       </header>
 

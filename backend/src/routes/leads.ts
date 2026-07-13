@@ -131,7 +131,14 @@ router.put(
     const files = (req.files as Express.Multer.File[]) || [];
     if (files.length) lead.images.push(...files.map((f) => f.path));
 
-    Object.assign(lead, req.body);
+    const updateFields = [
+      "customerName", "mobile", "alternateMobile", "email", "address", "pin", "state", "city", "lat", "lng",
+      "source", "service", "acType", "problem", "priority", "preferredDate", "preferredTime", "remarks",
+      "followUpDate", "followUpNote", "nextCallDate"
+    ];
+    updateFields.forEach((field) => {
+      if (req.body[field] !== undefined) (lead as any)[field] = req.body[field];
+    });
     await lead.save();
     res.json({ success: true, data: lead });
   })
