@@ -1,31 +1,31 @@
 import multer from "multer";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
-import cloudinary from "../config/cloudinary";
+import fs from "fs";
+import path from "path";
 
-const photoStorage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "escm/photos",
-    allowed_formats: ["jpg", "jpeg", "png", "webp"],
-    transformation: [{ width: 1600, height: 1600, crop: "limit" }],
-  } as any,
+const UPLOAD_DIR = path.join(process.cwd(), "uploads");
+const PHOTO_DIR = path.join(UPLOAD_DIR, "photos");
+const DOC_DIR = path.join(UPLOAD_DIR, "documents");
+
+[UPLOAD_DIR, PHOTO_DIR, DOC_DIR].forEach((dir) => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
-const docStorage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "escm/documents",
-    allowed_formats: ["jpg", "jpeg", "png", "pdf"],
-  } as any,
-});
+const createStorage = (dest: string) =>
+  multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, dest),
+    filename: (_req, file, cb) => {
+      const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
+      cb(null, unique);
+    },
+  });
 
 export const uploadPhotos = multer({
-  storage: photoStorage,
+  storage: createStorage(PHOTO_DIR),
   limits: { fileSize: 20 * 1024 * 1024 },
 }).array("photos", 20);
 
 export const uploadDocs = multer({
-  storage: docStorage,
+  storage: createStorage(DOC_DIR),
   limits: { fileSize: 10 * 1024 * 1024 },
 }).fields([
   { name: "photo", maxCount: 1 },
@@ -36,6 +36,11 @@ export const uploadDocs = multer({
 ]);
 
 export const uploadSingle = multer({
-  storage: photoStorage,
+  storage: createStorage(PHOTO_DIR),
   limits: { fileSize: 10 * 1024 * 1024 },
 }).single("image");
+
+export const getFileUrl = (file: Express.Multer.File) => {
+  const folder = file.destination.includes("documents") ? "documents" : "photos";
+  return `/uploads/${folder}/${file.filename}`;
+};

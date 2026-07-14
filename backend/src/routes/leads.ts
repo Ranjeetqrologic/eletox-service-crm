@@ -4,7 +4,7 @@ import Lead from "../models/Lead";
 import Job from "../models/Job";
 import { protect, restrictTo } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
-import { uploadSingle, uploadPhotos } from "../middleware/upload";
+import { uploadSingle, uploadPhotos, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
 
@@ -80,7 +80,7 @@ router.post(
     if (!errors.isEmpty()) throw new AppError(errors.array()[0].msg, 400);
 
     const files = (req.files as Express.Multer.File[]) || [];
-    const images = files.map((f) => f.path);
+    const images = files.map((f) => getFileUrl(f));
 
     const lead = await Lead.create({
       ...req.body,
@@ -112,7 +112,7 @@ router.post(
       ...req.body,
       leadId: generateLeadId(),
       source: "website",
-      images: file ? [file.path] : [],
+      images: file ? [getFileUrl(file)] : [],
     });
 
     res.status(201).json({ success: true, message: "Inquiry submitted. We will contact you shortly.", data: lead });
@@ -129,7 +129,7 @@ router.put(
     if (!lead) throw new AppError("Lead not found", 404);
 
     const files = (req.files as Express.Multer.File[]) || [];
-    if (files.length) lead.images.push(...files.map((f) => f.path));
+    if (files.length) lead.images.push(...files.map((f) => getFileUrl(f)));
 
     const updateFields = [
       "customerName", "mobile", "alternateMobile", "email", "address", "pin", "state", "city", "lat", "lng",

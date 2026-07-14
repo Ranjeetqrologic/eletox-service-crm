@@ -16,12 +16,15 @@ import reportRoutes from "./routes/reports";
 import settingRoutes from "./routes/settings";
 import publicRoutes from "./routes/public";
 import attendanceRoutes from "./routes/attendance";
+import remindersRoutes from "./routes/reminders";
 
 import { errorHandler } from "./middleware/errorHandler";
+import path from "path";
 
 const app: Application = express();
 
 app.use(cors());
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(morgan("dev"));
@@ -38,6 +41,7 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/settings", settingRoutes);
 app.use("/api/public", publicRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/reminders", remindersRoutes);
 
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok", time: new Date().toISOString() });

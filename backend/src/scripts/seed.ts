@@ -15,7 +15,7 @@ const seed = async () => {
     name: "Super Admin",
     email: "admin@escm.com",
     password: "Eletox@Admin2026#",
-    role: "superadmin",
+    role: "admin",
     phone: "9999999999",
   });
 
@@ -26,7 +26,7 @@ const seed = async () => {
     name: "Super Admin",
     mobile: "9999999999",
     address: "Eletox HQ",
-    role: "manager",
+    role: "admin",
   });
 
   await Company.findOneAndUpdate(
@@ -44,7 +44,7 @@ const seed = async () => {
   );
 
   console.log("Seed completed.");
-  console.log("Default admin: admin@escm.com / admin123");
+  console.log("Default admin: admin@escm.com / Eletox@Admin2026#");
   process.exit(0);
 };
 

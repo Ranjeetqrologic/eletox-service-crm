@@ -4,7 +4,7 @@ import Staff from "../models/Staff";
 import User from "../models/User";
 import { protect, restrictTo } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
-import { uploadDocs } from "../middleware/upload";
+import { uploadDocs, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
 
@@ -44,7 +44,7 @@ router.post(
     body("password").isLength({ min: 6 }),
     body("mobile").notEmpty(),
     body("address").notEmpty(),
-    body("role").isIn(["technician", "manager", "account"]),
+    body("role").isIn(["admin", "technician"]),
   ],
   asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -55,7 +55,7 @@ router.post(
 
     const docFields = ["photo", "aadharFront", "aadharBack", "pan", "drivingLicense"];
     docFields.forEach((field) => {
-      if (files?.[field]?.[0]) staffData[field] = files[field][0].path;
+      if (files?.[field]?.[0]) staffData[field] = getFileUrl(files[field][0]);
     });
 
     const existing = await Staff.findOne({ employeeId: staffData.employeeId });
@@ -104,7 +104,7 @@ router.put(
     const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
     const docFields = ["photo", "aadharFront", "aadharBack", "pan", "drivingLicense"];
     docFields.forEach((field) => {
-      if (files?.[field]?.[0]) req.body[field] = files[field][0].path;
+      if (files?.[field]?.[0]) req.body[field] = getFileUrl(files[field][0]);
     });
 
     Object.assign(staff, req.body);

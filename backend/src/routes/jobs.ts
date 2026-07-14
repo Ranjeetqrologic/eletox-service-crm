@@ -5,7 +5,7 @@ import Lead from "../models/Lead";
 import Staff from "../models/Staff";
 import { protect, restrictTo } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
-import { uploadPhotos } from "../middleware/upload";
+import { uploadPhotos, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
 
@@ -14,8 +14,8 @@ const photoFields = ["beforePhotos", "workingPhotos", "afterPhotos"];
 const getPhotoArrays = (files: Express.Multer.File[]) => {
   const result: Record<string, string[]> = { beforePhotos: [], workingPhotos: [], afterPhotos: [], videos: [] };
   files.forEach((file) => {
-    if (photoFields.includes(file.fieldname)) result[file.fieldname].push(file.path);
-    if (file.mimetype.startsWith("video")) result.videos.push(file.path);
+    if (photoFields.includes(file.fieldname)) result[file.fieldname].push(getFileUrl(file));
+    if (file.mimetype.startsWith("video")) result.videos.push(getFileUrl(file));
   });
   return result;
 };

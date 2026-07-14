@@ -8,6 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Eletox Service CRM - AC Repair & Maintenance",
   description: "Book AC repair, installation, gas filling and maintenance services. Fast, reliable AC technicians.",
+  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({

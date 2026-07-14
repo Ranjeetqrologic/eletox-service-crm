@@ -3,7 +3,7 @@ import Company from "../models/Company";
 import User from "../models/User";
 import { protect, restrictTo } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
-import { uploadSingle } from "../middleware/upload";
+import { uploadSingle, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ router.put(
   asyncHandler(async (req: Request, res: Response) => {
     const file = req.file as Express.Multer.File;
     const update = { ...req.body };
-    if (file) update.logo = file.path;
+    if (file) update.logo = getFileUrl(file);
 
     const company = await Company.findOneAndUpdate({}, update, { upsert: true, new: true });
     res.json({ success: true, data: company });

@@ -67,6 +67,15 @@ export default function LeadsPage() {
     }
   };
 
+  const sendReminders = async () => {
+    try {
+      const res = await api.post("/reminders/send-followups");
+      toast.success(res.data.message || "Reminders sent");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    }
+  };
+
   const exportCSV = () => {
     const rows = leads.map((l) => [
       l.leadId, l.customerName, l.mobile, l.service, l.status,
@@ -98,6 +107,7 @@ export default function LeadsPage() {
             <option value="">All Status</option>
             {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
+          <button onClick={sendReminders} className="bg-yellow-500 text-white px-4 py-2 rounded">Remind</button>
           <button onClick={exportCSV} className="bg-green-600 text-white px-4 py-2 rounded">Export</button>
           <button onClick={() => setShowForm(!showForm)} className="bg-primary-600 text-white px-4 py-2 rounded">{showForm ? "Close" : "+ New Lead"}</button>
         </div>
