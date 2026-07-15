@@ -1,19 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export type LeadStatus =
-  | "new"
-  | "assigned"
-  | "accepted"
-  | "on_the_way"
-  | "reached"
-  | "working"
-  | "half_done"
-  | "need_parts"
-  | "pending"
-  | "follow_up"
-  | "completed"
-  | "cancelled"
-  | "closed";
+export type LeadStatus = string;
 
 export interface ILead extends Document {
   leadId: string;
@@ -79,21 +66,6 @@ const LeadSchema = new Schema<ILead>(
     remarks: { type: String },
     status: {
       type: String,
-      enum: [
-        "new",
-        "assigned",
-        "accepted",
-        "on_the_way",
-        "reached",
-        "working",
-        "half_done",
-        "need_parts",
-        "pending",
-        "follow_up",
-        "completed",
-        "cancelled",
-        "closed",
-      ],
       default: "new",
     },
     assignedStaff: { type: Schema.Types.ObjectId, ref: "Staff" },

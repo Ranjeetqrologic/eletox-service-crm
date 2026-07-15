@@ -1,32 +1,43 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { getImageUrl } from "@/lib/utils";
 import toast from "react-hot-toast";
 
-const statuses = ["new", "assigned", "accepted", "on_the_way", "reached", "working", "half_done", "need_parts", "pending", "follow_up", "completed", "cancelled", "closed"];
 const sources = ["website", "call", "whatsapp", "facebook", "instagram", "google_ads", "referral", "manual", "others"];
 const priorities = ["low", "medium", "high", "urgent"];
 
 export default function LeadsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlStatus = searchParams.get("status") || "";
+
   const [leads, setLeads] = useState<any[]>([]);
   const [staff, setStaff] = useState<any[]>([]);
+  const [statuses, setStatuses] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<any>({ status: "new", priority: "medium", source: "manual" });
   const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStatus, setFilterStatus] = useState(urlStatus);
   const [jobModal, setJobModal] = useState<any>(null);
   const [loadingJob, setLoadingJob] = useState(false);
   const [locationModal, setLocationModal] = useState<any>(null);
 
   const fetchLeads = () => api.get("/leads").then((res) => setLeads(res.data.data));
   const fetchStaff = () => api.get("/staff").then((res) => setStaff(res.data.data));
+  const fetchStatuses = () => api.get("/lead-status/all").then((res) => setStatuses(res.data.data));
 
   useEffect(() => {
     fetchLeads();
     fetchStaff();
+    fetchStatuses();
   }, []);
+
+  useEffect(() => {
+    if (urlStatus) setFilterStatus(urlStatus);
+  }, [urlStatus]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,7 +142,7 @@ export default function LeadsPage() {
           <input className="border p-2 rounded" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
           <select className="border p-2 rounded" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             <option value="">All Status</option>
-            {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
+            {statuses.map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
           </select>
           <button onClick={sendReminders} className="bg-yellow-500 text-white px-4 py-2 rounded">Remind</button>
           <button onClick={exportCSV} className="bg-green-600 text-white px-4 py-2 rounded">Export</button>
@@ -149,6 +160,9 @@ export default function LeadsPage() {
           <input placeholder="Pin" className="border p-2 rounded" onChange={(e) => setForm({ ...form, pin: e.target.value })} />
           <select className="border p-2 rounded" onChange={(e) => setForm({ ...form, source: e.target.value })}>{sources.map((s) => <option key={s} value={s}>{s}</option>)}</select>
           <select className="border p-2 rounded" onChange={(e) => setForm({ ...form, priority: e.target.value })}>{priorities.map((p) => <option key={p} value={p}>{p}</option>)}</select>
+          <select className="border p-2 rounded" onChange={(e) => setForm({ ...form, status: e.target.value })}>
+            {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
+          </select>
           <input required placeholder="Service Required*" className="border p-2 rounded" onChange={(e) => setForm({ ...form, service: e.target.value })} />
           <input type="date" placeholder="Preferred Date" className="border p-2 rounded" onChange={(e) => setForm({ ...form, preferredDate: e.target.value })} />
           <input type="number" step="any" placeholder="Latitude" className="border p-2 rounded" onChange={(e) => setForm({ ...form, lat: e.target.value })} />
@@ -180,7 +194,7 @@ export default function LeadsPage() {
                 <td className="p-3">{l.service}</td>
                 <td className="p-3">
                   <select value={l.status} onChange={(e) => changeStatus(l._id, e.target.value)} className="border p-1 rounded">
-                    {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                    {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
                   </select>
                 </td>
                 <td className="p-3">

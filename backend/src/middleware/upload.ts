@@ -24,6 +24,15 @@ export const uploadPhotos = multer({
   limits: { fileSize: 20 * 1024 * 1024 },
 }).array("photos", 20);
 
+export const uploadReportPhotos = multer({
+  storage: createStorage(PHOTO_DIR),
+  limits: { fileSize: 20 * 1024 * 1024 },
+}).fields([
+  { name: "beforePhotos", maxCount: 10 },
+  { name: "workingPhotos", maxCount: 10 },
+  { name: "afterPhotos", maxCount: 10 },
+]);
+
 export const uploadDocs = multer({
   storage: createStorage(DOC_DIR),
   limits: { fileSize: 10 * 1024 * 1024 },
@@ -38,6 +47,16 @@ export const uploadDocs = multer({
 export const uploadSingle = multer({
   storage: createStorage(PHOTO_DIR),
   limits: { fileSize: 10 * 1024 * 1024 },
+}).single("image");
+
+export const uploadServiceImage = multer({
+  storage: createStorage(PHOTO_DIR),
+  limits: { fileSize: 20 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml"];
+    if (allowed.includes(file.mimetype)) cb(null, true);
+    else cb(new Error("Only PNG, JPG, JPEG, SVG allowed") as any);
+  },
 }).single("image");
 
 export const getFileUrl = (file: Express.Multer.File) => {

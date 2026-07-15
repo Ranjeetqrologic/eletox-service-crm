@@ -1,9 +1,9 @@
 import express, { Request, Response } from "express";
 import Lead from "../models/Lead";
+import LeadStatus from "../models/LeadStatus";
 import Job from "../models/Job";
 import Payment from "../models/Payment";
 import Staff from "../models/Staff";
-import Attendance from "../models/Attendance";
 import { protect, restrictTo } from "../middleware/auth";
 import { asyncHandler } from "../middleware/errorHandler";
 
@@ -38,34 +38,34 @@ router.get(
       }
     }
 
-    const [totalLeads, newLeads, assigned, working, completed, cancelled, pending, halfDone, todayLeads, todayVisits, revenue] = await Promise.all([
-      Lead.countDocuments({ ...leadFilter, ...staffFilter }),
-      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: "new" }),
-      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: "assigned" }),
-      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: { $in: ["accepted", "working", "on_the_way", "reached", "half_done"] } }),
-      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: "completed" }),
-      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: "cancelled" }),
-      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: { $in: ["pending", "follow_up", "need_parts", "half_done"] } }),
-      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: "half_done" }),
+    const statuses = await LeadStatus.find({ isActive: true }).sort({ order: 1 });
+    const statusCountPromises = statuses.map((s) =>
+      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: s.name })
+    );
+
+    const [todayLeads, todayVisits, revenue, statusCounts] = await Promise.all([
       Lead.countDocuments({ ...staffFilter, createdAt: { $gte: today, $lt: tomorrow } }),
       Lead.countDocuments({ ...staffFilter, assignedAt: { $gte: today, $lt: tomorrow } }),
       Payment.aggregate([{ $match: Object.keys(dateFilter).length ? { createdAt: dateFilter } : {} }, { $group: { _id: null, total: { $sum: "$amount" } } }]),
+      Promise.all(statusCountPromises),
     ]);
+
+    const statusData: Record<string, number> = {};
+    statuses.forEach((s, i) => {
+      statusData[s.name] = statusCounts[i] || 0;
+    });
+
+    const totalLeads = await Lead.countDocuments({ ...leadFilter, ...staffFilter });
 
     res.json({
       success: true,
       data: {
         totalLeads,
-        newLeads,
-        assigned,
-        working,
-        completed,
-        cancelled,
-        pending,
-        halfDone,
         todayLeads,
         todayVisits,
         revenue: (revenue as any)?.[0]?.total || 0,
+        statuses,
+        statusData,
       },
     });
   })
@@ -155,78 +155,6 @@ router.get(
       .populate("staff", "name employeeId")
       .sort({ updatedAt: -1 });
     res.json({ success: true, count: jobs.length, data: jobs });
-  })
-);
-
-router.get(
-  "/salary",
-  protect,
-  asyncHandler(async (req: Request, res: Response) => {
-    const { month, year, staff } = req.query;
-    const m = parseInt(month as string) || new Date().getMonth() + 1;
-    const y = parseInt(year as string) || new Date().getFullYear();
-
-    const startDate = new Date(y, m - 1, 1);
-    const endDate = new Date(y, m, 0);
-    const daysInMonth = endDate.getDate();
-
-    let staffFilter: any = { role: "technician" };
-    if (staff) staffFilter = { _id: staff };
-    if (req.user?.role === "technician") {
-      const technicianStaff = await Staff.findOne({ user: req.user._id });
-      if (technicianStaff) staffFilter = { _id: technicianStaff._id };
-    }
-
-    const staffList = await Staff.find(staffFilter);
-
-    const salaryData = await Promise.all(
-      staffList.map(async (s) => {
-        const monthlySalary = s.salary || 0;
-        const perDaySalary = monthlySalary ? monthlySalary / daysInMonth : 0;
-
-        const records = await Attendance.find({
-          staff: s._id,
-          date: { $gte: startDate, $lte: endDate },
-        });
-
-        let present = 0, absent = 0, halfDay = 0, leave = 0, holiday = 0, workingHours = 0;
-        records.forEach((r) => {
-          if (r.status === "present") present += 1;
-          if (r.status === "absent") absent += 1;
-          if (r.status === "half_day") halfDay += 1;
-          if (r.status === "leave") leave += 1;
-          if (r.status === "holiday") holiday += 1;
-          if (r.workingHours) workingHours += r.workingHours;
-        });
-
-        const paidDays = present + holiday + (leave * 0); // leave unpaid by default, can be changed
-        const unpaidDays = absent + (leave * 1) + (halfDay * 0.5);
-        const payableDays = paidDays + halfDay * 0.5;
-        const deductionDays = unpaidDays;
-        const deductionAmount = deductionDays * perDaySalary;
-        const payableSalary = Math.max(0, monthlySalary - deductionAmount);
-
-        return {
-          staffId: s._id,
-          employeeId: s.employeeId,
-          name: s.name,
-          monthlySalary,
-          daysInMonth,
-          present,
-          absent,
-          halfDay,
-          leave,
-          holiday,
-          workingHours: parseFloat(workingHours.toFixed(2)),
-          payableDays: parseFloat(payableDays.toFixed(2)),
-          deductionDays: parseFloat(deductionDays.toFixed(2)),
-          deductionAmount: parseFloat(deductionAmount.toFixed(2)),
-          payableSalary: parseFloat(payableSalary.toFixed(2)),
-        };
-      })
-    );
-
-    res.json({ success: true, data: salaryData });
   })
 );
 

@@ -10,19 +10,20 @@ export default function StaffDashboard() {
     api.get("/reports/dashboard").then((res) => setStats(res.data.data));
   }, []);
 
+  const statusCards = (stats?.statuses || []).map((s: any) => ({
+    label: s.label,
+    value: stats?.statusData?.[s.name] ?? 0,
+    bg: s.color || "#6B7280",
+  }));
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Technician Dashboard</h1>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: "Assigned", value: stats?.assigned ?? 0 },
-          { label: "Working", value: stats?.working ?? 0 },
-          { label: "Half Done", value: stats?.halfDone ?? 0 },
-          { label: "Completed", value: stats?.completed ?? 0 },
-        ].map((c) => (
-          <div key={c.label} className="bg-white p-5 rounded-xl shadow border">
-            <div className="text-2xl font-bold text-primary-700">{c.value}</div>
-            <div className="text-sm text-gray-500">{c.label}</div>
+        {statusCards.map((c: any) => (
+          <div key={c.label} className="text-white p-5 rounded-xl shadow" style={{ backgroundColor: c.bg }}>
+            <div className="text-2xl font-bold">{c.value}</div>
+            <div className="text-sm opacity-90">{c.label}</div>
           </div>
         ))}
       </div>

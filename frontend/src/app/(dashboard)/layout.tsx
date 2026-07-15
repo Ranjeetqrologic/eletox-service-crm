@@ -29,8 +29,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     ? [
         { name: "Dashboard", href: "/admin/", icon: HomeIcon },
         { name: "Leads", href: "/admin/leads/", icon: ClipboardDocumentListIcon },
+        { name: "Lead Status", href: "/admin/lead-status/", icon: ClipboardDocumentListIcon },
         { name: "Staff", href: "/admin/staff/", icon: UsersIcon },
-        { name: "Attendance", href: "/admin/attendance/", icon: UsersIcon },
+        { name: "Roles", href: "/admin/roles/", icon: UsersIcon },
         { name: "Services", href: "/admin/services/", icon: WrenchIcon },
         { name: "Banners", href: "/admin/banners/", icon: HomeIcon },
         { name: "Gallery", href: "/admin/gallery/", icon: PhotoIcon },
@@ -41,7 +42,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     : [
         { name: "Dashboard", href: "/staff/", icon: HomeIcon },
         { name: "My Leads", href: "/staff/leads/", icon: ClipboardDocumentListIcon },
-        { name: "Attendance", href: "/staff/attendance/", icon: UsersIcon },
       ];
 
   return (

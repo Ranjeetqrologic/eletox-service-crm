@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 export default function ServicesPage() {
   const [services, setServices] = useState<any[]>([]);
   const [form, setForm] = useState<any>({ title: "", slug: "", shortDesc: "", description: "", image: "", price: "", order: 0, isActive: true });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -19,15 +20,25 @@ export default function ServicesPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const payload = { ...form, price: form.price ? Number(form.price) : undefined, order: Number(form.order) };
+      const data = new FormData();
+      data.append("title", form.title);
+      data.append("slug", form.slug);
+      data.append("shortDesc", form.shortDesc);
+      data.append("description", form.description);
+      data.append("order", String(form.order ?? 0));
+      data.append("isActive", String(form.isActive));
+      if (form.price) data.append("price", String(form.price));
+      if (imageFile) data.append("image", imageFile);
+
       if (editing) {
-        await api.put(`/services/${editing}`, payload);
+        await api.put(`/services/${editing}`, data, { headers: { "Content-Type": "multipart/form-data" } });
         toast.success("Service updated");
       } else {
-        await api.post("/services", payload);
+        await api.post("/services", data, { headers: { "Content-Type": "multipart/form-data" } });
         toast.success("Service created");
       }
       setForm({ title: "", slug: "", shortDesc: "", description: "", image: "", price: "", order: 0, isActive: true });
+      setImageFile(null);
       setEditing(null);
       fetchServices();
     } catch (err: any) {
@@ -61,9 +72,12 @@ export default function ServicesPage() {
             <option value="true">Active</option>
             <option value="false">Inactive</option>
           </select>
-          <input className="border p-2 rounded w-full md:col-span-3" placeholder="Image URL (e.g. /eletox-assets/icon-ac.png)" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
+          <label className="block text-sm md:col-span-3">
+            Service Image (PNG, JPG, SVG):
+            <input type="file" accept=".png,.jpg,.jpeg,.svg" className="w-full border p-2 rounded mt-1" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+          </label>
         </div>
-        {form.image && <img src={getImageUrl(form.image)} alt="Preview" className="w-16 h-16 object-cover rounded border" />}
+        {(imageFile || form.image) && <img src={imageFile ? URL.createObjectURL(imageFile) : getImageUrl(form.image)} alt="Preview" className="w-16 h-16 object-cover rounded border" />}
         <input className="border p-2 rounded w-full" placeholder="Short Description*" value={form.shortDesc} onChange={(e) => setForm({ ...form, shortDesc: e.target.value })} required />
         <textarea className="border p-2 rounded w-full" rows={4} placeholder="Full Description*" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
         <button className="bg-primary-600 text-white px-4 py-2 rounded" disabled={loading}>{loading ? "Saving..." : editing ? "Update" : "Add Service"}</button>

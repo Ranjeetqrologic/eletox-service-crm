@@ -58,4 +58,48 @@ router.post(
   })
 );
 
+router.put(
+  "/:id",
+  protect,
+  restrictTo("superadmin", "admin", "manager", "account"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const payment = await Payment.findById(req.params.id);
+    if (!payment) throw new AppError("Payment not found", 404);
+
+    const oldAmount = payment.amount;
+    Object.assign(payment, req.body);
+    await payment.save();
+
+    const job = await Job.findOne({ lead: payment.lead });
+    if (job) {
+      const diff = Number(req.body.amount || oldAmount) - oldAmount;
+      job.receivedAmount += diff;
+      job.pendingAmount = Math.max(0, job.billAmount - job.receivedAmount);
+      await job.save();
+    }
+
+    res.json({ success: true, data: payment });
+  })
+);
+
+router.delete(
+  "/:id",
+  protect,
+  restrictTo("superadmin", "admin", "manager", "account"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const payment = await Payment.findById(req.params.id);
+    if (!payment) throw new AppError("Payment not found", 404);
+
+    const job = await Job.findOne({ lead: payment.lead });
+    if (job) {
+      job.receivedAmount -= payment.amount;
+      job.pendingAmount = Math.max(0, job.billAmount - job.receivedAmount);
+      await job.save();
+    }
+
+    await payment.deleteOne();
+    res.json({ success: true, message: "Payment deleted" });
+  })
+);
+
 export default router;

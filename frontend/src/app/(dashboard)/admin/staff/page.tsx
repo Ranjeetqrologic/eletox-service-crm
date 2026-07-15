@@ -10,7 +10,9 @@ export default function StaffPage() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
   const [staff, setStaff] = useState<any[]>([]);
+  const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showKyc, setShowKyc] = useState<any>(null);
   const [form, setForm] = useState<any>({
     employeeId: "",
     name: "",
@@ -18,8 +20,8 @@ export default function StaffPage() {
     password: "",
     mobile: "",
     address: "",
-    role: "technician",
-    salary: "",
+    role: "",
+    roleId: "",
     joiningDate: "",
     emergencyContact: "",
     bankName: "",
@@ -32,9 +34,13 @@ export default function StaffPage() {
   const fetchStaff = () => {
     api.get("/staff").then((res) => setStaff(res.data.data));
   };
+  const fetchRoles = () => {
+    api.get("/roles/all").then((res) => setRoles(res.data.data));
+  };
 
   useEffect(() => {
     fetchStaff();
+    fetchRoles();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,8 +58,8 @@ export default function StaffPage() {
       await api.post("/staff", data, { headers: { "Content-Type": "multipart/form-data" } });
       toast.success("Staff registered");
       setForm({
-        employeeId: "", name: "", email: "", password: "", mobile: "", address: "", role: "technician",
-        salary: "", joiningDate: "", emergencyContact: "", bankName: "", accountNumber: "", ifsc: "", upi: "",
+        employeeId: "", name: "", email: "", password: "", mobile: "", address: "", role: "", roleId: "",
+        joiningDate: "", emergencyContact: "", bankName: "", accountNumber: "", ifsc: "", upi: "",
       });
       setDocs({});
       fetchStaff();
@@ -99,11 +105,17 @@ export default function StaffPage() {
           <input className="border p-2 rounded" type="password" placeholder="Password*" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
           <input className="border p-2 rounded" placeholder="Mobile*" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} required />
           <input className="border p-2 rounded" placeholder="Address*" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
-          <select className="border p-2 rounded" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-            <option value="admin">Admin</option>
-            <option value="technician">Staff</option>
+          <select
+            className="border p-2 rounded"
+            value={form.roleId}
+            onChange={(e) => {
+              const role = roles.find((r) => r._id === e.target.value);
+              setForm({ ...form, roleId: e.target.value, role: role?.name || "" });
+            }}
+          >
+            <option value="">Select Role</option>
+            {roles.map((r) => <option key={r._id} value={r._id}>{r.name}</option>)}
           </select>
-          <input className="border p-2 rounded" type="number" placeholder="Salary" value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} />
           <input className="border p-2 rounded" type="date" placeholder="Joining Date" value={form.joiningDate} onChange={(e) => setForm({ ...form, joiningDate: e.target.value })} />
           <input className="border p-2 rounded" placeholder="Emergency Contact" value={form.emergencyContact} onChange={(e) => setForm({ ...form, emergencyContact: e.target.value })} />
           <input className="border p-2 rounded" placeholder="Bank Name" value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} />
@@ -147,6 +159,7 @@ export default function StaffPage() {
                   {s.user?._id && (
                     <button onClick={() => loginAs(s.user._id)} className="text-blue-600 hover:underline">Login As</button>
                   )}
+                  <button onClick={() => setShowKyc(s)} className="text-green-600 hover:underline">KYC & Bank</button>
                   <button onClick={() => deactivate(s._id)} className="text-red-600 hover:underline">Deactivate</button>
                 </td>
               </tr>
@@ -154,6 +167,38 @@ export default function StaffPage() {
           </tbody>
         </table>
       </div>
+
+      {showKyc && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">KYC & Bank Details - {showKyc.name}</h2>
+              <button onClick={() => setShowKyc(null)} className="text-gray-500 hover:text-gray-700">Close</button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div><span className="font-medium text-gray-500">Employee ID:</span> {showKyc.employeeId}</div>
+              <div><span className="font-medium text-gray-500">Mobile:</span> {showKyc.mobile}</div>
+              <div className="md:col-span-2"><span className="font-medium text-gray-500">Address:</span> {showKyc.address}</div>
+              <div><span className="font-medium text-gray-500">Bank Name:</span> {showKyc.bankDetails?.bankName || "-"}</div>
+              <div><span className="font-medium text-gray-500">Account Number:</span> {showKyc.bankDetails?.accountNumber || "-"}</div>
+              <div><span className="font-medium text-gray-500">IFSC:</span> {showKyc.bankDetails?.ifsc || "-"}</div>
+              <div><span className="font-medium text-gray-500">UPI:</span> {showKyc.bankDetails?.upi || "-"}</div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+              {["photo", "aadharFront", "aadharBack", "pan", "drivingLicense"].map((field) => (
+                <div key={field}>
+                  <div className="text-xs text-gray-500 capitalize mb-1">{field.replace(/([A-Z])/g, " $1")}</div>
+                  {showKyc[field] ? (
+                    <a href={showKyc[field]} target="_blank" rel="noreferrer" className="text-blue-600 text-sm hover:underline">View</a>
+                  ) : (
+                    <span className="text-gray-400 text-sm">Not uploaded</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

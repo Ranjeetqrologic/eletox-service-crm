@@ -22,8 +22,8 @@ export interface IStaff extends Document {
   };
   emergencyContact?: string;
   joiningDate?: Date;
-  salary?: number;
-  role: "superadmin" | "admin" | "manager" | "account" | "technician";
+  role: string;
+  roleId?: mongoose.Types.ObjectId;
   documents: { name: string; url: string; type?: string }[];
   isActive: boolean;
   createdAt: Date;
@@ -53,8 +53,8 @@ const StaffSchema = new Schema<IStaff>(
     },
     emergencyContact: { type: String },
     joiningDate: { type: Date },
-    salary: { type: Number },
-    role: { type: String, enum: ["superadmin", "admin", "manager", "account", "technician"], default: "technician" },
+    role: { type: String, default: "technician" },
+    roleId: { type: Schema.Types.ObjectId, ref: "Role" },
     documents: [{ name: String, url: String, type: String }],
     isActive: { type: Boolean, default: true },
   },

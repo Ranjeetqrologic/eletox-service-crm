@@ -5,15 +5,16 @@ import Lead from "../models/Lead";
 import Staff from "../models/Staff";
 import { protect, restrictTo } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
-import { uploadPhotos, getFileUrl } from "../middleware/upload";
+import { uploadReportPhotos, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
 
 const photoFields = ["beforePhotos", "workingPhotos", "afterPhotos"];
 
-const getPhotoArrays = (files: Express.Multer.File[]) => {
+const getPhotoArrays = (files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] }) => {
   const result: Record<string, string[]> = { beforePhotos: [], workingPhotos: [], afterPhotos: [], videos: [] };
-  files.forEach((file) => {
+  const allFiles = Array.isArray(files) ? files : Object.values(files || {}).flat();
+  allFiles.forEach((file) => {
     if (photoFields.includes(file.fieldname)) result[file.fieldname].push(getFileUrl(file));
     if (file.mimetype.startsWith("video")) result.videos.push(getFileUrl(file));
   });
@@ -133,13 +134,12 @@ router.put(
   "/:id/report",
   protect,
   restrictTo("technician", "admin", "manager"),
-  uploadPhotos,
+  uploadReportPhotos,
   asyncHandler(async (req: Request, res: Response) => {
     const job = await Job.findById(req.params.id);
     if (!job) throw new AppError("Job not found", 404);
 
-    const files = (req.files as Express.Multer.File[]) || [];
-    const photos = getPhotoArrays(files);
+    const photos = getPhotoArrays(req.files);
 
     job.beforePhotos.push(...photos.beforePhotos);
     job.workingPhotos.push(...photos.workingPhotos);
