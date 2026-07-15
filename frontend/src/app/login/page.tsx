@@ -8,8 +8,8 @@ import Logo from "@/components/Logo";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("admin@escm.com");
-  const [password, setPassword] = useState("Eletox@Admin2026#");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [company, setCompany] = useState<any>({});
   const router = useRouter();
@@ -66,7 +66,6 @@ export default function LoginPage() {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-500">Default: admin@escm.com / Eletox@Admin2026#</p>
       </div>
     </div>
   );
