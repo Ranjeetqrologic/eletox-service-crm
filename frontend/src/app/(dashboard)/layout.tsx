@@ -5,18 +5,21 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Logo from "@/components/Logo";
-import { Bars3Icon, XMarkIcon, HomeIcon, UsersIcon, ClipboardDocumentListIcon, CurrencyRupeeIcon, ChartPieIcon, CogIcon, ArrowRightOnRectangleIcon, WrenchIcon } from "@heroicons/react/24/outline";
+import api from "@/lib/api";
+import { Bars3Icon, XMarkIcon, HomeIcon, UsersIcon, ClipboardDocumentListIcon, CurrencyRupeeIcon, ChartPieIcon, CogIcon, ArrowRightOnRectangleIcon, WrenchIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [company, setCompany] = useState<any>({});
 
   useEffect(() => {
     if (!user) {
       router.replace("/login/");
     }
+    api.get("/settings/company").then((res) => setCompany(res.data.data || {})).catch(() => setCompany({}));
   }, [user, router]);
 
   if (!user) return null;
@@ -28,6 +31,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Leads", href: "/admin/leads/", icon: ClipboardDocumentListIcon },
         { name: "Staff", href: "/admin/staff/", icon: UsersIcon },
         { name: "Services", href: "/admin/services/", icon: WrenchIcon },
+        { name: "Banners", href: "/admin/banners/", icon: HomeIcon },
+        { name: "Gallery", href: "/admin/gallery/", icon: PhotoIcon },
         { name: "Payments", href: "/admin/payments/", icon: CurrencyRupeeIcon },
         { name: "Reports", href: "/admin/reports/", icon: ChartPieIcon },
         { name: "Settings", href: "/admin/settings/", icon: CogIcon },
@@ -42,7 +47,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-gray-100 flex">
       <aside className={`bg-gray-900 text-white w-64 flex-shrink-0 ${sidebarOpen ? "block" : "hidden"} md:block`}>
         <div className="p-4">
-          <Link href="/admin/"><Logo showText={false} height={60} /></Link>
+          <Link href="/admin/"><Logo showText={false} height={60} logoUrl={company.logo} /></Link>
           <div className="mt-2 font-bold text-lg">Eletox CRM</div>
         </div>
         <nav className="mt-6 space-y-1">

@@ -1,15 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { getImageUrl } from "@/lib/utils";
 
 interface LogoProps {
   className?: string;
   showText?: boolean;
   height?: number;
+  logoUrl?: string;
 }
 
-export default function Logo({ className = "", showText = true, height = 48 }: LogoProps) {
+export default function Logo({ className = "", showText = true, height = 48, logoUrl }: LogoProps) {
   const [error, setError] = useState(false);
+  const src = getImageUrl(logoUrl) || "/eletox-assets/logo.png";
 
   if (error) {
     return (
@@ -43,7 +46,7 @@ export default function Logo({ className = "", showText = true, height = 48 }: L
 
   return (
     <img
-      src="/logo.png"
+      src={src}
       alt="Eletox"
       style={{ height }}
       className={`object-contain ${className}`}

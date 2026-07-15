@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 import toast from "react-hot-toast";
 
 export default function ServicesPage() {
   const [services, setServices] = useState<any[]>([]);
-  const [form, setForm] = useState<any>({ title: "", slug: "", shortDesc: "", description: "", price: "", order: 0, isActive: true });
+  const [form, setForm] = useState<any>({ title: "", slug: "", shortDesc: "", description: "", image: "", price: "", order: 0, isActive: true });
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -26,7 +27,7 @@ export default function ServicesPage() {
         await api.post("/services", payload);
         toast.success("Service created");
       }
-      setForm({ title: "", slug: "", shortDesc: "", description: "", price: "", order: 0, isActive: true });
+      setForm({ title: "", slug: "", shortDesc: "", description: "", image: "", price: "", order: 0, isActive: true });
       setEditing(null);
       fetchServices();
     } catch (err: any) {
@@ -60,7 +61,9 @@ export default function ServicesPage() {
             <option value="true">Active</option>
             <option value="false">Inactive</option>
           </select>
+          <input className="border p-2 rounded w-full md:col-span-3" placeholder="Image URL (e.g. /eletox-assets/icon-ac.png)" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
         </div>
+        {form.image && <img src={getImageUrl(form.image)} alt="Preview" className="w-16 h-16 object-cover rounded border" />}
         <input className="border p-2 rounded w-full" placeholder="Short Description*" value={form.shortDesc} onChange={(e) => setForm({ ...form, shortDesc: e.target.value })} required />
         <textarea className="border p-2 rounded w-full" rows={4} placeholder="Full Description*" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
         <button className="bg-primary-600 text-white px-4 py-2 rounded" disabled={loading}>{loading ? "Saving..." : editing ? "Update" : "Add Service"}</button>
@@ -69,10 +72,13 @@ export default function ServicesPage() {
       <div className="grid md:grid-cols-2 gap-4">
         {services.map((s) => (
           <div key={s._id} className="bg-white p-4 rounded-xl shadow flex justify-between items-start">
-            <div>
-              <h3 className="font-bold">{s.title}</h3>
-              <p className="text-sm text-gray-600">{s.shortDesc}</p>
-              <p className="text-xs text-gray-400 mt-1">/{s.slug} · ₹{s.price || 0} · {s.isActive ? "Active" : "Inactive"}</p>
+            <div className="flex gap-3">
+              {s.image && <img src={getImageUrl(s.image)} alt={s.title} className="w-14 h-14 object-cover rounded" />}
+              <div>
+                <h3 className="font-bold">{s.title}</h3>
+                <p className="text-sm text-gray-600">{s.shortDesc}</p>
+                <p className="text-xs text-gray-400 mt-1">/{s.slug} · ₹{s.price || 0} · {s.isActive ? "Active" : "Inactive"}</p>
+              </div>
             </div>
             <div className="flex gap-2">
               <button onClick={() => { setForm(s); setEditing(s._id); }} className="text-blue-600 text-sm">Edit</button>

@@ -18,6 +18,8 @@ import settingRoutes from "./routes/settings";
 import publicRoutes from "./routes/public";
 import attendanceRoutes from "./routes/attendance";
 import remindersRoutes from "./routes/reminders";
+import bannerRoutes from "./routes/banners";
+import galleryRoutes from "./routes/gallery";
 
 import { errorHandler } from "./middleware/errorHandler";
 import path from "path";
@@ -44,6 +46,8 @@ app.use("/api/settings", settingRoutes);
 app.use("/api/public", publicRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/reminders", remindersRoutes);
+app.use("/api/banners", bannerRoutes);
+app.use("/api/gallery", galleryRoutes);
 
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok", time: new Date().toISOString() });

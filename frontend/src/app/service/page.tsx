@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 import Logo from "@/components/Logo";
 
 function ServiceContent() {
@@ -30,7 +31,9 @@ function ServiceContent() {
   return (
     <>
       <section className="py-16 max-w-4xl mx-auto px-4">
-        <div className="w-20 h-20 bg-gradient-to-br from-primary-600 to-accent-500 text-white rounded-full flex items-center justify-center mb-6 text-4xl mx-auto">❄</div>
+        <div className="w-32 h-32 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center mb-6 mx-auto">
+          {service.image ? <img src={getImageUrl(service.image)} alt={service.title} className="w-full h-full object-cover" /> : <span className="text-5xl">❄</span>}
+        </div>
         <h1 className="text-4xl md:text-5xl font-bold text-center mb-4">{service.title}</h1>
         <p className="text-center text-gray-600 text-lg mb-8">{service.shortDesc}</p>
         {service.price ? <p className="text-center text-2xl font-bold text-primary-600 mb-8">Starting at ₹{service.price}</p> : null}

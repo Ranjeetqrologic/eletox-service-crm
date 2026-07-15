@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
@@ -11,8 +11,13 @@ export default function LoginPage() {
   const [email, setEmail] = useState("admin@escm.com");
   const [password, setPassword] = useState("Eletox@Admin2026#");
   const [loading, setLoading] = useState(false);
+  const [company, setCompany] = useState<any>({});
   const router = useRouter();
   const { setAuth } = useAuthStore();
+
+  useEffect(() => {
+    api.get("/settings/company").then((res) => setCompany(res.data.data || {})).catch(() => setCompany({}));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +38,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <div className="flex justify-center mb-4">
-          <Logo />
+          <Logo logoUrl={company.logo} />
         </div>
         <h1 className="text-2xl font-bold text-center mb-6">Login</h1>
         <form onSubmit={handleSubmit} className="space-y-4">

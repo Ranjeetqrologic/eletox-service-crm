@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 import toast from "react-hot-toast";
 
 export default function SettingsPage() {
@@ -62,6 +63,7 @@ export default function SettingsPage() {
           <div>
             <label className="block text-sm font-medium mb-1">Logo</label>
             <input type="file" className="border p-2 rounded w-full" onChange={(e) => setLogo(e.target.files?.[0] || null)} />
+            {company.logo && <img src={getImageUrl(company.logo)} alt="Current logo" className="mt-2 h-16 object-contain" />}
           </div>
         </div>
         <button className="bg-primary-600 text-white px-4 py-2 rounded" disabled={loading}>{loading ? "Saving..." : "Save Settings"}</button>
