@@ -109,6 +109,15 @@ router.put(
 
     Object.assign(staff, req.body);
     await staff.save();
+
+    if (staff.user && req.body.password) {
+      const user = await User.findById(staff.user);
+      if (user) {
+        user.password = req.body.password;
+        await user.save();
+      }
+    }
+
     res.json({ success: true, data: staff });
   })
 );
