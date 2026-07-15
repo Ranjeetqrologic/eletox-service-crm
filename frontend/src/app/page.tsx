@@ -1,20 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
+import Logo from "@/components/Logo";
 import toast from "react-hot-toast";
-
-const services = [
-  { title: "AC Repair", desc: "Quick diagnosis and repair for all AC brands." },
-  { title: "AC Installation", desc: "Safe and professional installation at your home or office." },
-  { title: "AC Gas Filling", desc: "Genuine refrigerant refill with leak detection." },
-  { title: "AC Maintenance", desc: "Regular servicing to keep your AC running efficiently." },
-  { title: "AMC Plans", desc: "Affordable annual maintenance contracts." },
-  { title: "Commercial AC", desc: "Heavy-duty solutions for shops, offices and malls." },
-  { title: "Split AC Repair", desc: "Indoor and outdoor unit service for split ACs." },
-  { title: "Window AC Repair", desc: "Expert window AC repair and installation." },
-];
 
 const steps = [
   { title: "Book Online", desc: "Fill the service form or call us." },
@@ -23,6 +13,8 @@ const steps = [
 ];
 
 export default function Home() {
+  const [services, setServices] = useState<any[]>([]);
+  const [company, setCompany] = useState<any>({});
   const [form, setForm] = useState({
     customerName: "",
     mobile: "",
@@ -37,6 +29,11 @@ export default function Home() {
     problem: "",
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    api.get("/services/public").then((res) => setServices(res.data.data || [])).catch(() => setServices([]));
+    api.get("/settings/company").then((res) => setCompany(res.data.data || {})).catch(() => setCompany({}));
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -63,10 +60,7 @@ export default function Home() {
     <main className="min-h-screen bg-white text-gray-800">
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="bg-primary-600 text-white w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl">E</div>
-            <h1 className="text-2xl font-bold text-primary-700">Eletox</h1>
-          </div>
+          <Logo />
           <div className="flex items-center gap-3">
             <Link href="/login" className="md:hidden text-primary-600 font-medium text-sm border border-primary-600 px-3 py-1 rounded-lg">Login</Link>
             <nav className="hidden md:flex gap-6 text-sm font-medium">
@@ -99,11 +93,11 @@ export default function Home() {
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((s) => (
-            <div key={s.title} className="bg-white border rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition shadow-sm">
-              <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mb-4 text-2xl">❄</div>
-              <h4 className="text-lg font-bold mb-2">{s.title}</h4>
-              <p className="text-sm text-gray-600">{s.desc}</p>
-            </div>
+            <Link key={s._id} href={`/service/?slug=${s.slug}`} className="bg-white border rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition shadow-sm group">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-accent-500 text-white rounded-full flex items-center justify-center mb-4 text-2xl">❄</div>
+              <h4 className="text-lg font-bold mb-2 group-hover:text-primary-600">{s.title}</h4>
+              <p className="text-sm text-gray-600">{s.shortDesc}</p>
+            </Link>
           ))}
         </div>
       </section>
@@ -150,7 +144,7 @@ export default function Home() {
               <input name="pin" value={form.pin} onChange={handleChange} placeholder="Pin Code" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none" />
               <select name="service" value={form.service} onChange={handleChange} className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none" required>
                 <option value="">Select Service</option>
-                {services.map((s) => <option key={s.title} value={s.title}>{s.title}</option>)}
+                {services.map((s) => <option key={s._id} value={s.title}>{s.title}</option>)}
               </select>
               <select name="acType" value={form.acType} onChange={handleChange} className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none">
                 <option value="">AC Type</option>
@@ -174,16 +168,19 @@ export default function Home() {
 
       <section id="contact" className="bg-gray-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="flex justify-center mb-6">
+            <Logo className="[&_span]:text-white" />
+          </div>
           <h3 className="text-3xl font-bold mb-6">Contact Us</h3>
-          <p className="text-lg mb-2">Phone: +91-99999-99999</p>
-          <p className="text-lg mb-2">WhatsApp: +91-99999-99999</p>
-          <p className="text-lg mb-2">Email: info@eletox.com</p>
-          <p className="text-lg">123 Main Road, New Delhi</p>
+          <p className="text-lg mb-2">Phone: {company.phone || "+91-99999-99999"}</p>
+          <p className="text-lg mb-2">WhatsApp: {company.whatsapp || "+91-99999-99999"}</p>
+          <p className="text-lg mb-2">Email: {company.email || "info@eletox.com"}</p>
+          <p className="text-lg">{company.address || "123 Main Road, New Delhi"}</p>
         </div>
       </section>
 
       <footer className="bg-gray-950 text-gray-400 py-6 text-center text-sm">
-        <p>&copy; 2026 Eletox AC Services. All rights reserved.</p>
+        <p>&copy; 2026 {company.name || "Eletox AC Services"}. All rights reserved.</p>
       </footer>
     </main>
   );

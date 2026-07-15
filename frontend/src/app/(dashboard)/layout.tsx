@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { Bars3Icon, XMarkIcon, HomeIcon, UsersIcon, ClipboardDocumentListIcon, CurrencyRupeeIcon, ChartPieIcon, CogIcon, ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
+import Logo from "@/components/Logo";
+import { Bars3Icon, XMarkIcon, HomeIcon, UsersIcon, ClipboardDocumentListIcon, CurrencyRupeeIcon, ChartPieIcon, CogIcon, ArrowRightOnRectangleIcon, WrenchIcon } from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
@@ -26,6 +27,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Dashboard", href: "/admin/", icon: HomeIcon },
         { name: "Leads", href: "/admin/leads/", icon: ClipboardDocumentListIcon },
         { name: "Staff", href: "/admin/staff/", icon: UsersIcon },
+        { name: "Services", href: "/admin/services/", icon: WrenchIcon },
         { name: "Payments", href: "/admin/payments/", icon: CurrencyRupeeIcon },
         { name: "Reports", href: "/admin/reports/", icon: ChartPieIcon },
         { name: "Settings", href: "/admin/settings/", icon: CogIcon },
@@ -39,7 +41,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-gray-100 flex">
       <aside className={`bg-gray-900 text-white w-64 flex-shrink-0 ${sidebarOpen ? "block" : "hidden"} md:block`}>
-        <div className="p-4 font-bold text-xl">ESCM</div>
+        <div className="p-4">
+          <Link href="/admin/"><Logo className="[&_span]:text-white [&_span]:text-xl" showText={false} /></Link>
+          <div className="mt-2 font-bold text-lg">Eletox CRM</div>
+        </div>
         <nav className="mt-6 space-y-1">
           {nav.map((item) => {
             const Icon = item.icon;
