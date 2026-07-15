@@ -10,11 +10,17 @@ const router = express.Router();
 router.get(
   "/",
   protect,
-  restrictTo("superadmin", "admin", "manager"),
   asyncHandler(async (req: Request, res: Response) => {
     const { staff, from, to } = req.query;
     const filter: any = {};
-    if (staff) filter.staff = staff;
+
+    if (req.user?.role === "technician") {
+      const technicianStaff = await Staff.findOne({ user: req.user._id });
+      if (technicianStaff) filter.staff = technicianStaff._id;
+    } else if (staff) {
+      filter.staff = staff;
+    }
+
     if (from || to) {
       filter.date = {};
       if (from) filter.date.$gte = new Date(from as string);

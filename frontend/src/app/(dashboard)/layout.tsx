@@ -30,6 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Dashboard", href: "/admin/", icon: HomeIcon },
         { name: "Leads", href: "/admin/leads/", icon: ClipboardDocumentListIcon },
         { name: "Staff", href: "/admin/staff/", icon: UsersIcon },
+        { name: "Attendance", href: "/admin/attendance/", icon: UsersIcon },
         { name: "Services", href: "/admin/services/", icon: WrenchIcon },
         { name: "Banners", href: "/admin/banners/", icon: HomeIcon },
         { name: "Gallery", href: "/admin/gallery/", icon: PhotoIcon },

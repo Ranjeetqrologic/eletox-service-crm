@@ -79,40 +79,93 @@ export default function StaffLeads() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-3 text-left">Lead ID</th>
-              <th className="p-3 text-left">Customer</th>
-              <th className="p-3 text-left">Status</th>
-              <th className="p-3 text-left">Address</th>
-              <th className="p-3 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {jobs.map((j) => (
-              <tr key={j._id} className="border-t">
-                <td className="p-3">{j.lead?.leadId}</td>
-                <td className="p-3">{j.lead?.customerName} <br /> {j.lead?.mobile}</td>
-                <td className="p-3">{j.status}</td>
-                <td className="p-3">{j.lead?.address}, {j.lead?.city}</td>
-                <td className="p-3 space-x-2">
-                  {j.status === "assigned" && (
-                    <button onClick={() => acceptJob(j._id)} className="text-primary-600 hover:underline font-medium">Accept</button>
-                  )}
-                  {j.status === "accepted" && (
-                    <button onClick={() => checkIn(j._id)} className="text-blue-600 hover:underline">Check In</button>
-                  )}
-                  {["working", "started", "on_the_way", "reached", "half_done", "need_parts", "pending", "follow_up"].includes(j.status) && (
-                    <button onClick={() => setSelected(j)} className="text-green-600 hover:underline">Report</button>
-                  )}
-                  {j.status === "completed" && <span className="text-gray-500">Completed</span>}
-                </td>
+      <div className="bg-white rounded-xl shadow overflow-hidden">
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="p-3 text-left">Lead ID</th>
+                <th className="p-3 text-left">Customer</th>
+                <th className="p-3 text-left">Status</th>
+                <th className="p-3 text-left">Address</th>
+                <th className="p-3 text-left">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {jobs.map((j) => (
+                <tr key={j._id} className="border-t">
+                  <td className="p-3">{j.lead?.leadId}</td>
+                  <td className="p-3">
+                    <div className="font-medium">{j.lead?.customerName}</div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <a href={`tel:${j.lead?.mobile}`} className="text-blue-600 hover:underline text-sm flex items-center gap-1">
+                        <span>{j.lead?.mobile}</span>
+                        <span className="bg-green-600 text-white px-2 py-0.5 rounded text-xs">Call</span>
+                      </a>
+                    </div>
+                  </td>
+                  <td className="p-3">{j.status}</td>
+                  <td className="p-3">
+                    <div>{j.lead?.address}, {j.lead?.city}</div>
+                    {(j.lead?.lat || j.lead?.lng) && (
+                      <a href={`https://www.google.com/maps/dir/?api=1&destination=${j.lead?.lat},${j.lead?.lng}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-green-600 hover:underline text-sm mt-1">
+                        Directions
+                      </a>
+                    )}
+                  </td>
+                  <td className="p-3 space-x-2">
+                    {j.status === "assigned" && (
+                      <button onClick={() => acceptJob(j._id)} className="text-primary-600 hover:underline font-medium">Accept</button>
+                    )}
+                    {j.status === "accepted" && (
+                      <button onClick={() => checkIn(j._id)} className="text-blue-600 hover:underline">Check In</button>
+                    )}
+                    {["working", "started", "on_the_way", "reached", "half_done", "need_parts", "pending", "follow_up"].includes(j.status) && (
+                      <button onClick={() => setSelected(j)} className="text-green-600 hover:underline">Report</button>
+                    )}
+                    {j.status === "completed" && <span className="text-gray-500">Completed</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="md:hidden divide-y">
+          {jobs.map((j) => (
+            <div key={j._id} className="p-4 space-y-2">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="font-semibold">{j.lead?.customerName}</div>
+                  <div className="text-xs text-gray-500">{j.lead?.leadId}</div>
+                </div>
+                <span className="text-xs font-medium px-2 py-1 rounded bg-gray-100">{j.status}</span>
+              </div>
+              <a href={`tel:${j.lead?.mobile}`} className="inline-flex items-center gap-2 text-blue-600 text-sm">
+                <span className="bg-green-600 text-white px-2 py-0.5 rounded text-xs">Call Now</span>
+                {j.lead?.mobile}
+              </a>
+              <div className="text-sm text-gray-600">{j.lead?.address}, {j.lead?.city}</div>
+              {(j.lead?.lat || j.lead?.lng) && (
+                <a href={`https://www.google.com/maps/dir/?api=1&destination=${j.lead?.lat},${j.lead?.lng}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-green-600 text-sm">
+                  Google Map Directions
+                </a>
+              )}
+              <div className="flex flex-wrap gap-2 pt-1">
+                {j.status === "assigned" && (
+                  <button onClick={() => acceptJob(j._id)} className="bg-primary-600 text-white px-3 py-1 rounded text-sm">Accept</button>
+                )}
+                {j.status === "accepted" && (
+                  <button onClick={() => checkIn(j._id)} className="bg-blue-600 text-white px-3 py-1 rounded text-sm">Check In</button>
+                )}
+                {["working", "started", "on_the_way", "reached", "half_done", "need_parts", "pending", "follow_up"].includes(j.status) && (
+                  <button onClick={() => setSelected(j)} className="bg-green-600 text-white px-3 py-1 rounded text-sm">Report</button>
+                )}
+                {j.status === "completed" && <span className="text-gray-500 text-sm">Completed</span>}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {selected && (

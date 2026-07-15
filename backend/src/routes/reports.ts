@@ -3,6 +3,7 @@ import Lead from "../models/Lead";
 import Job from "../models/Job";
 import Payment from "../models/Payment";
 import Staff from "../models/Staff";
+import Attendance from "../models/Attendance";
 import { protect, restrictTo } from "../middleware/auth";
 import { asyncHandler } from "../middleware/errorHandler";
 
@@ -154,6 +155,78 @@ router.get(
       .populate("staff", "name employeeId")
       .sort({ updatedAt: -1 });
     res.json({ success: true, count: jobs.length, data: jobs });
+  })
+);
+
+router.get(
+  "/salary",
+  protect,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { month, year, staff } = req.query;
+    const m = parseInt(month as string) || new Date().getMonth() + 1;
+    const y = parseInt(year as string) || new Date().getFullYear();
+
+    const startDate = new Date(y, m - 1, 1);
+    const endDate = new Date(y, m, 0);
+    const daysInMonth = endDate.getDate();
+
+    let staffFilter: any = { role: "technician" };
+    if (staff) staffFilter = { _id: staff };
+    if (req.user?.role === "technician") {
+      const technicianStaff = await Staff.findOne({ user: req.user._id });
+      if (technicianStaff) staffFilter = { _id: technicianStaff._id };
+    }
+
+    const staffList = await Staff.find(staffFilter);
+
+    const salaryData = await Promise.all(
+      staffList.map(async (s) => {
+        const monthlySalary = s.salary || 0;
+        const perDaySalary = monthlySalary ? monthlySalary / daysInMonth : 0;
+
+        const records = await Attendance.find({
+          staff: s._id,
+          date: { $gte: startDate, $lte: endDate },
+        });
+
+        let present = 0, absent = 0, halfDay = 0, leave = 0, holiday = 0, workingHours = 0;
+        records.forEach((r) => {
+          if (r.status === "present") present += 1;
+          if (r.status === "absent") absent += 1;
+          if (r.status === "half_day") halfDay += 1;
+          if (r.status === "leave") leave += 1;
+          if (r.status === "holiday") holiday += 1;
+          if (r.workingHours) workingHours += r.workingHours;
+        });
+
+        const paidDays = present + holiday + (leave * 0); // leave unpaid by default, can be changed
+        const unpaidDays = absent + (leave * 1) + (halfDay * 0.5);
+        const payableDays = paidDays + halfDay * 0.5;
+        const deductionDays = unpaidDays;
+        const deductionAmount = deductionDays * perDaySalary;
+        const payableSalary = Math.max(0, monthlySalary - deductionAmount);
+
+        return {
+          staffId: s._id,
+          employeeId: s.employeeId,
+          name: s.name,
+          monthlySalary,
+          daysInMonth,
+          present,
+          absent,
+          halfDay,
+          leave,
+          holiday,
+          workingHours: parseFloat(workingHours.toFixed(2)),
+          payableDays: parseFloat(payableDays.toFixed(2)),
+          deductionDays: parseFloat(deductionDays.toFixed(2)),
+          deductionAmount: parseFloat(deductionAmount.toFixed(2)),
+          payableSalary: parseFloat(payableSalary.toFixed(2)),
+        };
+      })
+    );
+
+    res.json({ success: true, data: salaryData });
   })
 );
 

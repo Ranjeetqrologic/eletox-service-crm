@@ -18,6 +18,7 @@ export default function LeadsPage() {
   const [filterStatus, setFilterStatus] = useState("");
   const [jobModal, setJobModal] = useState<any>(null);
   const [loadingJob, setLoadingJob] = useState(false);
+  const [locationModal, setLocationModal] = useState<any>(null);
 
   const fetchLeads = () => api.get("/leads").then((res) => setLeads(res.data.data));
   const fetchStaff = () => api.get("/staff").then((res) => setStaff(res.data.data));
@@ -66,6 +67,16 @@ export default function LeadsPage() {
     try {
       await api.put(`/leads/${leadId}/status`, { status });
       toast.success("Status updated");
+      fetchLeads();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    }
+  };
+
+  const updateLocation = async (leadId: string, lat: string, lng: string) => {
+    try {
+      await api.put(`/leads/${leadId}`, { lat: lat ? parseFloat(lat) : undefined, lng: lng ? parseFloat(lng) : undefined });
+      toast.success("Location updated");
       fetchLeads();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
@@ -140,6 +151,8 @@ export default function LeadsPage() {
           <select className="border p-2 rounded" onChange={(e) => setForm({ ...form, priority: e.target.value })}>{priorities.map((p) => <option key={p} value={p}>{p}</option>)}</select>
           <input required placeholder="Service Required*" className="border p-2 rounded" onChange={(e) => setForm({ ...form, service: e.target.value })} />
           <input type="date" placeholder="Preferred Date" className="border p-2 rounded" onChange={(e) => setForm({ ...form, preferredDate: e.target.value })} />
+          <input type="number" step="any" placeholder="Latitude" className="border p-2 rounded" onChange={(e) => setForm({ ...form, lat: e.target.value })} />
+          <input type="number" step="any" placeholder="Longitude" className="border p-2 rounded" onChange={(e) => setForm({ ...form, lng: e.target.value })} />
           <textarea placeholder="Problem" className="border p-2 rounded md:col-span-2" onChange={(e) => setForm({ ...form, problem: e.target.value })} />
           <button type="submit" className="bg-green-600 text-white p-2 rounded md:col-span-4">Create Lead</button>
         </form>
@@ -185,6 +198,7 @@ export default function LeadsPage() {
                 </td>
                 <td className="p-3 space-x-2">
                   <button onClick={() => viewJob(l._id)} className="text-blue-600 hover:underline">View Job</button>
+                  <button onClick={() => setLocationModal(l)} className="text-purple-600 hover:underline">Set Location</button>
                   <button onClick={() => changeStatus(l._id, "closed")} className="text-green-600 hover:underline">Close</button>
                 </td>
               </tr>
@@ -192,6 +206,51 @@ export default function LeadsPage() {
           </tbody>
         </table>
       </div>
+
+      {locationModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Set Location - {locationModal.leadId}</h2>
+            <div className="space-y-3">
+              <input
+                type="number"
+                step="any"
+                placeholder="Latitude"
+                className="border p-2 rounded w-full"
+                value={locationModal.lat || ""}
+                onChange={(e) => setLocationModal({ ...locationModal, lat: e.target.value })}
+              />
+              <input
+                type="number"
+                step="any"
+                placeholder="Longitude"
+                className="border p-2 rounded w-full"
+                value={locationModal.lng || ""}
+                onChange={(e) => setLocationModal({ ...locationModal, lng: e.target.value })}
+              />
+              <button
+                onClick={() => {
+                  if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                      (pos) => setLocationModal({ ...locationModal, lat: pos.coords.latitude.toString(), lng: pos.coords.longitude.toString() }),
+                      () => toast.error("Location access denied")
+                    );
+                  } else {
+                    toast.error("Geolocation not supported");
+                  }
+                }}
+                className="bg-gray-100 text-gray-700 px-3 py-2 rounded w-full"
+              >
+                Use My Current Location
+              </button>
+            </div>
+            <div className="mt-4 flex gap-3">
+              <button onClick={() => { updateLocation(locationModal._id, locationModal.lat, locationModal.lng); setLocationModal(null); }} className="bg-primary-600 text-white px-4 py-2 rounded">Save Location</button>
+              <button onClick={() => setLocationModal(null)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {jobModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
