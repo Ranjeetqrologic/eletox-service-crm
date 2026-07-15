@@ -55,6 +55,18 @@ router.get(
   })
 );
 
+router.get(
+  "/lead/:leadId",
+  protect,
+  asyncHandler(async (req: Request, res: Response) => {
+    const job = await Job.findOne({ lead: req.params.leadId })
+      .populate("lead", "customerName mobile address city lat lng status leadId")
+      .populate("staff", "name mobile employeeId");
+    if (!job) throw new AppError("Job not found", 404);
+    res.json({ success: true, data: job });
+  })
+);
+
 router.post(
   "/",
   protect,

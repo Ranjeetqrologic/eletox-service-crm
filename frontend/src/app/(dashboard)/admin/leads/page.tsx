@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 import toast from "react-hot-toast";
 
 const statuses = ["new", "assigned", "accepted", "on_the_way", "reached", "working", "need_parts", "pending", "follow_up", "completed", "cancelled", "closed"];
@@ -15,6 +16,8 @@ export default function LeadsPage() {
   const [form, setForm] = useState<any>({ status: "new", priority: "medium", source: "manual" });
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [jobModal, setJobModal] = useState<any>(null);
+  const [loadingJob, setLoadingJob] = useState(false);
 
   const fetchLeads = () => api.get("/leads").then((res) => setLeads(res.data.data));
   const fetchStaff = () => api.get("/staff").then((res) => setStaff(res.data.data));
@@ -44,6 +47,18 @@ export default function LeadsPage() {
       fetchLeads();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
+    }
+  };
+
+  const viewJob = async (leadId: string) => {
+    setLoadingJob(true);
+    try {
+      const res = await api.get(`/jobs/lead/${leadId}`);
+      setJobModal(res.data.data);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "No job found");
+    } finally {
+      setLoadingJob(false);
     }
   };
 
@@ -168,7 +183,8 @@ export default function LeadsPage() {
                   <input type="date" className="border p-1 rounded mb-1" value={l.followUpDate ? l.followUpDate.split("T")[0] : ""} onChange={(e) => updateFollowUp(l._id, e.target.value, l.followUpNote || "")} />
                   <input className="border p-1 rounded w-full text-xs" placeholder="Note" value={l.followUpNote || ""} onChange={(e) => updateFollowUp(l._id, l.followUpDate ? l.followUpDate.split("T")[0] : "", e.target.value)} />
                 </td>
-                <td className="p-3">
+                <td className="p-3 space-x-2">
+                  <button onClick={() => viewJob(l._id)} className="text-blue-600 hover:underline">View Job</button>
                   <button onClick={() => changeStatus(l._id, "closed")} className="text-green-600 hover:underline">Close</button>
                 </td>
               </tr>
@@ -176,6 +192,57 @@ export default function LeadsPage() {
           </tbody>
         </table>
       </div>
+
+      {jobModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Job Details - {jobModal.lead?.leadId}</h2>
+              <button onClick={() => setJobModal(null)} className="text-gray-500 hover:text-gray-700">Close</button>
+            </div>
+            <div className="space-y-4 text-sm">
+              <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl">
+                <div><span className="font-medium text-gray-500">Customer:</span> {jobModal.lead?.customerName}</div>
+                <div><span className="font-medium text-gray-500">Mobile:</span> {jobModal.lead?.mobile}</div>
+                <div><span className="font-medium text-gray-500">Address:</span> {jobModal.lead?.address}, {jobModal.lead?.city}</div>
+                <div><span className="font-medium text-gray-500">Technician:</span> {jobModal.staff?.name} ({jobModal.staff?.employeeId})</div>
+                <div><span className="font-medium text-gray-500">Job Status:</span> {jobModal.status}</div>
+                <div><span className="font-medium text-gray-500">Accepted At:</span> {jobModal.acceptedAt ? new Date(jobModal.acceptedAt).toLocaleString() : "-"}</div>
+                <div><span className="font-medium text-gray-500">Checked In:</span> {jobModal.checkIn?.time ? new Date(jobModal.checkIn.time).toLocaleString() : "-"}</div>
+                <div><span className="font-medium text-gray-500">Completed At:</span> {jobModal.completedAt ? new Date(jobModal.completedAt).toLocaleString() : "-"}</div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl">
+                <div><span className="font-medium text-gray-500">Work Description:</span> {jobModal.workDescription || "-"}</div>
+                <div><span className="font-medium text-gray-500">Repair Notes:</span> {jobModal.repairNotes || "-"}</div>
+                <div><span className="font-medium text-gray-500">Gas Filled:</span> {jobModal.gasFilled || "-"}</div>
+                <div><span className="font-medium text-gray-500">Bill Amount:</span> ₹{jobModal.billAmount || 0}</div>
+                <div><span className="font-medium text-gray-500">Received Amount:</span> ₹{jobModal.receivedAmount || 0}</div>
+                <div><span className="font-medium text-gray-500">Payment Mode:</span> {jobModal.paymentMode || "-"}</div>
+                <div><span className="font-medium text-gray-500">Customer Feedback:</span> {jobModal.customerFeedback || "-"}</div>
+                <div><span className="font-medium text-gray-500">Rating:</span> {jobModal.rating || "-"}</div>
+              </div>
+              {[["beforePhotos", "Before Photos"], ["workingPhotos", "Working Photos"], ["afterPhotos", "After Photos"]].map(([key, label]) => (
+                jobModal[key]?.length > 0 && (
+                  <div key={key}>
+                    <h3 className="font-semibold mb-2">{label}</h3>
+                    <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+                      {jobModal[key].map((url: string, idx: number) => (
+                        <a key={idx} href={getImageUrl(url)} target="_blank" rel="noreferrer" className="block aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                          <img src={getImageUrl(url)} alt={label} className="w-full h-full object-cover" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )
+              ))}
+            </div>
+            <div className="mt-6 flex gap-3">
+              <button onClick={() => { changeStatus(jobModal.lead._id, "closed"); setJobModal(null); }} className="bg-green-600 text-white px-4 py-2 rounded">Close Lead</button>
+              <button onClick={() => setJobModal(null)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
