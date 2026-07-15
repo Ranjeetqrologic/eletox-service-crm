@@ -42,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-gray-100 flex">
       <aside className={`bg-gray-900 text-white w-64 flex-shrink-0 ${sidebarOpen ? "block" : "hidden"} md:block`}>
         <div className="p-4">
-          <Link href="/admin/"><Logo className="[&_span]:text-white [&_span]:text-xl" showText={false} /></Link>
+          <Link href="/admin/"><Logo showText={false} height={60} /></Link>
           <div className="mt-2 font-bold text-lg">Eletox CRM</div>
         </div>
         <nav className="mt-6 space-y-1">

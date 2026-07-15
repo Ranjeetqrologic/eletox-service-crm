@@ -44,7 +44,7 @@ router.post(
     body("password").isLength({ min: 6 }),
     body("mobile").notEmpty(),
     body("address").notEmpty(),
-    body("role").isIn(["admin", "technician"]),
+    body("role").isIn(["superadmin", "admin", "manager", "account", "technician"]),
   ],
   asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);

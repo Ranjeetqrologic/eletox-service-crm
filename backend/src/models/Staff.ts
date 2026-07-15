@@ -23,7 +23,7 @@ export interface IStaff extends Document {
   emergencyContact?: string;
   joiningDate?: Date;
   salary?: number;
-  role: "technician" | "manager" | "account";
+  role: "superadmin" | "admin" | "manager" | "account" | "technician";
   documents: { name: string; url: string; type?: string }[];
   isActive: boolean;
   createdAt: Date;
@@ -54,7 +54,7 @@ const StaffSchema = new Schema<IStaff>(
     emergencyContact: { type: String },
     joiningDate: { type: Date },
     salary: { type: Number },
-    role: { type: String, enum: ["technician", "manager", "account"], default: "technician" },
+    role: { type: String, enum: ["superadmin", "admin", "manager", "account", "technician"], default: "technician" },
     documents: [{ name: String, url: String, type: String }],
     isActive: { type: Boolean, default: true },
   },

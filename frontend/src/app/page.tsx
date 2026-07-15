@@ -6,27 +6,26 @@ import api from "@/lib/api";
 import Logo from "@/components/Logo";
 import toast from "react-hot-toast";
 
-const steps = [
-  { title: "Book Online", desc: "Fill the service form or call us." },
-  { title: "Get Confirmed", desc: "We assign a verified technician quickly." },
-  { title: "Service Done", desc: "Technician visits, repairs and gives a bill." },
+const stats = [
+  { value: "15+", label: "Professional Members", sub: "Experts" },
+  { value: "1000+", label: "Projects Completed", sub: "Done" },
+  { value: "02", label: "Service Branches", sub: "Total" },
+  { value: "5000+", label: "Happy Clients", sub: "Satisfaction" },
+];
+
+const whyChoose = [
+  { title: "Expert Repairman", desc: "Certified technicians with years of hands-on experience." },
+  { title: "Satisfied Services", desc: "Quality service backed by customer satisfaction guarantee." },
+  { title: "Same Day Visit", desc: "We reach your doorstep on the same day of booking." },
+  { title: "Transparent Pricing", desc: "No hidden charges. Fair and upfront repair costs." },
 ];
 
 export default function Home() {
   const [services, setServices] = useState<any[]>([]);
   const [company, setCompany] = useState<any>({});
   const [form, setForm] = useState({
-    customerName: "",
-    mobile: "",
-    email: "",
-    address: "",
-    city: "",
-    pin: "",
-    service: "",
-    acType: "",
-    preferredDate: "",
-    preferredTime: "",
-    problem: "",
+    customerName: "", mobile: "", email: "", address: "", city: "", pin: "",
+    service: "", acType: "", preferredDate: "", preferredTime: "", problem: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -45,10 +44,7 @@ export default function Home() {
     try {
       const { data } = await api.post("/leads/public-inquiry", form);
       toast.success(data.message || "Inquiry submitted successfully");
-      setForm({
-        customerName: "", mobile: "", email: "", address: "", city: "", pin: "",
-        service: "", acType: "", preferredDate: "", preferredTime: "", problem: "",
-      });
+      setForm({ customerName: "", mobile: "", email: "", address: "", city: "", pin: "", service: "", acType: "", preferredDate: "", preferredTime: "", problem: "" });
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to submit");
     } finally {
@@ -56,77 +52,150 @@ export default function Home() {
     }
   };
 
+  const phone = company.phone || "+91-99999-99999";
+
   return (
     <main className="min-h-screen bg-white text-gray-800">
+      {/* Top bar */}
+      <div className="bg-primary-900 text-white text-sm py-2">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-1">
+          <p className="opacity-90">Fast & Reliable Repair Services at Your Doorstep</p>
+          <div className="flex gap-4 opacity-90">
+            <a href={`tel:${phone}`} className="hover:text-accent-400">{phone}</a>
+            <span className="hidden md:inline">|</span>
+            <a href={`mailto:${company.email || "info@eletox.com"}`} className="hover:text-accent-400">{company.email || "info@eletox.com"}</a>
+          </div>
+        </div>
+      </div>
+
+      {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Logo />
           <div className="flex items-center gap-3">
-            <Link href="/login" className="md:hidden text-primary-600 font-medium text-sm border border-primary-600 px-3 py-1 rounded-lg">Login</Link>
-            <nav className="hidden md:flex gap-6 text-sm font-medium">
+            <Link href="/login" className="md:hidden text-primary-700 font-medium text-sm border border-primary-700 px-3 py-1 rounded">Login</Link>
+            <nav className="hidden md:flex gap-6 text-sm font-medium items-center">
               <a href="#services" className="hover:text-primary-600">Services</a>
-              <a href="#how" className="hover:text-primary-600">How it Works</a>
-              <a href="#book" className="hover:text-primary-600">Book Now</a>
+              <a href="#about" className="hover:text-primary-600">About</a>
+              <a href="#book" className="hover:text-primary-600">Free Estimate</a>
               <a href="#contact" className="hover:text-primary-600">Contact</a>
-              <Link href="/login" className="text-primary-600 hover:underline">Login</Link>
+              <Link href="/login" className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700">Login</Link>
             </nav>
           </div>
         </div>
       </header>
 
-      <section className="relative bg-gradient-to-br from-primary-700 to-primary-900 text-white py-24 overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-        <div className="max-w-7xl mx-auto px-4 relative text-center">
-          <h2 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">Fast & Reliable AC Services at Your Doorstep</h2>
-          <p className="text-lg md:text-2xl mb-10 max-w-2xl mx-auto opacity-90">Repair, Installation, Gas Filling & Maintenance by verified technicians.</p>
-          <div className="flex justify-center gap-4">
-            <a href="#book" className="bg-white text-primary-700 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition shadow-lg">Book Now</a>
-            <a href="tel:+919999999999" className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white/10 transition">Call Us</a>
+      {/* Hero */}
+      <section className="relative bg-primary-900 text-white overflow-hidden">
+        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+        <div className="max-w-7xl mx-auto px-4 py-20 md:py-28 relative grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <h3 className="text-accent-400 font-semibold mb-2">Residential Repair Service</h3>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">On your fingertips you have been cooling switch</h1>
+            <p className="text-lg md:text-xl mb-8 opacity-90 max-w-lg">Expert AC & home appliance repair services. Book now and get a verified technician at your doorstep.</p>
+            <div className="flex flex-wrap gap-4">
+              <a href="#book" className="bg-accent-500 text-white px-8 py-3 rounded font-semibold hover:bg-accent-600 transition shadow-lg">Get Free Estimate</a>
+              <a href={`tel:${phone}`} className="border-2 border-white text-white px-8 py-3 rounded font-semibold hover:bg-white/10 transition">Call Now</a>
+            </div>
+          </div>
+          <div className="relative">
+            <div className="bg-white/10 rounded-2xl p-6 backdrop-blur-sm border border-white/20">
+              <div className="aspect-video bg-primary-800 rounded-xl flex items-center justify-center mb-4">
+                <span className="text-6xl">❄</span>
+              </div>
+              <p className="text-center font-medium">Intro video</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="services" className="py-20 max-w-7xl mx-auto px-4">
-        <div className="text-center mb-14">
-          <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Our Services</h3>
-          <p className="text-gray-600 max-w-xl mx-auto">Comprehensive air conditioning solutions for homes and businesses.</p>
+      {/* Services */}
+      <section id="services" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-14">
+            <h3 className="text-accent-500 font-semibold mb-2">What We Offer</h3>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Popular Repair Services</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {services.length ? services.map((s) => (
+              <Link key={s._id} href={`/service/?slug=${s.slug}`} className="bg-white rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition shadow-sm group border-b-4 border-primary-600">
+                <div className="w-14 h-14 bg-gradient-to-br from-primary-600 to-accent-500 text-white rounded-lg flex items-center justify-center mb-4 text-2xl">❄</div>
+                <h4 className="text-lg font-bold mb-2 group-hover:text-primary-600">{s.title}</h4>
+                <p className="text-sm text-gray-600">{s.shortDesc}</p>
+              </Link>
+            )) : (
+              ["AC Repair & Service", "AC Installation", "AC Gas Filling", "AC Maintenance", "Washing Machine Repair", "Microwave Repair", "Geyser Repair", "Water Purifier Repair"].map((t) => (
+                <div key={t} className="bg-white rounded-xl p-6 shadow-sm border-b-4 border-primary-600">
+                  <div className="w-14 h-14 bg-gradient-to-br from-primary-600 to-accent-500 text-white rounded-lg flex items-center justify-center mb-4 text-2xl">❄</div>
+                  <h4 className="text-lg font-bold mb-2">{t}</h4>
+                  <p className="text-sm text-gray-600">Professional repair service at your doorstep.</p>
+                </div>
+              ))
+            )}
+          </div>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {services.map((s) => (
-            <Link key={s._id} href={`/service/?slug=${s.slug}`} className="bg-white border rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition shadow-sm group">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-accent-500 text-white rounded-full flex items-center justify-center mb-4 text-2xl">❄</div>
-              <h4 className="text-lg font-bold mb-2 group-hover:text-primary-600">{s.title}</h4>
-              <p className="text-sm text-gray-600">{s.shortDesc}</p>
-            </Link>
+      </section>
+
+      {/* Stats */}
+      <section className="py-16 bg-primary-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          {stats.map((s) => (
+            <div key={s.label}>
+              <div className="text-4xl md:text-5xl font-bold text-accent-400">{s.value}</div>
+              <div className="text-sm opacity-80 mt-1">{s.label}</div>
+              <div className="text-xs opacity-60">{s.sub}</div>
+            </div>
           ))}
         </div>
       </section>
 
-      <section id="how" className="py-20 bg-gray-50">
+      {/* About */}
+      <section id="about" className="py-20 max-w-7xl mx-auto px-4">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="relative">
+            <div className="bg-gradient-to-br from-primary-600 to-accent-500 rounded-2xl p-8 text-white">
+              <div className="text-5xl font-bold mb-2">1000+</div>
+              <div className="text-lg">Project Done</div>
+              <p className="mt-4 opacity-90">Don&apos;t feel heat when there is best air conditioning seat.</p>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-accent-500 font-semibold mb-2">About Us</h3>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Empower lifes forever better living</h2>
+            <p className="text-gray-600 mb-6">{company.name || "Eletox AC Services"} offers top-quality repair services for AC and home appliances. We believe in fast, reliable and transparent service for every customer.</p>
+            <a href="#book" className="bg-primary-600 text-white px-6 py-3 rounded font-semibold hover:bg-primary-700 transition">Book a Service</a>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose */}
+      <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-14">
-            <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">How It Works</h3>
-            <p className="text-gray-600">Get your AC fixed in 3 simple steps.</p>
+            <h3 className="text-accent-500 font-semibold mb-2">Why Choose Us</h3>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Let&apos;s started with Eletox</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {steps.map((s, i) => (
-              <div key={s.title} className="text-center bg-white p-8 rounded-xl shadow-sm">
-                <div className="w-14 h-14 bg-primary-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">{i + 1}</div>
-                <h4 className="text-xl font-bold mb-2">{s.title}</h4>
-                <p className="text-gray-600">{s.desc}</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {whyChoose.map((w) => (
+              <div key={w.title} className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mb-4 text-xl">✓</div>
+                <h4 className="font-bold text-lg mb-2">{w.title}</h4>
+                <p className="text-sm text-gray-600">{w.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* Book / Free Estimate */}
       <section id="book" className="py-20 max-w-7xl mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           <div>
-            <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Book a Service</h3>
-            <p className="text-gray-600 mb-8">Fill in your details and our team will contact you shortly to confirm the appointment.</p>
+            <h3 className="text-accent-500 font-semibold mb-2">Appointment</h3>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Free Estimate</h2>
+            <p className="text-gray-600 mb-8">Fill the form and our team will contact you shortly to confirm the appointment.</p>
             <div className="bg-primary-50 border-l-4 border-primary-600 p-6 rounded-r-lg">
-              <p className="font-semibold text-primary-800">Why book with Eletox?</p>
+              <p className="font-semibold text-primary-800">Why Eletox?</p>
               <ul className="mt-2 text-sm text-primary-700 space-y-1">
                 <li>✓ Verified technicians</li>
                 <li>✓ Transparent pricing</li>
@@ -137,28 +206,20 @@ export default function Home() {
           </div>
           <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-lg border space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
-              <input name="customerName" value={form.customerName} onChange={handleChange} placeholder="Full Name" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none" required />
-              <input name="mobile" value={form.mobile} onChange={handleChange} placeholder="Mobile Number" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none" required />
-              <input name="email" value={form.email} onChange={handleChange} placeholder="Email" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none" />
-              <input name="city" value={form.city} onChange={handleChange} placeholder="City" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none" required />
-              <input name="pin" value={form.pin} onChange={handleChange} placeholder="Pin Code" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none" />
-              <select name="service" value={form.service} onChange={handleChange} className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none" required>
-                <option value="">Select Service</option>
+              <input name="customerName" value={form.customerName} onChange={handleChange} placeholder="Full Name" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" required />
+              <input name="mobile" value={form.mobile} onChange={handleChange} placeholder="Mobile Number" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" required />
+              <input name="email" value={form.email} onChange={handleChange} placeholder="Email" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" />
+              <input name="city" value={form.city} onChange={handleChange} placeholder="City" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" required />
+              <input name="pin" value={form.pin} onChange={handleChange} placeholder="Pin Code" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" />
+              <select name="service" value={form.service} onChange={handleChange} className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" required>
+                <option value="">Choose Service</option>
                 {services.map((s) => <option key={s._id} value={s.title}>{s.title}</option>)}
               </select>
-              <select name="acType" value={form.acType} onChange={handleChange} className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none">
-                <option value="">AC Type</option>
-                <option>Split</option>
-                <option>Window</option>
-                <option>Cassette</option>
-                <option>Duct</option>
-                <option>VRV</option>
-              </select>
-              <input type="date" name="preferredDate" value={form.preferredDate} onChange={handleChange} className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none" />
-              <input type="time" name="preferredTime" value={form.preferredTime} onChange={handleChange} className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none" />
+              <input type="date" name="preferredDate" value={form.preferredDate} onChange={handleChange} className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" />
+              <input type="time" name="preferredTime" value={form.preferredTime} onChange={handleChange} className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" />
             </div>
-            <textarea name="address" value={form.address} onChange={handleChange} placeholder="Full Address" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none" required />
-            <textarea name="problem" value={form.problem} onChange={handleChange} placeholder="Problem Description" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-primary-500 outline-none" />
+            <textarea name="address" value={form.address} onChange={handleChange} placeholder="Full Address" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" required />
+            <textarea name="problem" value={form.problem} onChange={handleChange} placeholder="Problem Description" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" />
             <button type="submit" disabled={loading} className="bg-primary-600 text-white px-6 py-3 rounded-lg w-full font-semibold hover:bg-primary-700 disabled:opacity-50 transition">
               {loading ? "Submitting..." : "Submit Inquiry"}
             </button>
@@ -166,21 +227,42 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="contact" className="bg-gray-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex justify-center mb-6">
-            <Logo className="[&_span]:text-white" />
+      {/* Footer */}
+      <footer id="contact" className="bg-gray-900 text-gray-300 pt-16 pb-6">
+        <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-8 mb-12">
+          <div>
+            <Logo className="mb-4" showText={false} height={70} />
+            <p className="text-sm opacity-80">{company.tagline || "Fast, reliable AC & appliance repair services at your doorstep."}</p>
           </div>
-          <h3 className="text-3xl font-bold mb-6">Contact Us</h3>
-          <p className="text-lg mb-2">Phone: {company.phone || "+91-99999-99999"}</p>
-          <p className="text-lg mb-2">WhatsApp: {company.whatsapp || "+91-99999-99999"}</p>
-          <p className="text-lg mb-2">Email: {company.email || "info@eletox.com"}</p>
-          <p className="text-lg">{company.address || "123 Main Road, New Delhi"}</p>
+          <div>
+            <h4 className="text-white font-bold mb-4">About Us</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#about" className="hover:text-accent-400">Our Story</a></li>
+              <li><a href="#services" className="hover:text-accent-400">Services</a></li>
+              <li><a href="#book" className="hover:text-accent-400">Book Now</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-white font-bold mb-4">Services</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#services" className="hover:text-accent-400">AC Repair</a></li>
+              <li><a href="#services" className="hover:text-accent-400">AC Installation</a></li>
+              <li><a href="#services" className="hover:text-accent-400">Appliance Repair</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-white font-bold mb-4">Contact Info</h4>
+            <ul className="space-y-2 text-sm">
+              <li>Phone: {phone}</li>
+              <li>WhatsApp: {company.whatsapp || phone}</li>
+              <li>Email: {company.email || "info@eletox.com"}</li>
+              <li>{company.address || "123 Main Road, New Delhi"}</li>
+            </ul>
+          </div>
         </div>
-      </section>
-
-      <footer className="bg-gray-950 text-gray-400 py-6 text-center text-sm">
-        <p>&copy; 2026 {company.name || "Eletox AC Services"}. All rights reserved.</p>
+        <div className="border-t border-gray-800 pt-6 text-center text-sm opacity-70">
+          <p>&copy; 2026 {company.name || "Eletox AC Services"}. All rights reserved.</p>
+        </div>
       </footer>
     </main>
   );
