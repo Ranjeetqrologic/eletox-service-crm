@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
@@ -11,13 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("Eletox@Admin2026#");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { setAuth, user } = useAuthStore();
-
-  useEffect(() => {
-    if (user) {
-      router.push(user.role === "technician" ? "/staff" : "/admin");
-    }
-  }, [user, router]);
+  const { setAuth } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +20,7 @@ export default function LoginPage() {
       const { data } = await api.post("/auth/login", { email, password });
       setAuth(data.user, data.token);
       toast.success("Login successful");
-      router.push(data.user.role === "technician" ? "/staff" : "/admin");
+      router.replace(data.user.role === "technician" ? "/staff/" : "/admin/");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Login failed");
     } finally {

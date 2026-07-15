@@ -14,7 +14,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     if (!user) {
-      router.push("/login");
+      router.replace("/login/");
     }
   }, [user, router]);
 
@@ -23,17 +23,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isAdmin = user.role !== "technician";
   const nav = isAdmin
     ? [
-        { name: "Dashboard", href: "/admin", icon: HomeIcon },
-        { name: "Leads", href: "/admin/leads", icon: ClipboardDocumentListIcon },
-        { name: "Staff", href: "/admin/staff", icon: UsersIcon },
-        { name: "Payments", href: "/admin/payments", icon: CurrencyRupeeIcon },
-        { name: "Reports", href: "/admin/reports", icon: ChartPieIcon },
-        { name: "Settings", href: "/admin/settings", icon: CogIcon },
+        { name: "Dashboard", href: "/admin/", icon: HomeIcon },
+        { name: "Leads", href: "/admin/leads/", icon: ClipboardDocumentListIcon },
+        { name: "Staff", href: "/admin/staff/", icon: UsersIcon },
+        { name: "Payments", href: "/admin/payments/", icon: CurrencyRupeeIcon },
+        { name: "Reports", href: "/admin/reports/", icon: ChartPieIcon },
+        { name: "Settings", href: "/admin/settings/", icon: CogIcon },
       ]
     : [
-        { name: "Dashboard", href: "/staff", icon: HomeIcon },
-        { name: "My Leads", href: "/staff/leads", icon: ClipboardDocumentListIcon },
-        { name: "Attendance", href: "/staff/attendance", icon: UsersIcon },
+        { name: "Dashboard", href: "/staff/", icon: HomeIcon },
+        { name: "My Leads", href: "/staff/leads/", icon: ClipboardDocumentListIcon },
+        { name: "Attendance", href: "/staff/attendance/", icon: UsersIcon },
       ];
 
   return (

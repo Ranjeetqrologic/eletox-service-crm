@@ -27,7 +27,9 @@ router.post(
     if (!user || !(await user.comparePassword(password))) {
       throw new AppError("Invalid email or password", 401);
     }
-    if (!user.isActive) throw new AppError("Account disabled", 401);
+    if (!user.isActive && !["superadmin", "admin"].includes(user.role)) {
+      throw new AppError("Account disabled", 401);
+    }
 
     user.lastLogin = new Date();
     await user.save();
