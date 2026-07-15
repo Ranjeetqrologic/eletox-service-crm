@@ -5,7 +5,7 @@ import api from "@/lib/api";
 import { getImageUrl } from "@/lib/utils";
 import toast from "react-hot-toast";
 
-const statuses = ["new", "assigned", "accepted", "on_the_way", "reached", "working", "need_parts", "pending", "follow_up", "completed", "cancelled", "closed"];
+const statuses = ["new", "assigned", "accepted", "on_the_way", "reached", "working", "half_done", "need_parts", "pending", "follow_up", "completed", "cancelled", "closed"];
 const sources = ["website", "call", "whatsapp", "facebook", "instagram", "google_ads", "referral", "manual", "others"];
 const priorities = ["low", "medium", "high", "urgent"];
 

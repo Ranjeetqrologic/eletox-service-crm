@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IJob extends Document {
   lead: mongoose.Types.ObjectId;
   staff: mongoose.Types.ObjectId;
-  status: "assigned" | "accepted" | "started" | "working" | "need_parts" | "pending" | "follow_up" | "completed" | "cancelled";
+  status: "assigned" | "accepted" | "started" | "working" | "half_done" | "need_parts" | "pending" | "follow_up" | "completed" | "cancelled";
   acceptedAt?: Date;
   checkIn: {
     lat?: number;
@@ -47,7 +47,7 @@ const JobSchema = new Schema<IJob>(
     staff: { type: Schema.Types.ObjectId, ref: "Staff", required: true },
     status: {
       type: String,
-      enum: ["assigned", "accepted", "started", "working", "need_parts", "pending", "follow_up", "completed", "cancelled"],
+      enum: ["assigned", "accepted", "started", "working", "half_done", "need_parts", "pending", "follow_up", "completed", "cancelled"],
       default: "assigned",
     },
     acceptedAt: { type: Date },

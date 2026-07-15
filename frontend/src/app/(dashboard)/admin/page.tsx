@@ -18,6 +18,7 @@ export default function AdminDashboard() {
     { label: "Assigned", value: stats?.assigned ?? 0, color: "bg-yellow-500" },
     { label: "Working", value: stats?.working ?? 0, color: "bg-orange-500" },
     { label: "Completed", value: stats?.completed ?? 0, color: "bg-green-500" },
+    { label: "Half Done", value: stats?.halfDone ?? 0, color: "bg-orange-500" },
     { label: "Cancelled", value: stats?.cancelled ?? 0, color: "bg-red-500" },
     { label: "Today Leads", value: stats?.todayLeads ?? 0, color: "bg-purple-500" },
     { label: "Revenue", value: `₹${stats?.revenue ?? 0}`, color: "bg-teal-500" },

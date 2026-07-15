@@ -7,6 +7,7 @@ export type LeadStatus =
   | "on_the_way"
   | "reached"
   | "working"
+  | "half_done"
   | "need_parts"
   | "pending"
   | "follow_up"
@@ -85,6 +86,7 @@ const LeadSchema = new Schema<ILead>(
         "on_the_way",
         "reached",
         "working",
+        "half_done",
         "need_parts",
         "pending",
         "follow_up",

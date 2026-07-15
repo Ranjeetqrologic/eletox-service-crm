@@ -104,7 +104,7 @@ export default function StaffLeads() {
                   {j.status === "accepted" && (
                     <button onClick={() => checkIn(j._id)} className="text-blue-600 hover:underline">Check In</button>
                   )}
-                  {["working", "started", "on_the_way", "reached", "need_parts", "pending", "follow_up"].includes(j.status) && (
+                  {["working", "started", "on_the_way", "reached", "half_done", "need_parts", "pending", "follow_up"].includes(j.status) && (
                     <button onClick={() => setSelected(j)} className="text-green-600 hover:underline">Report</button>
                   )}
                   {j.status === "completed" && <span className="text-gray-500">Completed</span>}
@@ -141,8 +141,9 @@ export default function StaffLeads() {
                 </label>
               ))}
             </div>
-            <div className="mt-4 flex gap-3">
+            <div className="mt-4 flex flex-wrap gap-3">
               <button onClick={() => submitReport(selected._id, "completed")} className="bg-green-600 text-white px-4 py-2 rounded">Complete Job</button>
+              <button onClick={() => submitReport(selected._id, "half_done")} className="bg-orange-500 text-white px-4 py-2 rounded">Half Done</button>
               <button onClick={() => submitReport(selected._id, "working")} className="bg-blue-600 text-white px-4 py-2 rounded">Save Progress</button>
               <button onClick={() => setSelected(null)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
             </div>

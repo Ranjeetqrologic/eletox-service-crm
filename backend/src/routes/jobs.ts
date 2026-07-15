@@ -171,6 +171,9 @@ router.put(
       job.status = "completed";
       job.completedAt = new Date();
       await Lead.findByIdAndUpdate(job.lead, { status: "completed", completedAt: new Date() });
+    } else if (req.body.status === "half_done") {
+      job.status = "half_done";
+      await Lead.findByIdAndUpdate(job.lead, { status: "half_done" });
     }
 
     await job.save();
