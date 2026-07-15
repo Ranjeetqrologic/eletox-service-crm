@@ -83,6 +83,23 @@ router.post(
 );
 
 router.put(
+  "/:id/accept",
+  protect,
+  restrictTo("technician", "admin", "manager"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const job = await Job.findById(req.params.id);
+    if (!job) throw new AppError("Job not found", 404);
+
+    job.status = "accepted";
+    job.acceptedAt = new Date();
+    await job.save();
+
+    await Lead.findByIdAndUpdate(job.lead, { status: "accepted", acceptedAt: new Date() });
+    res.json({ success: true, data: job });
+  })
+);
+
+router.put(
   "/:id/checkin",
   protect,
   restrictTo("technician", "admin", "manager"),

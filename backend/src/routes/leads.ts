@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 import Lead from "../models/Lead";
 import Job from "../models/Job";
+import Staff from "../models/Staff";
 import { protect, restrictTo } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
 import { uploadSingle, uploadPhotos, getFileUrl } from "../middleware/upload";
@@ -157,6 +158,15 @@ router.put(
     lead.status = "assigned";
     lead.assignedAt = new Date();
     await lead.save();
+
+    const staffDoc = await Staff.findById(req.body.staffId);
+    if (staffDoc) {
+      await Job.findOneAndUpdate(
+        { lead: lead._id },
+        { lead: lead._id, staff: staffDoc._id, status: "assigned" },
+        { upsert: true, new: true }
+      );
+    }
 
     res.json({ success: true, message: "Lead assigned", data: lead });
   })

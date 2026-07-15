@@ -139,6 +139,7 @@ export default function LeadsPage() {
               <th className="p-3 text-left">Service</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Assigned</th>
+              <th className="p-3 text-left">Accepted At</th>
               <th className="p-3 text-left">Follow-up</th>
               <th className="p-3 text-left">Actions</th>
             </tr>
@@ -159,6 +160,9 @@ export default function LeadsPage() {
                     <option value="">Assign</option>
                     {staff.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
                   </select>
+                </td>
+                <td className="p-3 text-xs text-gray-500">
+                  {l.acceptedAt ? new Date(l.acceptedAt).toLocaleString() : "-"}
                 </td>
                 <td className="p-3">
                   <input type="date" className="border p-1 rounded mb-1" value={l.followUpDate ? l.followUpDate.split("T")[0] : ""} onChange={(e) => updateFollowUp(l._id, e.target.value, l.followUpNote || "")} />

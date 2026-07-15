@@ -18,7 +18,7 @@ export default function StaffDashboard() {
           { label: "Assigned", value: stats?.assigned ?? 0 },
           { label: "Working", value: stats?.working ?? 0 },
           { label: "Completed", value: stats?.completed ?? 0 },
-          { label: "Pending", value: stats?.pending ?? 0 },
+          { label: "Pending", value: stats?.pending ?? stats?.cancelled ?? 0 },
         ].map((c) => (
           <div key={c.label} className="bg-white p-5 rounded-xl shadow border">
             <div className="text-2xl font-bold text-primary-700">{c.value}</div>

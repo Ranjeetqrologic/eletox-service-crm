@@ -27,17 +27,26 @@ router.get(
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
 
-    const leadFilter = Object.keys(dateFilter).length ? { createdAt: dateFilter } : {};
+    let leadFilter: any = Object.keys(dateFilter).length ? { createdAt: dateFilter } : {};
+    let staffFilter: any = {};
 
-    const [totalLeads, newLeads, assigned, working, completed, cancelled, todayLeads, todayVisits, revenue] = await Promise.all([
-      Lead.countDocuments(leadFilter),
-      Lead.countDocuments({ ...leadFilter, status: "new" }),
-      Lead.countDocuments({ ...leadFilter, status: "assigned" }),
-      Lead.countDocuments({ ...leadFilter, status: { $in: ["working", "on_the_way", "reached"] } }),
-      Lead.countDocuments({ ...leadFilter, status: "completed" }),
-      Lead.countDocuments({ ...leadFilter, status: "cancelled" }),
-      Lead.countDocuments({ createdAt: { $gte: today, $lt: tomorrow } }),
-      Lead.countDocuments({ assignedAt: { $gte: today, $lt: tomorrow } }),
+    if (req.user?.role === "technician") {
+      const technicianStaff = await Staff.findOne({ user: req.user._id });
+      if (technicianStaff) {
+        staffFilter = { assignedStaff: technicianStaff._id };
+      }
+    }
+
+    const [totalLeads, newLeads, assigned, working, completed, cancelled, pending, todayLeads, todayVisits, revenue] = await Promise.all([
+      Lead.countDocuments({ ...leadFilter, ...staffFilter }),
+      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: "new" }),
+      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: "assigned" }),
+      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: { $in: ["accepted", "working", "on_the_way", "reached"] } }),
+      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: "completed" }),
+      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: "cancelled" }),
+      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: { $in: ["pending", "follow_up", "need_parts"] } }),
+      Lead.countDocuments({ ...staffFilter, createdAt: { $gte: today, $lt: tomorrow } }),
+      Lead.countDocuments({ ...staffFilter, assignedAt: { $gte: today, $lt: tomorrow } }),
       Payment.aggregate([{ $match: Object.keys(dateFilter).length ? { createdAt: dateFilter } : {} }, { $group: { _id: null, total: { $sum: "$amount" } } }]),
     ]);
 
@@ -50,6 +59,7 @@ router.get(
         working,
         completed,
         cancelled,
+        pending,
         todayLeads,
         todayVisits,
         revenue: revenue[0]?.total || 0,

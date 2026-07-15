@@ -16,6 +16,16 @@ export default function StaffLeads() {
     fetchJobs();
   }, []);
 
+  const acceptJob = async (jobId: string) => {
+    try {
+      await api.put(`/jobs/${jobId}/accept`);
+      toast.success("Job accepted");
+      fetchJobs();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    }
+  };
+
   const checkIn = async (jobId: string) => {
     try {
       await api.put(`/jobs/${jobId}/checkin`, { lat: 0, lng: 0, address: "" });
@@ -88,8 +98,16 @@ export default function StaffLeads() {
                 <td className="p-3">{j.status}</td>
                 <td className="p-3">{j.lead?.address}, {j.lead?.city}</td>
                 <td className="p-3 space-x-2">
-                  <button onClick={() => checkIn(j._id)} className="text-blue-600 hover:underline">Check In</button>
-                  <button onClick={() => setSelected(j)} className="text-green-600 hover:underline">Report</button>
+                  {j.status === "assigned" && (
+                    <button onClick={() => acceptJob(j._id)} className="text-primary-600 hover:underline font-medium">Accept</button>
+                  )}
+                  {j.status === "accepted" && (
+                    <button onClick={() => checkIn(j._id)} className="text-blue-600 hover:underline">Check In</button>
+                  )}
+                  {["working", "started", "on_the_way", "reached", "need_parts", "pending", "follow_up"].includes(j.status) && (
+                    <button onClick={() => setSelected(j)} className="text-green-600 hover:underline">Report</button>
+                  )}
+                  {j.status === "completed" && <span className="text-gray-500">Completed</span>}
                 </td>
               </tr>
             ))}
