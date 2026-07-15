@@ -36,6 +36,7 @@ app.use(morgan("dev"));
 
 connectDB();
 seedLeadStatuses().catch((err) => console.error("Seed failed:", err));
+console.log("Server config loaded, routes mounted");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/staff", staffRoutes);
