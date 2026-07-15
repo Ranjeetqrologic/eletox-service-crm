@@ -1,9 +1,9 @@
 import express, { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { body, validationResult } from "express-validator";
+import { body, param, validationResult } from "express-validator";
 import User from "../models/User";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
-import { protect } from "../middleware/auth";
+import { protect, restrictTo } from "../middleware/auth";
 
 const router = express.Router();
 
@@ -47,6 +47,30 @@ router.get(
   protect,
   asyncHandler(async (req: Request, res: Response) => {
     res.json({ success: true, user: req.user });
+  })
+);
+
+router.post(
+  "/impersonate/:userId",
+  protect,
+  restrictTo("superadmin", "admin"),
+  [param("userId").notEmpty()],
+  asyncHandler(async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) throw new AppError(errors.array()[0].msg, 400);
+
+    const targetUser = await User.findById(req.params.userId);
+    if (!targetUser) throw new AppError("User not found", 404);
+    if (targetUser.role === "superadmin") throw new AppError("Cannot impersonate superadmin", 403);
+
+    targetUser.lastLogin = new Date();
+    await targetUser.save();
+
+    res.json({
+      success: true,
+      token: signToken(targetUser._id.toString()),
+      user: { _id: targetUser._id, name: targetUser.name, email: targetUser.email, role: targetUser.role },
+    });
   })
 );
 

@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
 
 export default function StaffPage() {
+  const router = useRouter();
+  const { setAuth } = useAuthStore();
   const [staff, setStaff] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<any>({
@@ -57,6 +61,17 @@ export default function StaffPage() {
       toast.error(err.response?.data?.message || "Failed");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loginAs = async (userId: string) => {
+    try {
+      const { data } = await api.post(`/auth/impersonate/${userId}`);
+      setAuth(data.user, data.token);
+      toast.success("Logged in as staff");
+      router.replace(data.user.role === "technician" ? "/staff/" : "/admin/");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
     }
   };
 
@@ -128,8 +143,11 @@ export default function StaffPage() {
                 <td className="p-3">{s.mobile}</td>
                 <td className="p-3">{s.role}</td>
                 <td className="p-3">{s.isActive ? "Active" : "Inactive"}</td>
-                <td className="p-3">
-                  <button onClick={() => deactivate(s._id)} className="text-red-600">Deactivate</button>
+                <td className="p-3 space-x-2">
+                  {s.user?._id && (
+                    <button onClick={() => loginAs(s.user._id)} className="text-blue-600 hover:underline">Login As</button>
+                  )}
+                  <button onClick={() => deactivate(s._id)} className="text-red-600 hover:underline">Deactivate</button>
                 </td>
               </tr>
             ))}
