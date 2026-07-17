@@ -180,7 +180,9 @@ router.put(
     const lead = await Lead.findById(req.params.id);
     if (!lead) throw new AppError("Lead not found", 404);
 
-    const allowed = ["new", "assigned", "accepted", "on_the_way", "reached", "working", "need_parts", "pending", "follow_up", "completed", "cancelled", "closed"];
+    const LeadStatus = (await import("../models/LeadStatus")).default;
+    const validStatuses = await LeadStatus.find({ isActive: true }).select("name");
+    const allowed = validStatuses.map((s: any) => s.name);
     if (!allowed.includes(req.body.status)) throw new AppError("Invalid status", 400);
 
     lead.status = req.body.status;
