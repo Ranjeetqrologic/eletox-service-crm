@@ -7,19 +7,72 @@ import { getImageUrl } from "@/lib/utils";
 import Logo from "@/components/Logo";
 import toast from "react-hot-toast";
 
-const stats = [
-  { value: "15+", label: "Professional Members", sub: "Experts", icon: "/eletox-assets/icon-fact-1.png" },
-  { value: "1000+", label: "Projects Completed", sub: "Done", icon: "/eletox-assets/icon-fact-2.png" },
-  { value: "02", label: "Service Branches", sub: "Total", icon: "/eletox-assets/icon-fact-3.png" },
-  { value: "5000+", label: "Happy Clients", sub: "Satisfaction", icon: "/eletox-assets/icon-fact-4.png" },
+const A = "/eletox-assets";
+
+const DEFAULT_PHONE = "+91 9571071342";
+const DEFAULT_EMAIL = "eletox07@gmail.com";
+const DEFAULT_ADDRESS = "Tilak Vihar, Gokulpura, near Gs Swimming Pool, Jhotwara, Jaipur, Rajasthan 302012";
+
+const defaultServices = [
+  { title: "AC Repair & Service", image: `${A}/icon-ac.png`, shortDesc: "Split, window & cassette AC repair, gas filling and full service." },
+  { title: "AC Pipe Line", image: `${A}/icon-pipe.jpg`, shortDesc: "Copper pipe line, drain pipe and wiring fitting with sleeves." },
+  { title: "Washing Machine Repair", image: `${A}/icon-washing.jpg`, shortDesc: "Top load, front load & semi automatic washing machine repair." },
+  { title: "Microwave Repair", image: `${A}/icon-microwave.jpg`, shortDesc: "Solo, grill & convection microwave oven repair at home." },
+  { title: "Geyser Repair & Service", image: `${A}/icon-geyser.png`, shortDesc: "Electric & gas geyser repair, installation and servicing." },
+  { title: "Water Purifier Repair & Service", image: `${A}/icon-purifier.png`, shortDesc: "RO / UV purifier repair, filter change and AMC." },
+  { title: "Water Dispenser Repair & Services", image: `${A}/icon-dispenser.jpg`, shortDesc: "Hot & cold water dispenser repair and maintenance." },
+  { title: "Water Cooler Repair & Services", image: `${A}/icon-cooler.jpg`, shortDesc: "Commercial & domestic water cooler repair and gas charging." },
+  { title: "Electrician", image: `${A}/icon-electrician.png`, shortDesc: "Certified electrician for wiring, fittings and electrical faults." },
+];
+
+const heroSlides = [
+  { image: `${A}/hero-1.jpg`, title: "Elehome Provide Quality Repair Service", subtitle: "On your fingertips you have been cooling switch" },
+  { image: `${A}/hero-2.jpg`, title: "Elehome Provide Quality Repair Service", subtitle: "On your fingertips you have been cooling switch" },
+];
+
+const facts = [
+  { value: "15", l1: "Member", l2: "Professional", icon: `${A}/icon-fact-1.png` },
+  { value: "1000+", l1: "Project", l2: "Completed", icon: `${A}/icon-fact-2.png` },
+  { value: "02", l1: "Total", l2: "Branches", icon: `${A}/icon-fact-3.png` },
+  { value: "5000+", l1: "Client", l2: "Satisfaction", icon: `${A}/icon-fact-4.png` },
+];
+
+const team = [
+  { name: "Demica Master", role: "Technician", image: `${A}/team-1.jpg` },
+  { name: "Margie Burman", role: "Senior Technician", image: `${A}/team-2.jpg` },
+  { name: "Gorrien Hyrick", role: "Founder Of Pixa", image: `${A}/team-3.jpg` },
+  { name: "Jonson Pierce", role: "Support Engineer", image: `${A}/team-4.jpg` },
 ];
 
 const whyChoose = [
-  { title: "Expert Repairman", desc: "Certified technicians with years of hands-on experience." },
-  { title: "Satisfied Services", desc: "Quality service backed by customer satisfaction guarantee." },
-  { title: "Same Day Visit", desc: "We reach your doorstep on the same day of booking." },
-  { title: "Transparent Pricing", desc: "No hidden charges. Fair and upfront repair costs." },
+  { title: "Expert Repairman", desc: "Certified and experienced technicians who diagnose the problem right the first time and repair it with genuine parts." },
+  { title: "Satisfied Services", desc: "Transparent pricing, same-day visit and service warranty — that is why 5000+ clients in Jaipur trust Elehome." },
 ];
+
+const blogs = [
+  { image: `${A}/blog-1.jpg`, cat: "AC Care", title: "How often should you service your AC in Jaipur summers?" },
+  { image: `${A}/blog-2.jpg`, cat: "Appliances", title: "5 signs your washing machine needs a technician" },
+  { image: `${A}/blog-3.jpg`, cat: "Water Purifier", title: "When to change RO filters for safe drinking water" },
+];
+
+const navLinks = [
+  { label: "Home", href: "#home" },
+  { label: "About Us", href: "#about" },
+  { label: "Service", href: "#services" },
+  { label: "Team", href: "#team" },
+  { label: "Blog", href: "#blog" },
+  { label: "Contact Us", href: "#contact" },
+];
+
+const SectionTitle = ({ sub, title, light = false, center = false }: { sub: string; title: string; light?: boolean; center?: boolean }) => (
+  <div className={center ? "text-center" : ""}>
+    <span className={`inline-flex items-center gap-2 font-heading font-semibold uppercase tracking-wide text-sm ${light ? "text-white" : "text-brand-orange"}`}>
+      <img src={`${A}/icon-subtitle.png`} alt="" className="w-5 h-5" />
+      {sub}
+    </span>
+    <h2 className={`font-heading font-bold text-3xl md:text-[44px] leading-tight mt-3 ${light ? "text-white" : "text-brand-dark"}`}>{title}</h2>
+  </div>
+);
 
 export default function Home() {
   const [services, setServices] = useState<any[]>([]);
@@ -27,8 +80,10 @@ export default function Home() {
   const [banners, setBanners] = useState<any[]>([]);
   const [gallery, setGallery] = useState<any[]>([]);
   const [activeBanner, setActiveBanner] = useState(0);
+  const [tab, setTab] = useState<"residential" | "commercial">("residential");
+  const [menuOpen, setMenuOpen] = useState(false);
   const [form, setForm] = useState({
-    customerName: "", mobile: "", email: "", address: "", city: "", pin: "",
+    customerName: "", mobile: "", email: "", address: "", city: "Jaipur", pin: "",
     service: "", acType: "", preferredDate: "", preferredTime: "", problem: "",
   });
   const [loading, setLoading] = useState(false);
@@ -40,11 +95,15 @@ export default function Home() {
     api.get("/gallery/public").then((res) => setGallery(res.data.data || [])).catch(() => setGallery([]));
   }, []);
 
+  const slides = banners.length
+    ? banners.map((b) => ({ image: getImageUrl(b.image) || heroSlides[0].image, title: b.title || heroSlides[0].title, subtitle: b.subtitle || heroSlides[0].subtitle, link: b.buttonLink, button: b.buttonText }))
+    : heroSlides.map((s) => ({ ...s, link: undefined, button: undefined }));
+
   useEffect(() => {
-    if (banners.length <= 1) return;
-    const interval = setInterval(() => setActiveBanner((i) => (i + 1) % banners.length), 5000);
+    if (slides.length <= 1) return;
+    const interval = setInterval(() => setActiveBanner((i) => (i + 1) % slides.length), 6000);
     return () => clearInterval(interval);
-  }, [banners.length]);
+  }, [slides.length]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -56,7 +115,7 @@ export default function Home() {
     try {
       const { data } = await api.post("/leads/public-inquiry", form);
       toast.success(data.message || "Inquiry submitted successfully");
-      setForm({ customerName: "", mobile: "", email: "", address: "", city: "", pin: "", service: "", acType: "", preferredDate: "", preferredTime: "", problem: "" });
+      setForm({ customerName: "", mobile: "", email: "", address: "", city: "Jaipur", pin: "", service: "", acType: "", preferredDate: "", preferredTime: "", problem: "" });
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to submit");
     } finally {
@@ -64,136 +123,196 @@ export default function Home() {
     }
   };
 
-  const phone = company.phone || "+91-99999-99999";
+  const phone = company.phone || DEFAULT_PHONE;
+  const phoneHref = `tel:${phone.replace(/[^+\d]/g, "")}`;
+  const whatsapp = (company.whatsapp || phone).replace(/\D/g, "");
+  const email = company.email || DEFAULT_EMAIL;
+  const address = company.address || DEFAULT_ADDRESS;
+  const serviceList = services.length ? services : defaultServices;
+  const slide = slides[activeBanner % slides.length];
 
   return (
-    <main className="min-h-screen bg-white text-gray-800">
+    <main id="home" className="min-h-screen bg-white text-gray-700">
       {/* Top bar */}
-      <div className="bg-primary-900 text-white text-sm py-2">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-1">
-          <p className="opacity-90">Fast & Reliable Repair Services at Your Doorstep</p>
-          <div className="flex gap-4 opacity-90">
-            <a href={`tel:${phone}`} className="hover:text-accent-400">{phone}</a>
-            <span className="hidden md:inline">|</span>
-            <a href={`mailto:${company.email || "info@eletox.com"}`} className="hover:text-accent-400">{company.email || "info@eletox.com"}</a>
+      <div className="hidden md:block text-sm">
+        <div className="max-w-[1320px] mx-auto px-4 flex">
+          <div className="bg-brand-orange text-white font-heading font-semibold px-6 py-2.5 relative pr-10 tracking-wide">
+            {company.name || "Elehome Solutions PVT. LTD."}
+            <span className="absolute right-0 top-0 h-full w-6 bg-white" style={{ clipPath: "polygon(100% 0, 100% 100%, 0 100%)" }} />
+          </div>
+          <div className="flex-1 bg-brand-light text-brand-dark flex justify-end items-center gap-8 px-6 py-2.5">
+            <span className="flex items-center gap-2"><span className="text-brand-orange">◔</span>24x7 Services</span>
+            <span className="flex items-center gap-2"><span className="text-brand-orange">⌖</span>Jaipur</span>
+            <a href={`mailto:${email}`} className="flex items-center gap-2 hover:text-brand-orange"><span className="text-brand-orange">✉</span>{email}</a>
           </div>
         </div>
       </div>
 
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Logo logoUrl={company.logo} />
+      <header className="bg-white sticky top-0 z-50 shadow-[0_2px_20px_rgba(0,0,0,0.06)]">
+        <div className="max-w-[1320px] mx-auto px-4 py-3 flex justify-between items-center">
+          <Logo logoUrl={company.logo} height={62} />
+          <nav className="hidden lg:flex items-center gap-8 font-heading font-semibold text-[15px] uppercase text-brand-dark">
+            {navLinks.map((n) => <a key={n.label} href={n.href} className="hover:text-brand-orange transition">{n.label}</a>)}
+          </nav>
           <div className="flex items-center gap-3">
-            <Link href="/login" className="md:hidden text-primary-700 font-medium text-sm border border-primary-700 px-3 py-1 rounded">Login</Link>
-            <nav className="hidden md:flex gap-6 text-sm font-medium items-center">
-              <a href="#services" className="hover:text-primary-600">Services</a>
-              <a href="#about" className="hover:text-primary-600">About</a>
-              <a href="#gallery" className="hover:text-primary-600">Gallery</a>
-              <a href="#book" className="hover:text-primary-600">Free Estimate</a>
-              <a href="#contact" className="hover:text-primary-600">Contact</a>
-              <Link href="/login" className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700">Login</Link>
-            </nav>
+            <a href={phoneHref} className="hidden md:inline-flex items-center gap-2 bg-brand-orange text-white font-heading font-semibold px-6 py-3 rounded-sm hover:bg-brand-navy transition">
+              <span>☏</span> Call Now
+            </a>
+            <Link href="/login" className="hidden md:inline-flex border border-brand-navy text-brand-navy font-heading font-semibold px-4 py-3 rounded-sm hover:bg-brand-navy hover:text-white transition">Login</Link>
+            <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden text-brand-navy text-3xl leading-none px-2" aria-label="Menu">☰</button>
           </div>
         </div>
+        {menuOpen && (
+          <div className="lg:hidden border-t bg-white px-4 py-4 flex flex-col gap-3 font-heading font-semibold uppercase text-brand-dark">
+            {navLinks.map((n) => <a key={n.label} href={n.href} onClick={() => setMenuOpen(false)}>{n.label}</a>)}
+            <a href={phoneHref} className="text-brand-orange">Call Now: {phone}</a>
+            <Link href="/login">Login</Link>
+          </div>
+        )}
       </header>
 
-      {/* Hero / Slider */}
-      <section className="relative bg-primary-900 text-white overflow-hidden min-h-[500px] md:min-h-[600px] flex items-center">
-        <div className="absolute inset-0 bg-cover bg-center opacity-40 transition-all duration-700" style={{ backgroundImage: `url('${getImageUrl(banners[activeBanner]?.image) || "/eletox-assets/hero-1.jpg"}')` }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-900/95 to-primary-900/60" />
-        <div className="max-w-7xl mx-auto px-4 py-20 md:py-28 relative grid md:grid-cols-2 gap-12 items-center w-full">
-          <div>
-            <h3 className="text-accent-400 font-semibold mb-2">{banners[activeBanner]?.title || "Residential Repair Service"}</h3>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">{banners[activeBanner]?.subtitle || "On your fingertips you have been cooling switch"}</h1>
-            <p className="text-lg md:text-xl mb-8 opacity-90 max-w-lg">Expert AC & home appliance repair services. Book now and get a verified technician at your doorstep.</p>
+      {/* Hero */}
+      <section className="relative min-h-[520px] md:min-h-[720px] flex items-center overflow-hidden">
+        {slides.map((s, i) => (
+          <div key={i} className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${i === activeBanner % slides.length ? "opacity-100" : "opacity-0"}`} style={{ backgroundImage: `url('${s.image}')` }} />
+        ))}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/30 to-transparent" />
+        <div className="max-w-[1320px] mx-auto px-4 relative w-full py-20">
+          <div className="max-w-2xl text-white">
+            <span className="inline-flex items-center gap-2 font-heading font-semibold uppercase text-brand-orange tracking-wide">
+              <img src={`${A}/icon-subtitle.png`} alt="" className="w-5 h-5" /> Residential &amp; Commercial
+            </span>
+            <h1 className="font-heading font-bold text-4xl md:text-[64px] leading-[1.1] mt-4 mb-5">{slide.title}</h1>
+            <p className="text-lg md:text-xl mb-8 text-white/90">{slide.subtitle}</p>
             <div className="flex flex-wrap gap-4">
-              <a href={banners[activeBanner]?.buttonLink || "#book"} className="bg-accent-500 text-white px-8 py-3 rounded font-semibold hover:bg-accent-600 transition shadow-lg">{banners[activeBanner]?.buttonText || "Get Free Estimate"}</a>
-              <a href={`tel:${phone}`} className="border-2 border-white text-white px-8 py-3 rounded font-semibold hover:bg-white/10 transition">Call Now</a>
+              <a href={slide.link || "#estimate"} className="bg-brand-navy text-white font-heading font-semibold px-8 py-4 rounded-sm hover:bg-brand-orange transition">{slide.button || "Appointment Now"}</a>
+              <a href={phoneHref} className="bg-brand-orange text-white font-heading font-semibold px-8 py-4 rounded-sm hover:bg-brand-navy transition">Call Now</a>
             </div>
-            {banners.length > 1 && (
-              <div className="flex gap-2 mt-8">
-                {banners.map((_, i) => (
-                  <button key={i} onClick={() => setActiveBanner(i)} className={`w-3 h-3 rounded-full ${i === activeBanner ? "bg-accent-400" : "bg-white/40"}`} />
-                ))}
-              </div>
-            )}
           </div>
-          <div className="relative hidden md:block">
-            <img src="/eletox-assets/hero-2.jpg" alt="Eletox AC Service" className="rounded-2xl shadow-2xl border-4 border-white/10" />
+        </div>
+        {slides.length > 1 && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+            {slides.map((_, i) => (
+              <button key={i} onClick={() => setActiveBanner(i)} className={`w-3 h-3 rounded-full ${i === activeBanner % slides.length ? "bg-brand-orange" : "bg-white/50"}`} aria-label={`Slide ${i + 1}`} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Residential / Commercial tabs */}
+      <section className="relative z-10 -mt-16 md:-mt-20">
+        <div className="max-w-[1320px] mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-6">
+            {(["residential", "commercial"] as const).map((t) => (
+              <button key={t} onClick={() => setTab(t)} className={`text-left flex items-center gap-5 p-6 md:p-8 shadow-xl transition ${t === "residential" ? "bg-brand-orange" : "bg-brand-navy"} ${tab === t ? "ring-4 ring-white/70" : ""}`}>
+                <img src={`${A}/icon-man.png`} alt="" className="w-14 h-14 object-contain" />
+                <div className="text-white">
+                  <h3 className="font-heading font-bold text-2xl">{t === "residential" ? "Residential Repair Service" : "Commercial Repair Service"}</h3>
+                  <p className="text-white/85 text-sm mt-1">{t === "residential" ? "Home AC, appliances & electrical repair at your doorstep." : "Offices, shops, hotels & institutions — AMC and on-call repair."}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+          <div className="mt-6 grid md:grid-cols-2 gap-8 items-center bg-white shadow-xl p-6 md:p-10">
+            <img src={`${A}/icon-service.jpg`} alt="Repair service" className="w-full h-64 md:h-80 object-cover" />
+            <div>
+              <h3 className="font-heading font-bold text-3xl text-brand-dark mb-4">{tab === "residential" ? "Residential Repair Service" : "Commercial Repair Service"}</h3>
+              <p className="mb-6">
+                {tab === "residential"
+                  ? "Elehome technicians reach your home the same day for AC, washing machine, microwave, geyser, water purifier and electrical repair — with genuine spare parts and service warranty."
+                  : "We keep businesses cool and running with scheduled maintenance contracts, bulk AC servicing, water cooler & dispenser repair and 24x7 emergency support for commercial premises."}
+              </p>
+              <ul className="grid sm:grid-cols-2 gap-2 text-sm mb-6">
+                {["Same day visit", "Genuine spare parts", "Trained technicians", "Service warranty"].map((x) => (
+                  <li key={x} className="flex items-center gap-2"><span className="text-brand-orange font-bold">✔</span>{x}</li>
+                ))}
+              </ul>
+              <a href="#estimate" className="inline-block bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-sm hover:bg-brand-navy transition">Appointment Now</a>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Services */}
-      <section id="services" className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-14">
-            <h3 className="text-accent-500 font-semibold mb-2">What We Offer</h3>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Popular Repair Services</h2>
+      <section id="services" className="pb-20 bg-brand-light -mt-10 md:-mt-16 pt-[120px]">
+        <div className="max-w-[1320px] mx-auto px-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <SectionTitle sub="Featured Services" title="Popular repair service" />
+            <a href="#estimate" className="self-start md:self-auto bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-sm hover:bg-brand-navy transition">More Services</a>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.length ? services.map((s) => (
-              <Link key={s._id} href={`/service/?slug=${s.slug}`} className="bg-white rounded-xl p-6 hover:shadow-xl hover:-translate-y-1 transition shadow-sm group border-b-4 border-primary-600">
-                <div className="w-16 h-16 mb-4 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                  {s.image ? <img src={getImageUrl(s.image)} alt={s.title} className="w-full h-full object-cover" /> : <span className="text-3xl">❄</span>}
-                </div>
-                <h4 className="text-lg font-bold mb-2 group-hover:text-primary-600">{s.title}</h4>
-                <p className="text-sm text-gray-600">{s.shortDesc}</p>
-              </Link>
-            )) : (
-              ["AC Repair & Service", "AC Installation", "AC Gas Filling", "AC Maintenance", "Washing Machine Repair", "Microwave Repair", "Geyser Repair", "Water Purifier Repair"].map((t) => (
-                <div key={t} className="bg-white rounded-xl p-6 shadow-sm border-b-4 border-primary-600">
-                  <div className="w-14 h-14 bg-gradient-to-br from-primary-600 to-accent-500 text-white rounded-lg flex items-center justify-center mb-4 text-2xl">❄</div>
-                  <h4 className="text-lg font-bold mb-2">{t}</h4>
-                  <p className="text-sm text-gray-600">Professional repair service at your doorstep.</p>
-                </div>
-              ))
-            )}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {serviceList.map((s: any, i: number) => {
+              const inner = (
+                <>
+                  <div className="w-20 h-20 rounded-full bg-brand-light flex items-center justify-center mb-5 overflow-hidden group-hover:bg-brand-orange transition">
+                    {s.image ? <img src={getImageUrl(s.image)} alt={s.title} className="w-14 h-14 object-contain" /> : <span className="text-3xl">❄</span>}
+                  </div>
+                  <h4 className="font-heading font-bold text-xl text-brand-dark mb-2 group-hover:text-brand-orange transition">{s.title}</h4>
+                  <p className="text-sm text-gray-600 mb-4">{s.shortDesc}</p>
+                  <span className="font-heading font-semibold text-brand-navy text-sm">Read More →</span>
+                </>
+              );
+              const cls = "group bg-white p-8 border-b-4 border-transparent hover:border-brand-orange hover:shadow-xl transition block";
+              return s._id ? <Link key={s._id} href={`/service/?slug=${s.slug}`} className={cls}>{inner}</Link> : <a key={i} href="#estimate" className={cls}>{inner}</a>;
+            })}
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-16 bg-primary-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {stats.map((s) => (
-            <div key={s.label} className="flex flex-col items-center">
-              <img src={getImageUrl(s.icon)} alt={s.label} className="w-14 h-14 mb-3 object-contain" />
-              <div className="text-4xl md:text-5xl font-bold text-accent-400">{s.value}</div>
-              <div className="text-sm opacity-80 mt-1">{s.label}</div>
-              <div className="text-xs opacity-60">{s.sub}</div>
+      {/* About */}
+      <section id="about" className="py-24">
+        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-14 items-center">
+          <div className="relative pb-16 pr-10">
+            <img src={`${A}/about-1.jpg`} alt="About Elehome" className="w-full h-[420px] object-cover" />
+            <img src={`${A}/about-2.jpg`} alt="Technician" className="absolute bottom-0 right-0 w-[55%] h-64 object-cover border-8 border-white shadow-xl" />
+            <div className="absolute left-6 bottom-6 bg-brand-orange text-white font-heading px-6 py-4 shadow-xl">
+              <div className="text-3xl font-bold leading-none">1000+</div>
+              <div className="text-sm font-semibold">Project Done</div>
+            </div>
+          </div>
+          <div>
+            <SectionTitle sub="About company" title="We are most popular repair company" />
+            <p className="mt-6 text-gray-600">
+              {company.tagline || "Elehome Solutions PVT. LTD. (Eletox) is Jaipur's trusted AC and home appliance repair company. With 10+ years of experience, 15 professional members and 2 branches, we provide fast, honest and affordable repair for homes and businesses across Jaipur."}
+            </p>
+            <p className="mt-4 font-heading font-semibold text-brand-dark text-lg flex items-center gap-3">
+              <span className="w-10 h-10 rounded-full bg-brand-orange/15 text-brand-orange flex items-center justify-center">❄</span>
+              Don&apos;t feel heat when there is best air conditioning seat
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-6">
+              <a href="#estimate" className="bg-brand-orange text-white font-heading font-semibold px-8 py-4 rounded-sm hover:bg-brand-navy transition">Read More</a>
+              <a href={phoneHref} className="flex items-center gap-3 font-heading">
+                <img src={`${A}/icon-cta.png`} alt="" className="w-10 h-10 object-contain" />
+                <span><span className="block text-xs text-gray-500">Call Us Anytime</span><span className="font-bold text-brand-dark">{phone}</span></span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Facts */}
+      <section className="bg-brand-navy py-16 text-white">
+        <div className="max-w-[1320px] mx-auto px-4 grid grid-cols-2 lg:grid-cols-4 gap-8">
+          {facts.map((f) => (
+            <div key={f.l2} className="flex items-center gap-5">
+              <img src={f.icon} alt="" className="w-16 h-16 object-contain" />
+              <div>
+                <div className="font-heading font-bold text-4xl md:text-5xl leading-none">{f.value}</div>
+                <div className="font-heading text-white/85 text-sm mt-1 leading-tight">{f.l1}<br />{f.l2}</div>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* About */}
-      <section id="about" className="py-20 max-w-7xl mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="relative">
-            <img src="/eletox-assets/about-1.jpg" alt="About Eletox" className="rounded-2xl shadow-lg w-full" />
-            <img src="/eletox-assets/about-2.jpg" alt="Eletox Technician" className="absolute -bottom-6 -right-6 w-1/2 rounded-xl border-4 border-white shadow-lg hidden md:block" />
-          </div>
-          <div>
-            <h3 className="text-accent-500 font-semibold mb-2">About Us</h3>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Empower lifes forever better living</h2>
-            <p className="text-gray-600 mb-6">{company.name || "Eletox AC Services"} offers top-quality repair services for AC and home appliances. We believe in fast, reliable and transparent service for every customer.</p>
-            <a href="#book" className="bg-primary-600 text-white px-6 py-3 rounded font-semibold hover:bg-primary-700 transition">Book a Service</a>
-          </div>
-        </div>
-      </section>
-
-      {/* Gallery */}
+      {/* Gallery (optional, admin-managed) */}
       {gallery.length > 0 && (
-        <section id="gallery" className="py-20 max-w-7xl mx-auto px-4">
-          <div className="text-center mb-14">
-            <h3 className="text-accent-500 font-semibold mb-2">Our Work</h3>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Service Gallery</h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section id="gallery" className="py-20 max-w-[1320px] mx-auto px-4">
+          <SectionTitle sub="Our Work" title="Service gallery" center />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12">
             {gallery.map((g) => (
-              <div key={g._id} className="rounded-xl overflow-hidden shadow-md group">
+              <div key={g._id} className="overflow-hidden shadow-md group">
                 <img src={getImageUrl(g.image)} alt={g.title} className="w-full h-56 object-cover group-hover:scale-105 transition duration-500" />
                 {g.title && <div className="p-3 bg-white text-center font-medium text-sm">{g.title}</div>}
               </div>
@@ -202,104 +321,155 @@ export default function Home() {
         </section>
       )}
 
-      {/* Why Choose */}
-      <section className="relative py-24 bg-cover bg-center" style={{ backgroundImage: "url('/eletox-assets/choose-bg.jpg')" }}>
-        <div className="absolute inset-0 bg-primary-900/85" />
-        <div className="max-w-7xl mx-auto px-4 relative">
-          <div className="text-center mb-14">
-            <h3 className="text-accent-400 font-semibold mb-2">Why Choose Us</h3>
-            <h2 className="text-3xl md:text-4xl font-bold text-white">Let&apos;s started with Eletox</h2>
+      {/* Free estimate */}
+      <section id="estimate" className="py-24 bg-white">
+        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
+          <div className="relative">
+            <img src={`${A}/contact.png`} alt="Technician" className="w-full max-w-lg mx-auto" />
+            <div className="absolute top-6 left-0 bg-brand-navy text-white font-heading px-6 py-4 shadow-xl flex items-center gap-4">
+              <div className="text-5xl font-bold leading-none">10</div>
+              <div className="text-sm font-semibold leading-tight">10+Year<br />Working Experience</div>
+            </div>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {whyChoose.map((w) => (
-              <div key={w.title} className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition">
-                <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mb-4 text-xl">✓</div>
-                <h4 className="font-bold text-lg mb-2">{w.title}</h4>
-                <p className="text-sm text-gray-600">{w.desc}</p>
+          <form onSubmit={handleSubmit} className="bg-brand-orange p-8 md:p-12 text-white">
+            <h2 className="font-heading font-bold text-4xl mb-8">Free Estimate</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <input name="customerName" value={form.customerName} onChange={handleChange} placeholder="Full Name" className="bg-white text-gray-800 p-4 w-full outline-none" required />
+              <input name="mobile" value={form.mobile} onChange={handleChange} placeholder="Phone Number" className="bg-white text-gray-800 p-4 w-full outline-none" required />
+              <input name="email" value={form.email} onChange={handleChange} placeholder="Email Address" className="bg-white text-gray-800 p-4 w-full outline-none" />
+              <select name="service" value={form.service} onChange={handleChange} className="bg-white text-gray-800 p-4 w-full outline-none" required>
+                <option value="">Choose Service</option>
+                {serviceList.map((s: any) => <option key={s._id || s.title} value={s.title}>{s.title}</option>)}
+                {!services.length && ["Refrigerator Repair", "AC Installation"].map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <input name="city" value={form.city} onChange={handleChange} placeholder="City" className="bg-white text-gray-800 p-4 w-full outline-none" required />
+              <input name="pin" value={form.pin} onChange={handleChange} placeholder="Pin Code" className="bg-white text-gray-800 p-4 w-full outline-none" />
+              <input type="date" name="preferredDate" value={form.preferredDate} onChange={handleChange} className="bg-white text-gray-800 p-4 w-full outline-none" />
+              <input type="time" name="preferredTime" value={form.preferredTime} onChange={handleChange} className="bg-white text-gray-800 p-4 w-full outline-none" />
+            </div>
+            <textarea name="address" value={form.address} onChange={handleChange} placeholder="Full Address" className="bg-white text-gray-800 p-4 w-full outline-none mt-4" rows={2} required />
+            <textarea name="problem" value={form.problem} onChange={handleChange} placeholder="Describe the problem" className="bg-white text-gray-800 p-4 w-full outline-none mt-4" rows={3} />
+            <button type="submit" disabled={loading} className="mt-6 bg-brand-navy text-white font-heading font-semibold px-10 py-4 rounded-sm hover:bg-brand-dark disabled:opacity-60 transition">
+              {loading ? "Submitting..." : "Appointment Now"}
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* Team */}
+      <section id="team" className="bg-brand-navy py-24">
+        <div className="max-w-[1320px] mx-auto px-4">
+          <SectionTitle sub="Technician Team" title="Our dedicated & expert team member" light center />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
+            {team.map((m) => (
+              <div key={m.name} className="bg-white group overflow-hidden">
+                <div className="overflow-hidden">
+                  <img src={m.image} alt={m.name} className="w-full h-72 object-cover group-hover:scale-105 transition duration-500" />
+                </div>
+                <div className="p-5 text-center">
+                  <span className="text-brand-orange font-heading font-semibold text-sm uppercase">{m.role}</span>
+                  <h4 className="font-heading font-bold text-xl text-brand-dark">{m.name}</h4>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Book / Free Estimate */}
-      <section id="book" className="py-20 max-w-7xl mx-auto px-4">
-        <div className="grid lg:grid-cols-2 gap-12 items-start">
+      {/* Why Choose Us */}
+      <section className="relative py-24 bg-cover bg-center" style={{ backgroundImage: `url('${A}/choose-bg.jpg')` }}>
+        <div className="absolute inset-0 bg-white/90 lg:bg-gradient-to-r lg:from-white lg:via-white/95 lg:to-white/40" />
+        <div className="max-w-[1320px] mx-auto px-4 relative grid lg:grid-cols-2 gap-12">
           <div>
-            <h3 className="text-accent-500 font-semibold mb-2">Appointment</h3>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Free Estimate</h2>
-            <p className="text-gray-600 mb-8">Fill the form and our team will contact you shortly to confirm the appointment.</p>
-            <div className="bg-primary-50 border-l-4 border-primary-600 p-6 rounded-r-lg mb-6">
-              <p className="font-semibold text-primary-800">Why Eletox?</p>
-              <ul className="mt-2 text-sm text-primary-700 space-y-1">
-                <li>✓ Verified technicians</li>
-                <li>✓ Transparent pricing</li>
-                <li>✓ Same-day service available</li>
-                <li>✓ Warranty on repairs</li>
-              </ul>
+            <SectionTitle sub="Why Choose Us" title="Empower lifes forever better living" />
+            <p className="mt-6 text-gray-600">Elehome combines skilled technicians, genuine parts and honest pricing so every repair lasts longer and every customer stays cool.</p>
+            <div className="mt-10 space-y-8">
+              {whyChoose.map((w) => (
+                <div key={w.title} className="flex gap-5">
+                  <div className="w-16 h-16 shrink-0 rounded-full bg-brand-orange text-white flex items-center justify-center text-2xl font-bold">✔</div>
+                  <div>
+                    <h4 className="font-heading font-bold text-2xl text-brand-dark mb-2">{w.title}</h4>
+                    <p className="text-gray-600">{w.desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-            <img src="/eletox-assets/contact.png" alt="Contact" className="w-48 h-auto object-contain" />
           </div>
-          <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-lg border space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <input name="customerName" value={form.customerName} onChange={handleChange} placeholder="Full Name" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" required />
-              <input name="mobile" value={form.mobile} onChange={handleChange} placeholder="Mobile Number" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" required />
-              <input name="email" value={form.email} onChange={handleChange} placeholder="Email" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" />
-              <input name="city" value={form.city} onChange={handleChange} placeholder="City" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" required />
-              <input name="pin" value={form.pin} onChange={handleChange} placeholder="Pin Code" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" />
-              <select name="service" value={form.service} onChange={handleChange} className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" required>
-                <option value="">Choose Service</option>
-                {services.map((s) => <option key={s._id} value={s.title}>{s.title}</option>)}
-              </select>
-              <input type="date" name="preferredDate" value={form.preferredDate} onChange={handleChange} className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" />
-              <input type="time" name="preferredTime" value={form.preferredTime} onChange={handleChange} className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" />
-            </div>
-            <textarea name="address" value={form.address} onChange={handleChange} placeholder="Full Address" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" required />
-            <textarea name="problem" value={form.problem} onChange={handleChange} placeholder="Problem Description" className="border p-3 rounded-lg w-full outline-none focus:border-primary-600" />
-            <button type="submit" disabled={loading} className="bg-primary-600 text-white px-6 py-3 rounded-lg w-full font-semibold hover:bg-primary-700 disabled:opacity-50 transition">
-              {loading ? "Submitting..." : "Submit Inquiry"}
-            </button>
-          </form>
+        </div>
+      </section>
+
+      {/* Blog */}
+      <section id="blog" className="py-24 bg-brand-light">
+        <div className="max-w-[1320px] mx-auto px-4">
+          <SectionTitle sub="Recent Blogs" title="Every single update story from our journal" center />
+          <div className="grid md:grid-cols-3 gap-8 mt-14">
+            {blogs.map((b) => (
+              <article key={b.title} className="bg-white group overflow-hidden shadow-sm hover:shadow-xl transition">
+                <div className="overflow-hidden">
+                  <img src={b.image} alt={b.title} className="w-full h-60 object-cover group-hover:scale-105 transition duration-500" />
+                </div>
+                <div className="p-7">
+                  <div className="flex gap-4 text-sm text-gray-500 mb-3"><span className="text-brand-orange font-semibold">Eletox</span><span>{b.cat}</span></div>
+                  <h4 className="font-heading font-bold text-xl text-brand-dark mb-4 group-hover:text-brand-orange transition">{b.title}</h4>
+                  <a href="#estimate" className="font-heading font-semibold text-brand-navy text-sm">Read More →</a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-brand-orange">
+        <div className="max-w-[1320px] mx-auto px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-6 text-white">
+          <h3 className="font-heading font-bold text-3xl md:text-4xl">Let&apos;s started with Eletox</h3>
+          <a href={phoneHref} className="bg-white text-brand-navy font-heading font-bold px-8 py-4 rounded-sm hover:bg-brand-navy hover:text-white transition">Call Now {phone}</a>
         </div>
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="bg-gray-900 text-gray-300 pt-16 pb-6">
-        <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-8 mb-12">
+      <footer id="contact" className="bg-brand-dark text-gray-300 pt-16 pb-6">
+        <div className="max-w-[1320px] mx-auto px-4 grid md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
           <div>
-            <Logo className="mb-4" showText={false} height={70} logoUrl={company.logo} />
-            <p className="text-sm opacity-80">{company.tagline || "Fast, reliable AC & appliance repair services at your doorstep."}</p>
+            <h4 className="text-white font-heading font-bold text-xl mb-5">About Us</h4>
+            <p className="text-sm text-gray-400">{company.name || "Elehome Solutions PVT. LTD."} — quality AC, appliance and electrical repair service in Jaipur. 24x7 support, same-day visit and transparent pricing.</p>
+            <div className="mt-5 flex gap-3">
+              <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-[#25d366] text-white flex items-center justify-center font-bold">W</a>
+              <a href={phoneHref} className="w-10 h-10 rounded-full bg-brand-orange text-white flex items-center justify-center">☏</a>
+              <a href={`mailto:${email}`} className="w-10 h-10 rounded-full bg-[#4170b7] text-white flex items-center justify-center">✉</a>
+            </div>
           </div>
           <div>
-            <h4 className="text-white font-bold mb-4">About Us</h4>
+            <h4 className="text-white font-heading font-bold text-xl mb-5">Services</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#about" className="hover:text-accent-400">Our Story</a></li>
-              <li><a href="#services" className="hover:text-accent-400">Services</a></li>
-              <li><a href="#book" className="hover:text-accent-400">Book Now</a></li>
+              {navLinks.map((n) => <li key={n.label}><a href={n.href} className="hover:text-brand-orange transition">{n.label}</a></li>)}
             </ul>
           </div>
           <div>
-            <h4 className="text-white font-bold mb-4">Services</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#services" className="hover:text-accent-400">AC Repair</a></li>
-              <li><a href="#services" className="hover:text-accent-400">AC Installation</a></li>
-              <li><a href="#services" className="hover:text-accent-400">Appliance Repair</a></li>
+            <h4 className="text-white font-heading font-bold text-xl mb-5">Contact Info</h4>
+            <ul className="space-y-3 text-sm">
+              <li className="flex gap-2"><span className="text-brand-orange">⌖</span><span>{address}</span></li>
+              <li><span className="text-gray-400">Support:</span> <a href={phoneHref} className="text-white hover:text-brand-orange">{phone}</a></li>
+              <li><span className="text-gray-400">Email:</span> <a href={`mailto:${email}`} className="text-white hover:text-brand-orange">{email}</a></li>
             </ul>
           </div>
           <div>
-            <h4 className="text-white font-bold mb-4">Contact Info</h4>
-            <ul className="space-y-2 text-sm">
-              <li>Phone: {phone}</li>
-              <li>WhatsApp: {company.whatsapp || phone}</li>
-              <li>Email: {company.email || "info@eletox.com"}</li>
-              <li>{company.address || "123 Main Road, New Delhi"}</li>
-            </ul>
+            <h4 className="text-white font-heading font-bold text-xl mb-5">Newsletter</h4>
+            <p className="text-sm text-gray-400 mb-4">Get every week update from Eletox</p>
+            <form onSubmit={(e) => { e.preventDefault(); toast.success("Subscribed!"); }} className="flex">
+              <input type="email" placeholder="Email address" className="flex-1 p-3 text-gray-800 outline-none" required />
+              <button type="submit" className="bg-brand-orange text-white font-heading font-semibold px-4">Subscribe Now</button>
+            </form>
           </div>
         </div>
-        <div className="border-t border-gray-800 pt-6 text-center text-sm opacity-70">
-          <p>&copy; 2026 {company.name || "Eletox AC Services"}. All rights reserved.</p>
+        <div className="border-t border-white/10 pt-6 text-center text-sm text-gray-400 flex flex-col md:flex-row justify-between max-w-[1320px] mx-auto px-4 gap-2">
+          <p>&copy; {new Date().getFullYear()} ELEHOME SOLUTIONS PVT LTD - All Rights Reserved. Designed by Qroplus Pvt. Ltd.</p>
+          <p><a href="#" className="hover:text-white">Privacy Policy</a> | <a href="#" className="hover:text-white">Terms &amp; Conditions</a> | <Link href="/login" className="hover:text-white">Admin Login</Link></p>
         </div>
       </footer>
+
+      {/* Floating WhatsApp */}
+      <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#25d366] text-white flex items-center justify-center shadow-xl text-2xl font-bold hover:scale-110 transition">W</a>
     </main>
   );
 }

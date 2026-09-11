@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Saira_Semi_Condensed } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
+const saira = Saira_Semi_Condensed({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-saira" });
 
 export const metadata: Metadata = {
-  title: "Eletox Service CRM - AC Repair & Maintenance",
-  description: "Book AC repair, installation, gas filling and maintenance services. Fast, reliable AC technicians.",
+  title: "Eletox - Elehome Solutions PVT. LTD. | AC & Appliance Repair Service Jaipur",
+  description: "Elehome provide quality repair service: AC repair, washing machine, microwave, geyser, water purifier and electrician services in Jaipur. 24x7 services.",
+  icons: { icon: "/eletox-assets/favicon.png" },
 };
 
 export const viewport = {
@@ -22,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} ${saira.variable}`}>
         {children}
         <Toaster position="top-right" />
       </body>
