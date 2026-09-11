@@ -80,7 +80,6 @@ export default function Home() {
   const [banners, setBanners] = useState<any[]>([]);
   const [gallery, setGallery] = useState<any[]>([]);
   const [activeBanner, setActiveBanner] = useState(0);
-  const [tab, setTab] = useState<"residential" | "commercial">("residential");
   const [menuOpen, setMenuOpen] = useState(false);
   const [form, setForm] = useState({
     customerName: "", mobile: "", email: "", address: "", city: "Jaipur", pin: "",
@@ -201,61 +200,45 @@ export default function Home() {
       </section>
 
       {/* Residential / Commercial tabs */}
-      <section className="relative z-10 -mt-16 md:-mt-20">
+      <section className="relative z-10 -mt-14 md:-mt-[60px] mb-16">
         <div className="max-w-[1320px] mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 shadow-xl">
             {(["residential", "commercial"] as const).map((t) => (
-              <button key={t} onClick={() => setTab(t)} className={`text-left flex items-center gap-5 p-6 md:p-8 shadow-xl transition ${t === "residential" ? "bg-brand-orange" : "bg-brand-navy"} ${tab === t ? "ring-4 ring-white/70" : ""}`}>
-                <img src={`${A}/icon-man.png`} alt="" className="w-14 h-14 object-contain" />
-                <div className="text-white">
-                  <h3 className="font-heading font-bold text-2xl">{t === "residential" ? "Residential Repair Service" : "Commercial Repair Service"}</h3>
-                  <p className="text-white/85 text-sm mt-1">{t === "residential" ? "Home AC, appliances & electrical repair at your doorstep." : "Offices, shops, hotels & institutions — AMC and on-call repair."}</p>
+              <a key={t} href="#services" className={`flex items-center justify-between gap-6 px-12 py-10 md:py-12 text-white ${t === "residential" ? "bg-brand-orange" : "bg-brand-navy"}`}>
+                <div className="flex items-center gap-3">
+                  <span className="text-5xl opacity-70 leading-none">{t === "residential" ? "⌂" : "▦"}</span>
+                  <h3 className="font-heading font-semibold text-2xl md:text-[32px] leading-tight max-w-[280px]">{t === "residential" ? "Residential Repair Service" : "Commercial Repair Service"}</h3>
                 </div>
-              </button>
+                <span className="w-16 h-16 shrink-0 rounded-full border border-white/40 flex items-center justify-center text-2xl">→</span>
+              </a>
             ))}
-          </div>
-          <div className="mt-6 grid md:grid-cols-2 gap-8 items-center bg-white shadow-xl p-6 md:p-10">
-            <img src={`${A}/icon-service.jpg`} alt="Repair service" className="w-full h-64 md:h-80 object-cover" />
-            <div>
-              <h3 className="font-heading font-bold text-3xl text-brand-dark mb-4">{tab === "residential" ? "Residential Repair Service" : "Commercial Repair Service"}</h3>
-              <p className="mb-6">
-                {tab === "residential"
-                  ? "Elehome technicians reach your home the same day for AC, washing machine, microwave, geyser, water purifier and electrical repair — with genuine spare parts and service warranty."
-                  : "We keep businesses cool and running with scheduled maintenance contracts, bulk AC servicing, water cooler & dispenser repair and 24x7 emergency support for commercial premises."}
-              </p>
-              <ul className="grid sm:grid-cols-2 gap-2 text-sm mb-6">
-                {["Same day visit", "Genuine spare parts", "Trained technicians", "Service warranty"].map((x) => (
-                  <li key={x} className="flex items-center gap-2"><span className="text-brand-orange font-bold">✔</span>{x}</li>
-                ))}
-              </ul>
-              <a href="#estimate" className="inline-block bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-sm hover:bg-brand-navy transition">Appointment Now</a>
-            </div>
           </div>
         </div>
       </section>
 
       {/* Services */}
-      <section id="services" className="pb-20 bg-brand-light -mt-10 md:-mt-16 pt-[120px]">
+      <section id="services" className="py-20 bg-brand-light">
         <div className="max-w-[1320px] mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <SectionTitle sub="Featured Services" title="Popular repair service" />
-            <a href="#estimate" className="self-start md:self-auto bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-sm hover:bg-brand-navy transition">More Services</a>
+            <a href="#estimate" className="self-start md:self-auto bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-sm hover:bg-brand-navy transition">More Service</a>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {serviceList.map((s: any, i: number) => {
-              const inner = (
-                <>
-                  <div className="w-20 h-20 rounded-full bg-brand-light flex items-center justify-center mb-5 overflow-hidden group-hover:bg-brand-orange transition">
-                    {s.image ? <img src={getImageUrl(s.image)} alt={s.title} className="w-14 h-14 object-contain" /> : <span className="text-3xl">❄</span>}
-                  </div>
-                  <h4 className="font-heading font-bold text-xl text-brand-dark mb-2 group-hover:text-brand-orange transition">{s.title}</h4>
-                  <p className="text-sm text-gray-600 mb-4">{s.shortDesc}</p>
-                  <span className="font-heading font-semibold text-brand-navy text-sm">Read More →</span>
-                </>
-              );
-              const cls = "group bg-white p-8 border-b-4 border-transparent hover:border-brand-orange hover:shadow-xl transition block";
-              return s._id ? <Link key={s._id} href={`/service/?slug=${s.slug}`} className={cls}>{inner}</Link> : <a key={i} href="#estimate" className={cls}>{inner}</a>;
-            })}
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div className="grid grid-cols-3 gap-x-4 gap-y-8 max-w-[540px] mx-auto lg:mx-0">
+              {serviceList.map((s: any, i: number) => {
+                const inner = (
+                  <>
+                    <div className="w-full aspect-square bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center p-5 group-hover:shadow-lg group-hover:-translate-y-1 transition">
+                      {s.image ? <img src={getImageUrl(s.image)} alt={s.title} className="w-full h-full object-contain" /> : <span className="text-3xl">❄</span>}
+                    </div>
+                    <p className="mt-3 text-center text-[13px] leading-tight text-gray-700 group-hover:text-brand-orange transition">{s.title}</p>
+                  </>
+                );
+                const cls = "group block";
+                return s._id ? <Link key={s._id} href={`/service/?slug=${s.slug}`} className={cls}>{inner}</Link> : <a key={i} href="#estimate" className={cls}>{inner}</a>;
+              })}
+            </div>
+            <img src={`${A}/icon-service.jpg`} alt="AC repair service" className="w-full h-[420px] lg:h-[510px] object-cover rounded-sm hidden md:block" />
           </div>
         </div>
       </section>
