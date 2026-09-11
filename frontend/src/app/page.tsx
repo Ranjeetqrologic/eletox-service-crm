@@ -446,7 +446,7 @@ export default function Home() {
           </div>
         </div>
         <div className="border-t border-white/10 pt-6 text-center text-sm text-gray-400 flex flex-col md:flex-row justify-between max-w-[1320px] mx-auto px-4 gap-2">
-          <p>&copy; {new Date().getFullYear()} ELEHOME SOLUTIONS PVT LTD - All Rights Reserved. Designed by Qroplus Pvt. Ltd.</p>
+          <p>&copy; {new Date().getFullYear()} ELEHOME SOLUTIONS PVT LTD - All Rights Reserved. Designed by QROLOGIC SOFTECH AND RESEARCH PRIVATE LIMITED</p>
           <p><a href="#" className="hover:text-white">Privacy Policy</a> | <a href="#" className="hover:text-white">Terms &amp; Conditions</a> | <Link href="/login" className="hover:text-white">Admin Login</Link></p>
         </div>
       </footer>
