@@ -8,6 +8,18 @@ import { uploadDocs, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
 
+const BANK_FIELDS = ["bankName", "accountNumber", "ifsc", "upi"] as const;
+
+// Multipart forms send bank fields flat; nest them under bankDetails.
+const pickBankDetails = (data: any) => {
+  const bank: Record<string, string> = { ...(data.bankDetails || {}) };
+  BANK_FIELDS.forEach((f) => {
+    if (data[f] !== undefined && data[f] !== "") bank[f] = data[f];
+    delete data[f];
+  });
+  return Object.keys(bank).length ? bank : undefined;
+};
+
 router.get(
   "/",
   protect,
@@ -72,8 +84,10 @@ router.post(
       phone: staffData.mobile,
     });
 
+    const bankDetails = pickBankDetails(staffData);
     const staff = await Staff.create({
       ...staffData,
+      ...(bankDetails ? { bankDetails } : {}),
       user: user._id,
     });
 
@@ -107,7 +121,9 @@ router.put(
       if (files?.[field]?.[0]) req.body[field] = getFileUrl(files[field][0]);
     });
 
+    const bankDetails = pickBankDetails(req.body);
     Object.assign(staff, req.body);
+    if (bankDetails) staff.bankDetails = { ...(staff.bankDetails || {}), ...bankDetails };
     await staff.save();
 
     if (staff.user && req.body.password) {

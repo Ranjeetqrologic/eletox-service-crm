@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { homeForRole } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
 
@@ -75,7 +76,7 @@ export default function StaffPage() {
       const { data } = await api.post(`/auth/impersonate/${userId}`);
       setAuth(data.user, data.token);
       toast.success("Logged in as staff");
-      router.replace(data.user.role === "technician" ? "/staff/" : "/admin/");
+      router.replace(homeForRole(data.user.role));
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
     }

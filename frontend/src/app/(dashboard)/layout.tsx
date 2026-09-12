@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Logo from "@/components/Logo";
 import api from "@/lib/api";
+import { isAdminRole } from "@/lib/utils";
 import { Bars3Icon, XMarkIcon, HomeIcon, UsersIcon, ClipboardDocumentListIcon, CurrencyRupeeIcon, ChartPieIcon, CogIcon, ArrowRightOnRectangleIcon, WrenchIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -18,13 +19,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     if (!user) {
       router.replace("/login/");
+    } else if (!isAdminRole(user.role) && pathname?.startsWith("/admin")) {
+      router.replace("/staff/");
     }
     api.get("/settings/company").then((res) => setCompany(res.data.data || {})).catch(() => setCompany({}));
-  }, [user, router]);
+  }, [user, router, pathname]);
 
   if (!user) return null;
 
-  const isAdmin = user.role !== "technician";
+  const isAdmin = isAdminRole(user.role);
   const nav = isAdmin
     ? [
         { name: "Dashboard", href: "/admin/", icon: HomeIcon },

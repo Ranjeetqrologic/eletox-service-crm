@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { homeForRole } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 import Logo from "@/components/Logo";
 import toast from "react-hot-toast";
@@ -26,7 +27,7 @@ export default function LoginPage() {
       const { data } = await api.post("/auth/login", { email, password });
       setAuth(data.user, data.token);
       toast.success("Login successful");
-      router.replace(data.user.role === "technician" ? "/staff/" : "/admin/");
+      router.replace(homeForRole(data.user.role));
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Login failed");
     } finally {
