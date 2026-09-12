@@ -17,3 +17,60 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Shared CRM (dashboard) styling: applied to all admin/staff pages via the .crm wrapper */
+@layer components {
+  .crm h1 {
+    @apply text-2xl font-bold text-gray-800 tracking-tight;
+  }
+  .crm h2 {
+    @apply text-gray-800;
+  }
+  .crm input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  .crm select,
+  .crm textarea {
+    @apply border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-gray-800 placeholder-gray-400 shadow-sm transition;
+  }
+  .crm input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+  .crm select:focus,
+  .crm textarea:focus {
+    @apply outline-none ring-2 ring-primary-500/40 border-primary-500;
+  }
+  .crm input[type="file"] {
+    @apply text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-primary-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary-700 hover:file:bg-primary-100;
+  }
+  .crm input[type="checkbox"] {
+    @apply h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500;
+  }
+  .crm label {
+    @apply text-gray-700;
+  }
+  .crm form button[type="submit"],
+  .crm form > button:not([type]),
+  .crm .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg font-medium shadow-sm transition hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+  .crm main .rounded-xl.shadow {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    border: 1px solid rgb(229 231 235);
+  }
+  .crm table {
+    @apply text-sm text-gray-700;
+  }
+  .crm thead {
+    @apply bg-gray-50 text-xs uppercase tracking-wide text-gray-500;
+  }
+  .crm thead th {
+    @apply font-semibold;
+  }
+  .crm tbody tr {
+    @apply border-t border-gray-100 transition;
+  }
+  .crm tbody tr:hover {
+    @apply bg-gray-50;
+  }
+  .crm td button,
+  .crm td a {
+    @apply font-medium;
+  }
+}

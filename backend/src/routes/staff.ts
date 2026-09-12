@@ -122,15 +122,27 @@ router.put(
     });
 
     const bankDetails = pickBankDetails(req.body);
+    if (req.body.password === "") delete req.body.password;
+    if (req.body.employeeId && req.body.employeeId !== staff.employeeId) {
+      const dup = await Staff.findOne({ employeeId: req.body.employeeId, _id: { $ne: staff._id } });
+      if (dup) throw new AppError("Employee ID already exists", 400);
+    }
+    if (req.body.email) {
+      const dupUser = await User.findOne({ email: req.body.email, _id: { $ne: staff.user } });
+      if (dupUser) throw new AppError("Email already registered", 400);
+    }
     Object.assign(staff, req.body);
     if (bankDetails) staff.bankDetails = { ...(staff.bankDetails || {}), ...bankDetails };
     await staff.save();
 
-    if (staff.user && (req.body.password || req.body.role)) {
+    if (staff.user) {
       const user = await User.findById(staff.user);
       if (user) {
         if (req.body.password) user.password = req.body.password;
         if (req.body.role) user.role = req.body.role;
+        if (req.body.name) user.name = req.body.name;
+        if (req.body.email) user.email = req.body.email;
+        if (req.body.mobile) user.phone = req.body.mobile;
         await user.save();
       }
     }

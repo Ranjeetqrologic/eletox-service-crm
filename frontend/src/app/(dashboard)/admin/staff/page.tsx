@@ -22,6 +22,7 @@ export default function StaffPage() {
   const [roleEdit, setRoleEdit] = useState<any>(null);
   const [roleForm, setRoleForm] = useState<{ roleId: string; role: string; permissions: string[] }>({ roleId: "", role: "", permissions: [] });
   const [roleSaving, setRoleSaving] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState<any>({
     employeeId: "",
     name: "",
@@ -64,19 +65,52 @@ export default function StaffPage() {
     });
 
     try {
-      await api.post("/staff", data, { headers: { "Content-Type": "multipart/form-data" } });
-      toast.success("Staff registered");
-      setForm({
-        employeeId: "", name: "", email: "", password: "", mobile: "", address: "", role: "", roleId: "",
-        joiningDate: "", emergencyContact: "", bankName: "", accountNumber: "", ifsc: "", upi: "",
-      });
-      setDocs({});
+      if (editing) {
+        await api.put(`/staff/${editing._id}`, data, { headers: { "Content-Type": "multipart/form-data" } });
+        toast.success("Staff updated");
+      } else {
+        await api.post("/staff", data, { headers: { "Content-Type": "multipart/form-data" } });
+        toast.success("Staff registered");
+      }
+      resetForm();
       fetchStaff();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setEditing(null);
+    setForm({
+      employeeId: "", name: "", email: "", password: "", mobile: "", address: "", role: "", roleId: "",
+      joiningDate: "", emergencyContact: "", bankName: "", accountNumber: "", ifsc: "", upi: "",
+    });
+    setDocs({});
+  };
+
+  const startEdit = (s: any) => {
+    const current = roles.find((r) => r._id === s.roleId) || roles.find((r) => r.name === s.role);
+    setEditing(s);
+    setForm({
+      employeeId: s.employeeId || "",
+      name: s.name || "",
+      email: s.user?.email || s.email || "",
+      password: "",
+      mobile: s.mobile || "",
+      address: s.address || "",
+      role: s.role || "",
+      roleId: current?._id || "",
+      joiningDate: s.joiningDate ? String(s.joiningDate).slice(0, 10) : "",
+      emergencyContact: s.emergencyContact || "",
+      bankName: s.bankDetails?.bankName || "",
+      accountNumber: s.bankDetails?.accountNumber || "",
+      ifsc: s.bankDetails?.ifsc || "",
+      upi: s.bankDetails?.upi || "",
+    });
+    setDocs({});
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const loginAs = async (userId: string) => {
@@ -140,12 +174,15 @@ export default function StaffPage() {
       <h1 className="text-2xl font-bold">Staff Management</h1>
 
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
-        <h2 className="font-semibold text-lg">Register New Staff</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-lg">{editing ? `Edit Staff - ${editing.name}` : "Register New Staff"}</h2>
+          {editing && <button type="button" onClick={resetForm} className="text-sm text-gray-500 hover:underline">Cancel edit</button>}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input className="border p-2 rounded" placeholder="Employee ID*" value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })} required />
           <input className="border p-2 rounded" placeholder="Name*" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           <input className="border p-2 rounded" placeholder="Email*" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-          <input className="border p-2 rounded" type="password" placeholder="Password*" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+          <input className="border p-2 rounded" type="password" placeholder={editing ? "New Password (leave blank to keep)" : "Password*"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required={!editing} />
           <input className="border p-2 rounded" placeholder="Mobile*" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} required />
           <input className="border p-2 rounded" placeholder="Address*" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
           <select
@@ -173,7 +210,10 @@ export default function StaffPage() {
             </label>
           ))}
         </div>
-        <button className="bg-primary-600 text-white px-4 py-2 rounded" disabled={loading}>{loading ? "Saving..." : "Register Staff"}</button>
+        <div className="flex gap-2">
+          <button className="bg-primary-600 text-white px-4 py-2 rounded" disabled={loading}>{loading ? "Saving..." : editing ? "Update Staff" : "Register Staff"}</button>
+          {editing && <button type="button" onClick={resetForm} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>}
+        </div>
       </form>
 
       <div className="bg-white rounded-xl shadow overflow-x-auto">
@@ -202,6 +242,7 @@ export default function StaffPage() {
                   {s.user?._id && (
                     <button onClick={() => loginAs(s.user._id)} className="text-blue-600 hover:underline">Login As</button>
                   )}
+                  <button onClick={() => startEdit(s)} className="text-indigo-600 hover:underline">Edit</button>
                   <button onClick={() => setShowKyc(s)} className="text-green-600 hover:underline">KYC & Bank</button>
                   <button onClick={() => openRoleEdit(s)} className="text-purple-600 hover:underline">Role & Permissions</button>
                   <button onClick={() => deactivate(s._id)} className="text-red-600 hover:underline">Deactivate</button>

@@ -4,7 +4,7 @@ export interface User {
   _id: string;
   name: string;
   email: string;
-  role: "superadmin" | "admin" | "manager" | "technician" | "account";
+  role: string;
 }
 
 const readStoredAuth = () => {
