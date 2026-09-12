@@ -32,9 +32,14 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
+const BUILTIN_ROLES = ["superadmin", "admin", "manager", "technician", "account"];
+
+// Custom roles created from the Roles page get manager-level access.
+const effectiveRole = (role: string) => (BUILTIN_ROLES.includes(role) ? role : "manager");
+
 export const restrictTo = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    if (!req.user || !roles.includes(effectiveRole(req.user.role))) {
       return res.status(403).json({ success: false, message: "Not allowed" });
     }
     next();

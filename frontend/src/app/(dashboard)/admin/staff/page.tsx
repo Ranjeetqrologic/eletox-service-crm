@@ -3,8 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { homeForRole } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
+
+const availablePermissions = [
+  "dashboard", "leads", "lead_status", "staff", "roles", "services",
+  "payments", "reports", "settings", "banners", "gallery",
+];
 
 export default function StaffPage() {
   const router = useRouter();
@@ -13,6 +19,10 @@ export default function StaffPage() {
   const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [showKyc, setShowKyc] = useState<any>(null);
+  const [roleEdit, setRoleEdit] = useState<any>(null);
+  const [roleForm, setRoleForm] = useState<{ roleId: string; role: string; permissions: string[] }>({ roleId: "", role: "", permissions: [] });
+  const [roleSaving, setRoleSaving] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState<any>({
     employeeId: "",
     name: "",
@@ -55,13 +65,14 @@ export default function StaffPage() {
     });
 
     try {
-      await api.post("/staff", data, { headers: { "Content-Type": "multipart/form-data" } });
-      toast.success("Staff registered");
-      setForm({
-        employeeId: "", name: "", email: "", password: "", mobile: "", address: "", role: "", roleId: "",
-        joiningDate: "", emergencyContact: "", bankName: "", accountNumber: "", ifsc: "", upi: "",
-      });
-      setDocs({});
+      if (editing) {
+        await api.put(`/staff/${editing._id}`, data, { headers: { "Content-Type": "multipart/form-data" } });
+        toast.success("Staff updated");
+      } else {
+        await api.post("/staff", data, { headers: { "Content-Type": "multipart/form-data" } });
+        toast.success("Staff registered");
+      }
+      resetForm();
       fetchStaff();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
@@ -70,14 +81,80 @@ export default function StaffPage() {
     }
   };
 
+  const resetForm = () => {
+    setEditing(null);
+    setForm({
+      employeeId: "", name: "", email: "", password: "", mobile: "", address: "", role: "", roleId: "",
+      joiningDate: "", emergencyContact: "", bankName: "", accountNumber: "", ifsc: "", upi: "",
+    });
+    setDocs({});
+  };
+
+  const startEdit = (s: any) => {
+    const current = roles.find((r) => r._id === s.roleId) || roles.find((r) => r.name === s.role);
+    setEditing(s);
+    setForm({
+      employeeId: s.employeeId || "",
+      name: s.name || "",
+      email: s.user?.email || s.email || "",
+      password: "",
+      mobile: s.mobile || "",
+      address: s.address || "",
+      role: s.role || "",
+      roleId: current?._id || "",
+      joiningDate: s.joiningDate ? String(s.joiningDate).slice(0, 10) : "",
+      emergencyContact: s.emergencyContact || "",
+      bankName: s.bankDetails?.bankName || "",
+      accountNumber: s.bankDetails?.accountNumber || "",
+      ifsc: s.bankDetails?.ifsc || "",
+      upi: s.bankDetails?.upi || "",
+    });
+    setDocs({});
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const loginAs = async (userId: string) => {
     try {
       const { data } = await api.post(`/auth/impersonate/${userId}`);
       setAuth(data.user, data.token);
       toast.success("Logged in as staff");
-      router.replace(data.user.role === "technician" ? "/staff/" : "/admin/");
+      router.replace(homeForRole(data.user.role));
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
+    }
+  };
+
+  const openRoleEdit = (s: any) => {
+    const current = roles.find((r) => r._id === s.roleId) || roles.find((r) => r.name === s.role);
+    setRoleForm({ roleId: current?._id || "", role: current?.name || s.role || "", permissions: current?.permissions || [] });
+    setRoleEdit(s);
+  };
+
+  const selectRole = (roleId: string) => {
+    const r = roles.find((x) => x._id === roleId);
+    setRoleForm({ roleId, role: r?.name || "", permissions: r?.permissions || [] });
+  };
+
+  const togglePermission = (perm: string) => {
+    const perms = new Set(roleForm.permissions);
+    if (perms.has(perm)) perms.delete(perm); else perms.add(perm);
+    setRoleForm({ ...roleForm, permissions: Array.from(perms) });
+  };
+
+  const saveRole = async () => {
+    if (!roleForm.roleId) return toast.error("Select a role");
+    setRoleSaving(true);
+    try {
+      await api.put(`/roles/${roleForm.roleId}`, { permissions: roleForm.permissions });
+      await api.put(`/staff/${roleEdit._id}`, { role: roleForm.role, roleId: roleForm.roleId });
+      toast.success("Role & permissions updated");
+      setRoleEdit(null);
+      fetchStaff();
+      fetchRoles();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    } finally {
+      setRoleSaving(false);
     }
   };
 
@@ -97,12 +174,15 @@ export default function StaffPage() {
       <h1 className="text-2xl font-bold">Staff Management</h1>
 
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
-        <h2 className="font-semibold text-lg">Register New Staff</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-lg">{editing ? `Edit Staff - ${editing.name}` : "Register New Staff"}</h2>
+          {editing && <button type="button" onClick={resetForm} className="text-sm text-gray-500 hover:underline">Cancel edit</button>}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input className="border p-2 rounded" placeholder="Employee ID*" value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })} required />
           <input className="border p-2 rounded" placeholder="Name*" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           <input className="border p-2 rounded" placeholder="Email*" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-          <input className="border p-2 rounded" type="password" placeholder="Password*" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+          <input className="border p-2 rounded" type="password" placeholder={editing ? "New Password (leave blank to keep)" : "Password*"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required={!editing} />
           <input className="border p-2 rounded" placeholder="Mobile*" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} required />
           <input className="border p-2 rounded" placeholder="Address*" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
           <select
@@ -130,7 +210,10 @@ export default function StaffPage() {
             </label>
           ))}
         </div>
-        <button className="bg-primary-600 text-white px-4 py-2 rounded" disabled={loading}>{loading ? "Saving..." : "Register Staff"}</button>
+        <div className="flex gap-2">
+          <button className="bg-primary-600 text-white px-4 py-2 rounded" disabled={loading}>{loading ? "Saving..." : editing ? "Update Staff" : "Register Staff"}</button>
+          {editing && <button type="button" onClick={resetForm} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>}
+        </div>
       </form>
 
       <div className="bg-white rounded-xl shadow overflow-x-auto">
@@ -159,7 +242,9 @@ export default function StaffPage() {
                   {s.user?._id && (
                     <button onClick={() => loginAs(s.user._id)} className="text-blue-600 hover:underline">Login As</button>
                   )}
+                  <button onClick={() => startEdit(s)} className="text-indigo-600 hover:underline">Edit</button>
                   <button onClick={() => setShowKyc(s)} className="text-green-600 hover:underline">KYC & Bank</button>
+                  <button onClick={() => openRoleEdit(s)} className="text-purple-600 hover:underline">Role & Permissions</button>
                   <button onClick={() => deactivate(s._id)} className="text-red-600 hover:underline">Deactivate</button>
                 </td>
               </tr>
@@ -167,6 +252,36 @@ export default function StaffPage() {
           </tbody>
         </table>
       </div>
+
+      {roleEdit && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Role & Permissions - {roleEdit.name}</h2>
+              <button onClick={() => setRoleEdit(null)} className="text-gray-500 hover:text-gray-700">Close</button>
+            </div>
+            <label className="block text-sm font-medium mb-1">Role</label>
+            <select className="border p-2 rounded w-full mb-4" value={roleForm.roleId} onChange={(e) => selectRole(e.target.value)}>
+              <option value="">Select Role</option>
+              {roles.map((r) => <option key={r._id} value={r._id}>{r.name}</option>)}
+            </select>
+            <div className="font-medium text-sm mb-2">Permissions</div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm mb-4">
+              {availablePermissions.map((perm) => (
+                <label key={perm} className="flex items-center gap-2">
+                  <input type="checkbox" checked={roleForm.permissions.includes(perm)} onChange={() => togglePermission(perm)} disabled={!roleForm.roleId} />
+                  <span className="capitalize">{perm.replace("_", " ")}</span>
+                </label>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mb-4">Permissions apply to the selected role (all staff with this role).</p>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setRoleEdit(null)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+              <button onClick={saveRole} disabled={roleSaving} className="bg-primary-600 text-white px-4 py-2 rounded">{roleSaving ? "Saving..." : "Save"}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showKyc && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">

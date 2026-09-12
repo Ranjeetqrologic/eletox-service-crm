@@ -138,8 +138,8 @@ export default function LeadsPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <h1 className="text-2xl font-bold">Lead Management</h1>
-        <div className="flex gap-2">
-          <input className="border p-2 rounded" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <div className="flex flex-wrap gap-2">
+          <input className="border p-2 rounded flex-1 min-w-[140px]" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
           <select className="border p-2 rounded" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             <option value="">All Status</option>
             {statuses.map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
