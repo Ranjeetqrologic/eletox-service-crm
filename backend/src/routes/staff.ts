@@ -126,13 +126,16 @@ router.put(
     if (bankDetails) staff.bankDetails = { ...(staff.bankDetails || {}), ...bankDetails };
     await staff.save();
 
-    if (staff.user && req.body.password) {
+    if (staff.user && (req.body.password || req.body.role)) {
       const user = await User.findById(staff.user);
       if (user) {
-        user.password = req.body.password;
+        if (req.body.password) user.password = req.body.password;
+        if (req.body.role) user.role = req.body.role;
         await user.save();
       }
     }
+
+    await staff.populate("user", "name email role isActive");
 
     res.json({ success: true, data: staff });
   })
