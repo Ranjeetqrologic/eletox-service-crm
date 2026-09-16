@@ -21,6 +21,9 @@ export default function LeadsPage() {
   const [form, setForm] = useState<any>({ status: "new", priority: "medium", source: "manual" });
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState(urlStatus);
+  const [filterStaff, setFilterStaff] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [jobModal, setJobModal] = useState<any>(null);
   const [loadingJob, setLoadingJob] = useState(false);
   const [locationModal, setLocationModal] = useState<any>(null);
@@ -141,7 +144,10 @@ export default function LeadsPage() {
   const filteredLeads = leads.filter((l) => {
     const matchesSearch = [l.customerName, l.mobile, l.leadId].some((x) => x?.toLowerCase().includes(search.toLowerCase()));
     const matchesStatus = !filterStatus || l.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const matchesStaff = !filterStaff || (filterStaff === "unassigned" ? !l.assignedStaff : l.assignedStaff?._id === filterStaff);
+    const created = l.createdAt ? l.createdAt.split("T")[0] : "";
+    const matchesDate = (!fromDate || created >= fromDate) && (!toDate || created <= toDate);
+    return matchesSearch && matchesStatus && matchesStaff && matchesDate;
   });
 
   return (
@@ -154,6 +160,13 @@ export default function LeadsPage() {
             <option value="">All Status</option>
             {statuses.map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
           </select>
+          <select className="border p-2 rounded" value={filterStaff} onChange={(e) => setFilterStaff(e.target.value)}>
+            <option value="">All Staff</option>
+            <option value="unassigned">Unassigned</option>
+            {staff.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
+          </select>
+          <input type="date" className="border p-2 rounded" value={fromDate} onChange={(e) => setFromDate(e.target.value)} title="From date" />
+          <input type="date" className="border p-2 rounded" value={toDate} onChange={(e) => setToDate(e.target.value)} title="To date" />
           <button onClick={sendReminders} className="bg-yellow-500 text-white px-4 py-2 rounded">Remind</button>
           <button onClick={exportCSV} className="bg-green-600 text-white px-4 py-2 rounded">Export</button>
           <button onClick={() => setShowForm(!showForm)} className="bg-primary-600 text-white px-4 py-2 rounded">{showForm ? "Close" : "+ New Lead"}</button>

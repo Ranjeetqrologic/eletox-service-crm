@@ -8,6 +8,8 @@ export default function LeadStatusPage() {
   const [statuses, setStatuses] = useState<any[]>([]);
   const [form, setForm] = useState<any>({ name: "", label: "", color: "#6B7280", order: 0, isActive: true });
   const [editing, setEditing] = useState<any>(null);
+  const [search, setSearch] = useState("");
+  const filteredStatuses = statuses.filter((s) => !search || [s.name, s.label].some((x: string) => x?.toLowerCase().includes(search.toLowerCase())));
 
   const fetchStatuses = () => api.get("/lead-status/all").then((res) => setStatuses(res.data.data));
 
@@ -51,7 +53,12 @@ export default function LeadStatusPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Lead Status Management</h1>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 className="text-2xl font-bold">Lead Status Management</h1>
+        <div className="flex flex-wrap gap-2">
+          <input className="border p-2 rounded min-w-[200px]" placeholder="Search status..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-4 rounded-xl shadow grid md:grid-cols-6 gap-4 items-end">
         <input required disabled={!!editing} placeholder="Status key (e.g. half_done)" className="border p-2 rounded" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -84,7 +91,7 @@ export default function LeadStatusPage() {
             </tr>
           </thead>
           <tbody>
-            {statuses.map((s) => (
+            {filteredStatuses.map((s) => (
               <tr key={s._id} className="border-t">
                 <td className="p-3">{s.name}</td>
                 <td className="p-3">{s.label}</td>

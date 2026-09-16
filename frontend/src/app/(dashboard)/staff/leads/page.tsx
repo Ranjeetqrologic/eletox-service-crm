@@ -26,6 +26,20 @@ export default function StaffLeads() {
   const [report, setReport] = useState<any>({});
   const [photos, setPhotos] = useState<Record<string, File[]>>({});
   const [services, setServices] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  const jobStatuses = Array.from(new Set(jobs.map((j) => j.status))).filter(Boolean) as string[];
+  const filteredJobs = jobs.filter((j) => {
+    const q = search.toLowerCase();
+    const matchesSearch = !q || [j.lead?.customerName, j.lead?.mobile, j.lead?.leadId, j.lead?.address, j.lead?.city, j.machineSerialNo, j.lead?.machineSerialNo].some((x: string) => x?.toLowerCase().includes(q));
+    const matchesStatus = !filterStatus || j.status === filterStatus;
+    const created = j.createdAt ? j.createdAt.split("T")[0] : "";
+    const matchesDate = (!fromDate || created >= fromDate) && (!toDate || created <= toDate);
+    return matchesSearch && matchesStatus && matchesDate;
+  });
 
   const openReport = (job: any) => {
     setSelected(job);
@@ -103,7 +117,18 @@ export default function StaffLeads() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">My Assigned Jobs</h1>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 className="text-2xl font-bold">My Assigned Jobs</h1>
+        <div className="flex flex-wrap gap-2">
+          <input className="border p-2 rounded flex-1 min-w-[160px]" placeholder="Search customer, mobile, ID, serial..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select className="border p-2 rounded" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+            <option value="">All Status</option>
+            {jobStatuses.map((st) => <option key={st} value={st}>{st}</option>)}
+          </select>
+          <input type="date" className="border p-2 rounded" value={fromDate} onChange={(e) => setFromDate(e.target.value)} title="From date" />
+          <input type="date" className="border p-2 rounded" value={toDate} onChange={(e) => setToDate(e.target.value)} title="To date" />
+        </div>
+      </div>
 
       {followUpsToday.length > 0 && (
         <div className="bg-yellow-50 border border-yellow-300 p-4 rounded-xl">
@@ -132,7 +157,7 @@ export default function StaffLeads() {
               </tr>
             </thead>
             <tbody>
-              {jobs.map((j) => (
+              {filteredJobs.map((j) => (
                 <tr key={j._id} className="border-t">
                   <td className="p-3">{j.lead?.leadId}</td>
                   <td className="p-3">
@@ -173,7 +198,7 @@ export default function StaffLeads() {
         </div>
 
         <div className="md:hidden divide-y">
-          {jobs.map((j) => (
+          {filteredJobs.map((j) => (
             <div key={j._id} className="p-4 space-y-2">
               <div className="flex justify-between items-start">
                 <div>

@@ -36,6 +36,17 @@ export default function StaffPage() {
     upi: "",
   });
   const [docs, setDocs] = useState<any>({});
+  const [search, setSearch] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [filterActive, setFilterActive] = useState("");
+
+  const filteredStaff = staff.filter((s) => {
+    const q = search.toLowerCase();
+    const matchesSearch = !q || [s.name, s.email, s.mobile, s.employeeId].some((x: string) => x?.toLowerCase().includes(q));
+    const matchesRole = !filterRole || s.role === filterRole;
+    const matchesActive = !filterActive || (filterActive === "active" ? s.isActive : !s.isActive);
+    return matchesSearch && matchesRole && matchesActive;
+  });
 
   const fetchStaff = () => {
     api.get("/staff").then((res) => setStaff(res.data.data));
@@ -172,7 +183,21 @@ export default function StaffPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Staff Management</h1>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 className="text-2xl font-bold">Staff Management</h1>
+        <div className="flex flex-wrap gap-2">
+          <input className="border p-2 rounded flex-1 min-w-[160px]" placeholder="Search name, email, mobile, ID..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select className="border p-2 rounded" value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
+            <option value="">All Roles</option>
+            {roles.map((r) => <option key={r._id} value={r.name}>{r.name}</option>)}
+          </select>
+          <select className="border p-2 rounded" value={filterActive} onChange={(e) => setFilterActive(e.target.value)}>
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
         <div className="flex items-center justify-between">
@@ -231,7 +256,7 @@ export default function StaffPage() {
             </tr>
           </thead>
           <tbody>
-            {staff.map((s) => (
+            {filteredStaff.map((s) => (
               <tr key={s._id} className="border-t">
                 <td className="p-3">{s.employeeId}</td>
                 <td className="p-3">{s.name}</td>
