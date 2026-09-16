@@ -89,9 +89,27 @@ export default function LeadsPage() {
     }
   };
 
-  const updateLocation = async (leadId: string, lat: string, lng: string) => {
+  const [geoLoading, setGeoLoading] = useState(false);
+  const findAddress = async () => {
+    const q = (locationModal?.address || "").trim();
+    if (!q) return toast.error("Type a location first");
+    setGeoLoading(true);
     try {
-      await api.put(`/leads/${leadId}`, { lat: lat ? parseFloat(lat) : undefined, lng: lng ? parseFloat(lng) : undefined });
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`, { headers: { Accept: "application/json" } });
+      const results = await res.json();
+      if (!results?.length) return toast.error("Location not found, try a more specific address");
+      setLocationModal({ ...locationModal, lat: results[0].lat, lng: results[0].lon });
+      toast.success("Location found");
+    } catch {
+      toast.error("Could not search location");
+    } finally {
+      setGeoLoading(false);
+    }
+  };
+
+  const updateLocation = async (leadId: string, lat: string, lng: string, address?: string) => {
+    try {
+      await api.put(`/leads/${leadId}`, { lat: lat ? parseFloat(lat) : undefined, lng: lng ? parseFloat(lng) : undefined, ...(address?.trim() ? { address: address.trim() } : {}) });
       toast.success("Location updated");
       fetchLeads();
     } catch (err: any) {
@@ -255,6 +273,16 @@ export default function LeadsPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Set Location - {locationModal.leadId}</h2>
             <div className="space-y-3">
+              <div className="flex gap-2">
+                <input
+                  placeholder="Type location / address (e.g. Malviya Nagar, Jaipur)"
+                  className="border p-2 rounded w-full"
+                  value={locationModal.address || ""}
+                  onChange={(e) => setLocationModal({ ...locationModal, address: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === "Enter") findAddress(); }}
+                />
+                <button onClick={findAddress} disabled={geoLoading} className="bg-blue-600 text-white px-3 py-2 rounded whitespace-nowrap disabled:opacity-60">{geoLoading ? "..." : "Find"}</button>
+              </div>
               <input
                 type="number"
                 step="any"
@@ -288,7 +316,7 @@ export default function LeadsPage() {
               </button>
             </div>
             <div className="mt-4 flex gap-3">
-              <button onClick={() => { updateLocation(locationModal._id, locationModal.lat, locationModal.lng); setLocationModal(null); }} className="bg-primary-600 text-white px-4 py-2 rounded">Save Location</button>
+              <button onClick={() => { updateLocation(locationModal._id, locationModal.lat, locationModal.lng, locationModal.address); setLocationModal(null); }} className="bg-primary-600 text-white px-4 py-2 rounded">Save Location</button>
               <button onClick={() => setLocationModal(null)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
             </div>
           </div>
