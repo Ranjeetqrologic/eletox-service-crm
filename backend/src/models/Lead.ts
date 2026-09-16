@@ -33,6 +33,7 @@ export interface ILead extends Document {
   cancelledReason?: string;
   followUpDate?: Date;
   followUpNote?: string;
+  machineSerialNo?: string;
   nextCallDate?: Date;
   images: string[];
   createdAt: Date;
@@ -78,6 +79,7 @@ const LeadSchema = new Schema<ILead>(
     cancelledReason: { type: String },
     followUpDate: { type: Date },
     followUpNote: { type: String },
+    machineSerialNo: { type: String, trim: true },
     nextCallDate: { type: Date },
     images: [{ type: String }],
   },

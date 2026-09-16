@@ -4,11 +4,62 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 
+const SERVICE_OPTIONS = [
+  "AC Service",
+  "Installation",
+  "Uninstallation",
+  "Gas Topup",
+  "Gas Full Charge",
+  "Copper Pipe Fitting",
+  "Other",
+];
+
+const PHOTO_FIELDS: [string, string][] = [
+  ["workingPhotos", "Photos"],
+];
+
 export default function StaffLeads() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [selected, setSelected] = useState<any>(null);
   const [report, setReport] = useState<any>({});
-  const [photos, setPhotos] = useState<any>({});
+  const [photos, setPhotos] = useState<Record<string, File[]>>({});
+  const [services, setServices] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  const jobStatuses = Array.from(new Set(jobs.map((j) => j.status))).filter(Boolean) as string[];
+  const filteredJobs = jobs.filter((j) => {
+    const q = search.toLowerCase();
+    const matchesSearch = !q || [j.lead?.customerName, j.lead?.mobile, j.lead?.leadId, j.lead?.address, j.lead?.city, j.machineSerialNo, j.lead?.machineSerialNo].some((x: string) => x?.toLowerCase().includes(q));
+    const matchesStatus = !filterStatus || j.status === filterStatus;
+    const created = j.createdAt ? j.createdAt.split("T")[0] : "";
+    const matchesDate = (!fromDate || created >= fromDate) && (!toDate || created <= toDate);
+    return matchesSearch && matchesStatus && matchesDate;
+  });
+
+  const openReport = (job: any) => {
+    setSelected(job);
+    setServices(job.servicesDone || []);
+    setReport({
+      machineSerialNo: job.machineSerialNo || job.lead?.machineSerialNo || "",
+      customerFeedback: job.customerFeedback || "Customer satisfied with the service",
+      rating: job.rating || 5,
+    });
+    setPhotos({});
+  };
+
+  const toggleService = (name: string) =>
+    setServices((prev) => (prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name]));
+
+  const addPhotos = (field: string, files: FileList | null) => {
+    if (!files) return;
+    setPhotos((prev) => ({ ...prev, [field]: [...(prev[field] || []), ...Array.from(files)] }));
+  };
+
+  const removePhoto = (field: string, index: number) =>
+    setPhotos((prev) => ({ ...prev, [field]: (prev[field] || []).filter((_, i) => i !== index) }));
 
   const fetchJobs = () => api.get("/jobs").then((res) => setJobs(res.data.data));
 
@@ -43,16 +94,16 @@ export default function StaffLeads() {
         if (report[key] !== undefined && report[key] !== "") data.append(key, report[key]);
       });
       data.append("status", status);
-      ["beforePhotos", "workingPhotos", "afterPhotos"].forEach((field) => {
-        if (photos[field]) {
-          Array.from(photos[field]).forEach((file: any) => data.append(field, file));
-        }
+      data.append("servicesDone", JSON.stringify(services));
+      PHOTO_FIELDS.forEach(([field]) => {
+        (photos[field] || []).forEach((file) => data.append(field, file));
       });
       await api.put(`/jobs/${jobId}/report`, data, { headers: { "Content-Type": "multipart/form-data" } });
       toast.success(status === "completed" ? "Job completed" : "Report saved");
       setSelected(null);
       setReport({});
       setPhotos({});
+      setServices([]);
       fetchJobs();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
@@ -64,7 +115,18 @@ export default function StaffLeads() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">My Assigned Jobs</h1>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 className="text-2xl font-bold">My Assigned Jobs</h1>
+        <div className="flex flex-wrap gap-2">
+          <input className="border p-2 rounded flex-1 min-w-[160px]" placeholder="Search customer, mobile, ID, serial..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select className="border p-2 rounded" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+            <option value="">All Status</option>
+            {jobStatuses.map((st) => <option key={st} value={st}>{st}</option>)}
+          </select>
+          <input type="date" className="border p-2 rounded" value={fromDate} onChange={(e) => setFromDate(e.target.value)} title="From date" />
+          <input type="date" className="border p-2 rounded" value={toDate} onChange={(e) => setToDate(e.target.value)} title="To date" />
+        </div>
+      </div>
 
       {followUpsToday.length > 0 && (
         <div className="bg-yellow-50 border border-yellow-300 p-4 rounded-xl">
@@ -86,13 +148,14 @@ export default function StaffLeads() {
               <tr>
                 <th className="p-3 text-left">Lead ID</th>
                 <th className="p-3 text-left">Customer</th>
+                <th className="p-3 text-left">Machine Serial No.</th>
                 <th className="p-3 text-left">Status</th>
                 <th className="p-3 text-left">Address</th>
                 <th className="p-3 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {jobs.map((j) => (
+              {filteredJobs.map((j) => (
                 <tr key={j._id} className="border-t">
                   <td className="p-3">{j.lead?.leadId}</td>
                   <td className="p-3">
@@ -104,6 +167,7 @@ export default function StaffLeads() {
                       </a>
                     </div>
                   </td>
+                  <td className="p-3">{j.machineSerialNo || j.lead?.machineSerialNo || "-"}</td>
                   <td className="p-3">{j.status}</td>
                   <td className="p-3">
                     <div>{j.lead?.address}, {j.lead?.city}</div>
@@ -121,7 +185,7 @@ export default function StaffLeads() {
                       <button onClick={() => checkIn(j._id)} className="text-blue-600 hover:underline">Check In</button>
                     )}
                     {["working", "started", "on_the_way", "reached", "half_done", "need_parts", "pending", "follow_up"].includes(j.status) && (
-                      <button onClick={() => setSelected(j)} className="text-green-600 hover:underline">Report</button>
+                      <button onClick={() => openReport(j)} className="text-green-600 hover:underline">Report</button>
                     )}
                     {j.status === "completed" && <span className="text-gray-500">Completed</span>}
                   </td>
@@ -132,7 +196,7 @@ export default function StaffLeads() {
         </div>
 
         <div className="md:hidden divide-y">
-          {jobs.map((j) => (
+          {filteredJobs.map((j) => (
             <div key={j._id} className="p-4 space-y-2">
               <div className="flex justify-between items-start">
                 <div>
@@ -146,6 +210,7 @@ export default function StaffLeads() {
                 {j.lead?.mobile}
               </a>
               <div className="text-sm text-gray-600">{j.lead?.address}, {j.lead?.city}</div>
+              <div className="text-xs text-gray-500">Machine Serial No.: {j.machineSerialNo || j.lead?.machineSerialNo || "-"}</div>
               {(j.lead?.lat || j.lead?.lng) && (
                 <a href={`https://www.google.com/maps/dir/?api=1&destination=${j.lead?.lat},${j.lead?.lng}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-green-600 text-sm">
                   Google Map Directions
@@ -159,7 +224,7 @@ export default function StaffLeads() {
                   <button onClick={() => checkIn(j._id)} className="bg-blue-600 text-white px-3 py-1 rounded text-sm">Check In</button>
                 )}
                 {["working", "started", "on_the_way", "reached", "half_done", "need_parts", "pending", "follow_up"].includes(j.status) && (
-                  <button onClick={() => setSelected(j)} className="bg-green-600 text-white px-3 py-1 rounded text-sm">Report</button>
+                  <button onClick={() => openReport(j)} className="bg-green-600 text-white px-3 py-1 rounded text-sm">Report</button>
                 )}
                 {j.status === "completed" && <span className="text-gray-500 text-sm">Completed</span>}
               </div>
@@ -174,8 +239,38 @@ export default function StaffLeads() {
             <h2 className="text-xl font-bold mb-4">Work Report - {selected.lead?.leadId}</h2>
             <div className="space-y-3">
               <textarea placeholder="Work Description" className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, workDescription: e.target.value })} />
-              <textarea placeholder="Repair Notes" className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, repairNotes: e.target.value })} />
-              <input placeholder="Gas Filled" className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, gasFilled: e.target.value })} />
+              <div className="border rounded p-3">
+                <div className="text-sm font-medium mb-2">Services (select one or more)</div>
+                <div className="flex flex-wrap gap-2">
+                  {SERVICE_OPTIONS.map((name) => {
+                    const active = services.includes(name);
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => toggleService(name)}
+                        className={`px-3 py-1 rounded-full text-sm border ${active ? "bg-green-600 text-white border-green-600" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
+                      >
+                        {active ? "✓ " : "+ "}{name}
+                      </button>
+                    );
+                  })}
+                </div>
+                {services.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {services.map((name) => (
+                      <span key={name} className="inline-flex items-center gap-1 bg-green-50 text-green-800 border border-green-200 px-2 py-1 rounded text-xs">
+                        {name}
+                        <button type="button" onClick={() => toggleService(name)} className="text-red-600 font-bold" aria-label={`Remove ${name}`}>×</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {services.includes("Other") && (
+                  <input placeholder="Other service details" className="border p-2 rounded w-full mt-3" onChange={(e) => setReport({ ...report, repairNotes: e.target.value })} />
+                )}
+              </div>
+              <input placeholder="Machine Serial No." className="border p-2 rounded w-full" value={report.machineSerialNo || ""} onChange={(e) => setReport({ ...report, machineSerialNo: e.target.value })} />
               <input type="number" placeholder="Bill Amount" className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, billAmount: e.target.value })} />
               <input type="number" placeholder="Received Amount" className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, receivedAmount: e.target.value })} />
               <select className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, paymentMode: e.target.value })}>
@@ -185,20 +280,39 @@ export default function StaffLeads() {
                 <option value="card">Card</option>
                 <option value="online">Online</option>
               </select>
-              <textarea placeholder="Customer Feedback" className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, customerFeedback: e.target.value })} />
-              <input type="number" placeholder="Rating 1-5" min="1" max="5" className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, rating: e.target.value })} />
+              <textarea placeholder="Customer Feedback" className="border p-2 rounded w-full" value={report.customerFeedback || ""} onChange={(e) => setReport({ ...report, customerFeedback: e.target.value })} />
+              <input type="number" placeholder="Rating 1-5" min="1" max="5" className="border p-2 rounded w-full" value={report.rating || ""} onChange={(e) => setReport({ ...report, rating: e.target.value })} />
 
-              {["beforePhotos", "workingPhotos", "afterPhotos"].map((field) => (
-                <label key={field} className="block text-sm">
-                  {field.replace(/([A-Z])/g, " $1")}: <input type="file" multiple className="w-full" onChange={(e) => setPhotos({ ...photos, [field]: e.target.files })} />
-                </label>
-              ))}
+              {PHOTO_FIELDS.map(([field, label]) => {
+                const list = photos[field] || [];
+                return (
+                  <div key={field} className="border rounded p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">{label} ({list.length})</span>
+                      <label className="cursor-pointer bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                        + Add Photo
+                        <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { addPhotos(field, e.target.files); e.target.value = ""; }} />
+                      </label>
+                    </div>
+                    {list.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {list.map((file, i) => (
+                          <div key={`${file.name}-${i}`} className="relative">
+                            <img src={URL.createObjectURL(file)} alt={file.name} className="w-16 h-16 object-cover rounded border" />
+                            <button type="button" onClick={() => removePhoto(field, i)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs leading-5" aria-label="Remove photo">×</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <div className="mt-4 flex flex-wrap gap-3">
               <button onClick={() => submitReport(selected._id, "completed")} className="bg-green-600 text-white px-4 py-2 rounded">Complete Job</button>
               <button onClick={() => submitReport(selected._id, "half_done")} className="bg-orange-500 text-white px-4 py-2 rounded">Half Done</button>
               <button onClick={() => submitReport(selected._id, "working")} className="bg-blue-600 text-white px-4 py-2 rounded">Save Progress</button>
-              <button onClick={() => setSelected(null)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+              <button onClick={() => { setSelected(null); setPhotos({}); setServices([]); setReport({}); }} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
             </div>
           </div>
         </div>

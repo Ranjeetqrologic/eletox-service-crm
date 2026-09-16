@@ -37,7 +37,7 @@ router.get(
     }
 
     const jobs = await Job.find(filter)
-      .populate("lead", "customerName mobile address city status leadId")
+      .populate("lead", "customerName mobile address city status leadId machineSerialNo followUpDate followUpNote")
       .populate("staff", "name mobile employeeId")
       .sort({ createdAt: -1 });
     res.json({ success: true, count: jobs.length, data: jobs });
@@ -49,7 +49,7 @@ router.get(
   protect,
   asyncHandler(async (req: Request, res: Response) => {
     const job = await Job.findById(req.params.id)
-      .populate("lead", "customerName mobile address city lat lng status leadId")
+      .populate("lead", "customerName mobile address city lat lng status leadId machineSerialNo followUpDate followUpNote")
       .populate("staff", "name mobile employeeId");
     if (!job) throw new AppError("Job not found", 404);
     res.json({ success: true, data: job });
@@ -61,7 +61,7 @@ router.get(
   protect,
   asyncHandler(async (req: Request, res: Response) => {
     const job = await Job.findOne({ lead: req.params.leadId })
-      .populate("lead", "customerName mobile address city lat lng status leadId")
+      .populate("lead", "customerName mobile address city lat lng status leadId machineSerialNo followUpDate followUpNote")
       .populate("staff", "name mobile employeeId");
     if (!job) throw new AppError("Job not found", 404);
     res.json({ success: true, data: job });
@@ -155,6 +155,7 @@ router.put(
       "workDescription",
       "gasFilled",
       "repairNotes",
+      "machineSerialNo",
       "billAmount",
       "receivedAmount",
       "paymentMode",
@@ -166,6 +167,16 @@ router.put(
     updateFields.forEach((field) => {
       if (req.body[field] !== undefined) (job as any)[field] = req.body[field];
     });
+
+    if (req.body.machineSerialNo !== undefined) {
+      await Lead.findByIdAndUpdate(job.lead, { machineSerialNo: req.body.machineSerialNo });
+    }
+
+    if (req.body.servicesDone !== undefined) {
+      const raw = req.body.servicesDone;
+      const list: string[] = Array.isArray(raw) ? raw : typeof raw === "string" && raw.startsWith("[") ? JSON.parse(raw) : raw ? [raw] : [];
+      job.servicesDone = list.map((s) => String(s).trim()).filter(Boolean);
+    }
 
     if (req.body.status === "completed") {
       job.status = "completed";

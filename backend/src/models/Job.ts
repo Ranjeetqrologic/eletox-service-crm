@@ -29,6 +29,8 @@ export interface IJob extends Document {
   workDescription?: string;
   gasFilled?: string;
   repairNotes?: string;
+  servicesDone: string[];
+  machineSerialNo?: string;
   billAmount: number;
   receivedAmount: number;
   paymentMode?: "cash" | "upi" | "card" | "online";
@@ -75,6 +77,8 @@ const JobSchema = new Schema<IJob>(
     workDescription: { type: String },
     gasFilled: { type: String },
     repairNotes: { type: String },
+    servicesDone: [{ type: String }],
+    machineSerialNo: { type: String },
     billAmount: { type: Number, default: 0 },
     receivedAmount: { type: Number, default: 0 },
     paymentMode: { type: String, enum: ["cash", "upi", "card", "online"] },

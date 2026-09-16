@@ -18,7 +18,7 @@ export default function StaffDashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Technician Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-6">Staff Dashboard</h1>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statusCards.map((c: any) => (
           <div key={c.label} className="text-white p-5 rounded-xl shadow" style={{ backgroundColor: c.bg }}>

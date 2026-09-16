@@ -8,6 +8,18 @@ import { uploadDocs, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
 
+const BANK_FIELDS = ["bankName", "accountNumber", "ifsc", "upi"] as const;
+
+// Multipart forms send bank fields flat; nest them under bankDetails.
+const pickBankDetails = (data: any) => {
+  const bank: Record<string, string> = { ...(data.bankDetails || {}) };
+  BANK_FIELDS.forEach((f) => {
+    if (data[f] !== undefined && data[f] !== "") bank[f] = data[f];
+    delete data[f];
+  });
+  return Object.keys(bank).length ? bank : undefined;
+};
+
 router.get(
   "/",
   protect,
@@ -32,13 +44,18 @@ router.get(
   })
 );
 
+const nextEmployeeId = async () => {
+  const last = await Staff.findOne({ employeeId: /^EMP\d+$/ }).sort({ employeeId: -1 }).select("employeeId");
+  const n = last ? parseInt(last.employeeId.replace("EMP", ""), 10) + 1 : 1;
+  return `EMP${String(n).padStart(3, "0")}`;
+};
+
 router.post(
   "/",
   protect,
   restrictTo("superadmin", "admin", "manager"),
   uploadDocs,
   [
-    body("employeeId").notEmpty(),
     body("name").notEmpty(),
     body("email").isEmail(),
     body("password").isLength({ min: 6 }),
@@ -58,8 +75,12 @@ router.post(
       if (files?.[field]?.[0]) staffData[field] = getFileUrl(files[field][0]);
     });
 
-    const existing = await Staff.findOne({ employeeId: staffData.employeeId });
-    if (existing) throw new AppError("Employee ID already exists", 400);
+    if (staffData.employeeId) {
+      const existing = await Staff.findOne({ employeeId: staffData.employeeId });
+      if (existing) throw new AppError("Employee ID already exists", 400);
+    } else {
+      staffData.employeeId = await nextEmployeeId();
+    }
 
     const existingUser = await User.findOne({ email: staffData.email });
     if (existingUser) throw new AppError("Email already registered", 400);
@@ -72,8 +93,10 @@ router.post(
       phone: staffData.mobile,
     });
 
+    const bankDetails = pickBankDetails(staffData);
     const staff = await Staff.create({
       ...staffData,
+      ...(bankDetails ? { bankDetails } : {}),
       user: user._id,
     });
 
@@ -107,16 +130,33 @@ router.put(
       if (files?.[field]?.[0]) req.body[field] = getFileUrl(files[field][0]);
     });
 
+    const bankDetails = pickBankDetails(req.body);
+    if (req.body.password === "") delete req.body.password;
+    if (req.body.employeeId && req.body.employeeId !== staff.employeeId) {
+      const dup = await Staff.findOne({ employeeId: req.body.employeeId, _id: { $ne: staff._id } });
+      if (dup) throw new AppError("Employee ID already exists", 400);
+    }
+    if (req.body.email) {
+      const dupUser = await User.findOne({ email: req.body.email, _id: { $ne: staff.user } });
+      if (dupUser) throw new AppError("Email already registered", 400);
+    }
     Object.assign(staff, req.body);
+    if (bankDetails) staff.bankDetails = { ...(staff.bankDetails || {}), ...bankDetails };
     await staff.save();
 
-    if (staff.user && req.body.password) {
+    if (staff.user) {
       const user = await User.findById(staff.user);
       if (user) {
-        user.password = req.body.password;
+        if (req.body.password) user.password = req.body.password;
+        if (req.body.role) user.role = req.body.role;
+        if (req.body.name) user.name = req.body.name;
+        if (req.body.email) user.email = req.body.email;
+        if (req.body.mobile) user.phone = req.body.mobile;
         await user.save();
       }
     }
+
+    await staff.populate("user", "name email role isActive");
 
     res.json({ success: true, data: staff });
   })

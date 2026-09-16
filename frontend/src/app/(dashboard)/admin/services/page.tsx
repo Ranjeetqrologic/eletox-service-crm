@@ -11,6 +11,9 @@ export default function ServicesPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterActive, setFilterActive] = useState("");
+  const filteredServices = services.filter((s) => (!search || [s.title, s.slug, s.shortDesc].some((x: string) => x?.toLowerCase().includes(search.toLowerCase()))) && (!filterActive || (filterActive === "active" ? s.isActive : !s.isActive)));
 
   const fetchServices = () => api.get("/services").then((res) => setServices(res.data.data || []));
 
@@ -61,7 +64,17 @@ export default function ServicesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Services</h1>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 className="text-2xl font-bold">Services</h1>
+        <div className="flex flex-wrap gap-2">
+          <input className="border p-2 rounded min-w-[200px]" placeholder="Search service..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select className="border p-2 rounded" value={filterActive} onChange={(e) => setFilterActive(e.target.value)}>
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input className="border p-2 rounded" placeholder="Title*" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
@@ -84,7 +97,7 @@ export default function ServicesPage() {
       </form>
 
       <div className="grid md:grid-cols-2 gap-4">
-        {services.map((s) => (
+        {filteredServices.map((s) => (
           <div key={s._id} className="bg-white p-4 rounded-xl shadow flex justify-between items-start">
             <div className="flex gap-3">
               {s.image && <img src={getImageUrl(s.image)} alt={s.title} className="w-14 h-14 object-cover rounded" />}

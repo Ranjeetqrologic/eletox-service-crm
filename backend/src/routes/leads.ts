@@ -9,8 +9,13 @@ import { uploadSingle, uploadPhotos, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
 
-const generateLeadId = () => {
-  return "LEAD" + Date.now().toString(36).toUpperCase();
+const generateLeadId = async () => {
+  const yy = String(new Date().getFullYear()).slice(-2);
+  for (let i = 0; i < 20; i++) {
+    const id = String(Math.floor(1000 + Math.random() * 9000)) + yy;
+    if (!(await Lead.exists({ leadId: id }))) return id;
+  }
+  return String(Date.now()).slice(-4) + yy;
 };
 
 router.get(
@@ -85,7 +90,7 @@ router.post(
 
     const lead = await Lead.create({
       ...req.body,
-      leadId: generateLeadId(),
+      leadId: await generateLeadId(),
       images,
       createdBy: req.user?._id,
     });
@@ -111,7 +116,7 @@ router.post(
     const file = req.file as Express.Multer.File;
     const lead = await Lead.create({
       ...req.body,
-      leadId: generateLeadId(),
+      leadId: await generateLeadId(),
       source: "website",
       images: file ? [getFileUrl(file)] : [],
     });
@@ -135,7 +140,7 @@ router.put(
     const updateFields = [
       "customerName", "mobile", "alternateMobile", "email", "address", "pin", "state", "city", "lat", "lng",
       "source", "service", "acType", "problem", "priority", "preferredDate", "preferredTime", "remarks",
-      "followUpDate", "followUpNote", "nextCallDate"
+      "followUpDate", "followUpNote", "nextCallDate", "machineSerialNo"
     ];
     updateFields.forEach((field) => {
       if (req.body[field] !== undefined) (lead as any)[field] = req.body[field];
@@ -153,6 +158,7 @@ router.put(
   asyncHandler(async (req: Request, res: Response) => {
     const lead = await Lead.findById(req.params.id);
     if (!lead) throw new AppError("Lead not found", 404);
+    if (!(await Staff.findById(req.body.staffId))) throw new AppError("Select a valid staff", 400);
 
     lead.assignedStaff = req.body.staffId;
     lead.status = "assigned";

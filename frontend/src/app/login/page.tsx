@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import { useAuthStore } from "@/store/authStore";
+import { homeForRole } from "@/lib/utils";
+import { useAuthStore, IMPERSONATE_KEY } from "@/store/authStore";
 import Logo from "@/components/Logo";
 import toast from "react-hot-toast";
 
@@ -13,7 +14,22 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [company, setCompany] = useState<any>({});
   const router = useRouter();
-  const { setAuth } = useAuthStore();
+  const { setAuth, setImpersonatedAuth } = useAuthStore();
+
+  useEffect(() => {
+    if (!window.location.search.includes("impersonate=1")) return;
+    const raw = localStorage.getItem(IMPERSONATE_KEY);
+    localStorage.removeItem(IMPERSONATE_KEY);
+    if (!raw) return;
+    try {
+      const { user, token } = JSON.parse(raw);
+      setImpersonatedAuth(user, token);
+      toast.success(`Logged in as ${user.name}`);
+      router.replace(homeForRole(user.role));
+    } catch {
+      toast.error("Login As failed");
+    }
+  }, [router, setImpersonatedAuth]);
 
   useEffect(() => {
     api.get("/settings/company").then((res) => setCompany(res.data.data || {})).catch(() => setCompany({}));
@@ -26,7 +42,7 @@ export default function LoginPage() {
       const { data } = await api.post("/auth/login", { email, password });
       setAuth(data.user, data.token);
       toast.success("Login successful");
-      router.replace(data.user.role === "technician" ? "/staff/" : "/admin/");
+      router.replace(homeForRole(data.user.role));
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Login failed");
     } finally {
