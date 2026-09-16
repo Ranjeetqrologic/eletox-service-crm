@@ -108,7 +108,6 @@ export default function LeadsPage() {
     }
   };
 
-  const [serialDraft, setSerialDraft] = useState<Record<string, string>>({});
   const [assignDraft, setAssignDraft] = useState<Record<string, string>>({});
 
   const sendReminders = async () => {
@@ -216,10 +215,7 @@ export default function LeadsPage() {
                   {l.problem && <div className="text-xs text-gray-500 max-w-[200px] truncate" title={l.problem}>{l.problem}</div>}
                 </td>
                 <td className="p-3">
-                  <div className="flex gap-1">
-                    <input className="border p-1 rounded w-28 text-xs" placeholder="Serial No." value={serialDraft[l._id] ?? l.machineSerialNo ?? ""} onChange={(e) => setSerialDraft({ ...serialDraft, [l._id]: e.target.value })} />
-                    <button onClick={() => { updateLead(l._id, { machineSerialNo: serialDraft[l._id] ?? l.machineSerialNo ?? "" }); setSerialDraft(({ [l._id]: _, ...rest }) => rest); }} className="bg-blue-600 text-white text-xs px-2 rounded">Submit</button>
-                  </div>
+                  <input className="border p-1 rounded w-32 text-xs" placeholder="Serial No." defaultValue={l.machineSerialNo || ""} onBlur={(e) => { if (e.target.value !== (l.machineSerialNo || "")) updateLead(l._id, { machineSerialNo: e.target.value }); }} />
                 </td>
                 <td className="p-3">
                   <select value={l.status} onChange={(e) => changeStatus(l._id, e.target.value)} className="border p-1 rounded">
