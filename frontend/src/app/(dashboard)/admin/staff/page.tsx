@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import { homeForRole } from "@/lib/utils";
-import { useAuthStore } from "@/store/authStore";
+import { IMPERSONATE_KEY } from "@/store/authStore";
 import toast from "react-hot-toast";
 
 const availablePermissions = [
@@ -13,8 +11,6 @@ const availablePermissions = [
 ];
 
 export default function StaffPage() {
-  const router = useRouter();
-  const { setAuth } = useAuthStore();
   const [staff, setStaff] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -116,9 +112,14 @@ export default function StaffPage() {
   const loginAs = async (userId: string) => {
     try {
       const { data } = await api.post(`/auth/impersonate/${userId}`);
-      setAuth(data.user, data.token);
-      toast.success("Logged in as staff");
-      router.replace(homeForRole(data.user.role));
+      localStorage.setItem(IMPERSONATE_KEY, JSON.stringify({ user: data.user, token: data.token }));
+      const tab = window.open("/login/?impersonate=1", "_blank");
+      if (!tab) {
+        localStorage.removeItem(IMPERSONATE_KEY);
+        toast.error("Popup blocked - please allow popups for this site");
+        return;
+      }
+      toast.success(`Opened ${data.user.name}'s dashboard in a new tab`);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
     }

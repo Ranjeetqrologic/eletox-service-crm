@@ -94,6 +94,16 @@ export default function LeadsPage() {
     }
   };
 
+  const updateLead = async (leadId: string, payload: Record<string, string>) => {
+    try {
+      await api.put(`/leads/${leadId}`, payload);
+      toast.success("Lead updated");
+      fetchLeads();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    }
+  };
+
   const updateFollowUp = async (leadId: string, followUpDate: string, followUpNote: string) => {
     try {
       await api.put(`/leads/${leadId}`, { followUpDate, followUpNote });
@@ -164,6 +174,7 @@ export default function LeadsPage() {
             {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
           </select>
           <input required placeholder="Service Required*" className="border p-2 rounded" onChange={(e) => setForm({ ...form, service: e.target.value })} />
+          <input placeholder="Machine Serial No." className="border p-2 rounded" onChange={(e) => setForm({ ...form, machineSerialNo: e.target.value })} />
           <input type="date" placeholder="Preferred Date" className="border p-2 rounded" onChange={(e) => setForm({ ...form, preferredDate: e.target.value })} />
           <input type="number" step="any" placeholder="Latitude" className="border p-2 rounded" onChange={(e) => setForm({ ...form, lat: e.target.value })} />
           <input type="number" step="any" placeholder="Longitude" className="border p-2 rounded" onChange={(e) => setForm({ ...form, lng: e.target.value })} />
@@ -179,6 +190,7 @@ export default function LeadsPage() {
               <th className="p-3 text-left">Lead ID</th>
               <th className="p-3 text-left">Customer</th>
               <th className="p-3 text-left">Service</th>
+              <th className="p-3 text-left">Machine Serial No.</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Assigned</th>
               <th className="p-3 text-left">Accepted At</th>
@@ -192,6 +204,9 @@ export default function LeadsPage() {
                 <td className="p-3">{l.leadId}</td>
                 <td className="p-3">{l.customerName} <br /><span className="text-gray-500">{l.mobile}</span></td>
                 <td className="p-3">{l.service}</td>
+                <td className="p-3">
+                  <input className="border p-1 rounded w-32 text-xs" placeholder="Serial No." defaultValue={l.machineSerialNo || ""} onBlur={(e) => { if (e.target.value !== (l.machineSerialNo || "")) updateLead(l._id, { machineSerialNo: e.target.value }); }} />
+                </td>
                 <td className="p-3">
                   <select value={l.status} onChange={(e) => changeStatus(l._id, e.target.value)} className="border p-1 rounded">
                     {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
@@ -286,6 +301,8 @@ export default function LeadsPage() {
               </div>
               <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl">
                 <div><span className="font-medium text-gray-500">Work Description:</span> {jobModal.workDescription || "-"}</div>
+                <div><span className="font-medium text-gray-500">Services Done:</span> {(jobModal.servicesDone || []).join(", ") || "-"}</div>
+                <div><span className="font-medium text-gray-500">Machine Serial No.:</span> {jobModal.machineSerialNo || jobModal.lead?.machineSerialNo || "-"}</div>
                 <div><span className="font-medium text-gray-500">Repair Notes:</span> {jobModal.repairNotes || "-"}</div>
                 <div><span className="font-medium text-gray-500">Gas Filled:</span> {jobModal.gasFilled || "-"}</div>
                 <div><span className="font-medium text-gray-500">Bill Amount:</span> ₹{jobModal.billAmount || 0}</div>

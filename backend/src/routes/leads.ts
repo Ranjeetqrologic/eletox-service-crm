@@ -135,7 +135,7 @@ router.put(
     const updateFields = [
       "customerName", "mobile", "alternateMobile", "email", "address", "pin", "state", "city", "lat", "lng",
       "source", "service", "acType", "problem", "priority", "preferredDate", "preferredTime", "remarks",
-      "followUpDate", "followUpNote", "nextCallDate"
+      "followUpDate", "followUpNote", "nextCallDate", "machineSerialNo"
     ];
     updateFields.forEach((field) => {
       if (req.body[field] !== undefined) (lead as any)[field] = req.body[field];
