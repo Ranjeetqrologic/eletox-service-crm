@@ -319,19 +319,15 @@ export default function Home() {
             <div className="grid md:grid-cols-2 gap-4">
               <input name="customerName" value={form.customerName} onChange={handleChange} placeholder="Full Name" className="bg-white text-gray-800 p-4 w-full outline-none" required />
               <input name="mobile" value={form.mobile} onChange={handleChange} placeholder="Phone Number" className="bg-white text-gray-800 p-4 w-full outline-none" required />
-              <input name="email" value={form.email} onChange={handleChange} placeholder="Email Address" className="bg-white text-gray-800 p-4 w-full outline-none" />
-              <select name="service" value={form.service} onChange={handleChange} className="bg-white text-gray-800 p-4 w-full outline-none" required>
+              <select name="service" value={form.service} onChange={handleChange} className="bg-white text-gray-800 p-4 w-full outline-none md:col-span-2" required>
                 <option value="">Choose Service</option>
                 {serviceList.map((s: any) => <option key={s._id || s.title} value={s.title}>{s.title}</option>)}
                 {!services.length && ["Refrigerator Repair", "AC Installation"].map((t) => <option key={t} value={t}>{t}</option>)}
+                <option value="Other">Other</option>
               </select>
-              <input name="city" value={form.city} onChange={handleChange} placeholder="City" className="bg-white text-gray-800 p-4 w-full outline-none" required />
-              <input name="pin" value={form.pin} onChange={handleChange} placeholder="Pin Code" className="bg-white text-gray-800 p-4 w-full outline-none" />
-              <input type="date" name="preferredDate" value={form.preferredDate} onChange={handleChange} className="bg-white text-gray-800 p-4 w-full outline-none" />
-              <input type="time" name="preferredTime" value={form.preferredTime} onChange={handleChange} className="bg-white text-gray-800 p-4 w-full outline-none" />
             </div>
-            <textarea name="address" value={form.address} onChange={handleChange} placeholder="Full Address" className="bg-white text-gray-800 p-4 w-full outline-none mt-4" rows={2} required />
-            <textarea name="problem" value={form.problem} onChange={handleChange} placeholder="Describe the problem" className="bg-white text-gray-800 p-4 w-full outline-none mt-4" rows={3} />
+            <textarea name="address" value={form.address} onChange={handleChange} placeholder="Address" className="bg-white text-gray-800 p-4 w-full outline-none mt-4" rows={2} required />
+            <textarea name="problem" value={form.problem} onChange={handleChange} placeholder="Note" className="bg-white text-gray-800 p-4 w-full outline-none mt-4" rows={3} />
             <button type="submit" disabled={loading} className="mt-6 bg-brand-navy text-white font-heading font-semibold px-10 py-4 rounded-sm hover:bg-brand-dark disabled:opacity-60 transition">
               {loading ? "Submitting..." : "Appointment Now"}
             </button>

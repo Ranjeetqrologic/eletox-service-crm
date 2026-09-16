@@ -216,7 +216,10 @@ export default function LeadsPage() {
               <tr key={l._id} className="border-t">
                 <td className="p-3">{l.leadId}</td>
                 <td className="p-3">{l.customerName} <br /><span className="text-gray-500">{l.mobile}</span></td>
-                <td className="p-3">{l.service}</td>
+                <td className="p-3">
+                  <div>{l.service}</div>
+                  {l.problem && <div className="text-xs text-gray-500 max-w-[200px] truncate" title={l.problem}>{l.problem}</div>}
+                </td>
                 <td className="p-3">
                   <input className="border p-1 rounded w-32 text-xs" placeholder="Serial No." defaultValue={l.machineSerialNo || ""} onBlur={(e) => { if (e.target.value !== (l.machineSerialNo || "")) updateLead(l._id, { machineSerialNo: e.target.value }); }} />
                 </td>
