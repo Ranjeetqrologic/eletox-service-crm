@@ -88,7 +88,6 @@ router.post(
     const files = (req.files as Express.Multer.File[]) || [];
     const images = files.map((f) => getFileUrl(f));
 
-    if (req.body.status === "assigned" && !req.body.assignedStaff) req.body.status = "new";
     const lead = await Lead.create({
       ...req.body,
       leadId: await generateLeadId(),
@@ -191,8 +190,6 @@ router.put(
     const validStatuses = await LeadStatus.find({ isActive: true }).select("name");
     const allowed = validStatuses.map((s: any) => s.name);
     if (!allowed.includes(req.body.status)) throw new AppError("Invalid status", 400);
-    if (req.body.status === "assigned" && !lead.assignedStaff)
-      throw new AppError("Select a staff first to mark lead as Assigned", 400);
 
     lead.status = req.body.status;
     if (req.body.status === "accepted") lead.acceptedAt = new Date();
