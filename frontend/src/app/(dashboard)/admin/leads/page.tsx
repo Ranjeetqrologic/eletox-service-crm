@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { getImageUrl } from "@/lib/utils";
 import toast from "react-hot-toast";
+import { EyeIcon, MapPinIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 
 const sources = ["website", "call", "whatsapp", "facebook", "instagram", "google_ads", "referral", "manual", "others"];
 const priorities = ["low", "medium", "high", "urgent"];
@@ -234,10 +235,14 @@ export default function LeadsPage() {
                 <td className="p-3 text-xs text-gray-500">
                   {l.acceptedAt ? new Date(l.acceptedAt).toLocaleString() : "-"}
                 </td>
-                <td className="p-3 space-x-2">
-                  <button onClick={() => viewJob(l._id)} className="text-blue-600 hover:underline">View Job</button>
-                  <button onClick={() => setLocationModal(l)} className="text-purple-600 hover:underline">Set Location</button>
-                  <button onClick={() => changeStatus(l._id, "closed")} className="text-green-600 hover:underline">Close</button>
+                <td className="p-3">
+                  <div className="flex items-center gap-1.5 whitespace-nowrap">
+                    <button onClick={() => viewJob(l._id)} title="View Job" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-100"><EyeIcon className="w-4 h-4" /> View</button>
+                    <button onClick={() => setLocationModal(l)} title="Set Location" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-100"><MapPinIcon className="w-4 h-4" /> Location</button>
+                    {l.status !== "closed" && (
+                      <button onClick={() => changeStatus(l._id, "closed")} title="Close Lead" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 border border-green-100"><CheckCircleIcon className="w-4 h-4" /> Close</button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
