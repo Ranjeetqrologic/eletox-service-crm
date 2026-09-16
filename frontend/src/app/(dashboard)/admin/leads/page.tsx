@@ -108,15 +108,7 @@ export default function LeadsPage() {
     }
   };
 
-  const updateFollowUp = async (leadId: string, followUpDate: string, followUpNote: string) => {
-    try {
-      await api.put(`/leads/${leadId}`, { followUpDate, followUpNote });
-      toast.success("Follow-up updated");
-      fetchLeads();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed");
-    }
-  };
+  const [serialDraft, setSerialDraft] = useState<Record<string, string>>({});
 
   const sendReminders = async () => {
     try {
@@ -208,7 +200,6 @@ export default function LeadsPage() {
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Assigned</th>
               <th className="p-3 text-left">Accepted At</th>
-              <th className="p-3 text-left">Follow-up</th>
               <th className="p-3 text-left">Actions</th>
             </tr>
           </thead>
@@ -222,7 +213,10 @@ export default function LeadsPage() {
                   {l.problem && <div className="text-xs text-gray-500 max-w-[200px] truncate" title={l.problem}>{l.problem}</div>}
                 </td>
                 <td className="p-3">
-                  <input className="border p-1 rounded w-32 text-xs" placeholder="Serial No." defaultValue={l.machineSerialNo || ""} onBlur={(e) => { if (e.target.value !== (l.machineSerialNo || "")) updateLead(l._id, { machineSerialNo: e.target.value }); }} />
+                  <div className="flex gap-1">
+                    <input className="border p-1 rounded w-28 text-xs" placeholder="Serial No." value={serialDraft[l._id] ?? l.machineSerialNo ?? ""} onChange={(e) => setSerialDraft({ ...serialDraft, [l._id]: e.target.value })} />
+                    <button onClick={() => { updateLead(l._id, { machineSerialNo: serialDraft[l._id] ?? l.machineSerialNo ?? "" }); setSerialDraft(({ [l._id]: _, ...rest }) => rest); }} className="bg-blue-600 text-white text-xs px-2 rounded">Submit</button>
+                  </div>
                 </td>
                 <td className="p-3">
                   <select value={l.status} onChange={(e) => changeStatus(l._id, e.target.value)} className="border p-1 rounded">
@@ -237,10 +231,6 @@ export default function LeadsPage() {
                 </td>
                 <td className="p-3 text-xs text-gray-500">
                   {l.acceptedAt ? new Date(l.acceptedAt).toLocaleString() : "-"}
-                </td>
-                <td className="p-3">
-                  <input type="date" className="border p-1 rounded mb-1" value={l.followUpDate ? l.followUpDate.split("T")[0] : ""} onChange={(e) => updateFollowUp(l._id, e.target.value, l.followUpNote || "")} />
-                  <input className="border p-1 rounded w-full text-xs" placeholder="Note" value={l.followUpNote || ""} onChange={(e) => updateFollowUp(l._id, l.followUpDate ? l.followUpDate.split("T")[0] : "", e.target.value)} />
                 </td>
                 <td className="p-3 space-x-2">
                   <button onClick={() => viewJob(l._id)} className="text-blue-600 hover:underline">View Job</button>
