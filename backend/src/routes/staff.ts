@@ -44,13 +44,18 @@ router.get(
   })
 );
 
+const nextEmployeeId = async () => {
+  const last = await Staff.findOne({ employeeId: /^EMP\d+$/ }).sort({ employeeId: -1 }).select("employeeId");
+  const n = last ? parseInt(last.employeeId.replace("EMP", ""), 10) + 1 : 1;
+  return `EMP${String(n).padStart(3, "0")}`;
+};
+
 router.post(
   "/",
   protect,
   restrictTo("superadmin", "admin", "manager"),
   uploadDocs,
   [
-    body("employeeId").notEmpty(),
     body("name").notEmpty(),
     body("email").isEmail(),
     body("password").isLength({ min: 6 }),
@@ -70,8 +75,12 @@ router.post(
       if (files?.[field]?.[0]) staffData[field] = getFileUrl(files[field][0]);
     });
 
-    const existing = await Staff.findOne({ employeeId: staffData.employeeId });
-    if (existing) throw new AppError("Employee ID already exists", 400);
+    if (staffData.employeeId) {
+      const existing = await Staff.findOne({ employeeId: staffData.employeeId });
+      if (existing) throw new AppError("Employee ID already exists", 400);
+    } else {
+      staffData.employeeId = await nextEmployeeId();
+    }
 
     const existingUser = await User.findOne({ email: staffData.email });
     if (existingUser) throw new AppError("Email already registered", 400);

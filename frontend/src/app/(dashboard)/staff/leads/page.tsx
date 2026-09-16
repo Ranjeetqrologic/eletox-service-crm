@@ -30,7 +30,11 @@ export default function StaffLeads() {
   const openReport = (job: any) => {
     setSelected(job);
     setServices(job.servicesDone || []);
-    setReport({ machineSerialNo: job.machineSerialNo || job.lead?.machineSerialNo || "" });
+    setReport({
+      machineSerialNo: job.machineSerialNo || job.lead?.machineSerialNo || "",
+      customerFeedback: job.customerFeedback || "Customer satisfied with the service",
+      rating: job.rating || 5,
+    });
     setPhotos({});
   };
 
@@ -254,8 +258,8 @@ export default function StaffLeads() {
                 <option value="card">Card</option>
                 <option value="online">Online</option>
               </select>
-              <textarea placeholder="Customer Feedback" className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, customerFeedback: e.target.value })} />
-              <input type="number" placeholder="Rating 1-5" min="1" max="5" className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, rating: e.target.value })} />
+              <textarea placeholder="Customer Feedback" className="border p-2 rounded w-full" value={report.customerFeedback || ""} onChange={(e) => setReport({ ...report, customerFeedback: e.target.value })} />
+              <input type="number" placeholder="Rating 1-5" min="1" max="5" className="border p-2 rounded w-full" value={report.rating || ""} onChange={(e) => setReport({ ...report, rating: e.target.value })} />
 
               {PHOTO_FIELDS.map(([field, label]) => {
                 const list = photos[field] || [];

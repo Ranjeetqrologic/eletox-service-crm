@@ -180,7 +180,7 @@ export default function StaffPage() {
           {editing && <button type="button" onClick={resetForm} className="text-sm text-gray-500 hover:underline">Cancel edit</button>}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input className="border p-2 rounded" placeholder="Employee ID*" value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })} required />
+          <input className="border p-2 rounded" placeholder="Employee ID (auto: EMP001)" value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })} />
           <input className="border p-2 rounded" placeholder="Name*" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           <input className="border p-2 rounded" placeholder="Email*" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
           <input className="border p-2 rounded" type="password" placeholder={editing ? "New Password (leave blank to keep)" : "Password*"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required={!editing} />
