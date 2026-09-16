@@ -56,6 +56,7 @@ export default function LeadsPage() {
   };
 
   const assignLead = async (leadId: string, staffId: string) => {
+    if (!staffId) return toast.error("Please select a staff name");
     try {
       await api.put(`/leads/${leadId}/assign`, { staffId });
       toast.success("Assigned");
@@ -184,7 +185,7 @@ export default function LeadsPage() {
           <select className="border p-2 rounded" onChange={(e) => setForm({ ...form, source: e.target.value })}>{sources.map((s) => <option key={s} value={s}>{s}</option>)}</select>
           <select className="border p-2 rounded" onChange={(e) => setForm({ ...form, priority: e.target.value })}>{priorities.map((p) => <option key={p} value={p}>{p}</option>)}</select>
           <select className="border p-2 rounded" onChange={(e) => setForm({ ...form, status: e.target.value })}>
-            {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
+            {statuses.filter((s) => s.isActive && s.name !== "assigned").map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
           </select>
           <input required placeholder="Service Required*" className="border p-2 rounded" onChange={(e) => setForm({ ...form, service: e.target.value })} />
           <input placeholder="Machine Serial No." className="border p-2 rounded" onChange={(e) => setForm({ ...form, machineSerialNo: e.target.value })} />
@@ -225,7 +226,7 @@ export default function LeadsPage() {
                 </td>
                 <td className="p-3">
                   <select value={l.status} onChange={(e) => changeStatus(l._id, e.target.value)} className="border p-1 rounded">
-                    {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
+                    {statuses.filter((s) => s.isActive && (s.name !== "assigned" || l.assignedStaff)).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
                   </select>
                 </td>
                 <td className="p-3">
