@@ -109,6 +109,7 @@ export default function LeadsPage() {
   };
 
   const [serialDraft, setSerialDraft] = useState<Record<string, string>>({});
+  const [assignDraft, setAssignDraft] = useState<Record<string, string>>({});
 
   const sendReminders = async () => {
     try {
@@ -194,6 +195,7 @@ export default function LeadsPage() {
           <thead className="bg-gray-100">
             <tr>
               <th className="p-3 text-left">Lead ID</th>
+              <th className="p-3 text-left">Date &amp; Time</th>
               <th className="p-3 text-left">Customer</th>
               <th className="p-3 text-left">Service</th>
               <th className="p-3 text-left">Machine Serial No.</th>
@@ -207,6 +209,7 @@ export default function LeadsPage() {
             {filteredLeads.map((l) => (
               <tr key={l._id} className="border-t">
                 <td className="p-3">{l.leadId}</td>
+                <td className="p-3 text-xs text-gray-500">{l.createdAt ? new Date(l.createdAt).toLocaleString() : "-"}</td>
                 <td className="p-3">{l.customerName} <br /><span className="text-gray-500">{l.mobile}</span></td>
                 <td className="p-3">
                   <div>{l.service}</div>
@@ -224,10 +227,13 @@ export default function LeadsPage() {
                   </select>
                 </td>
                 <td className="p-3">
-                  <select value={l.assignedStaff?._id || ""} onChange={(e) => assignLead(l._id, e.target.value)} className="border p-1 rounded">
-                    <option value="">Assign</option>
-                    {staff.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
-                  </select>
+                  <div className="flex gap-1">
+                    <select value={assignDraft[l._id] ?? l.assignedStaff?._id ?? ""} onChange={(e) => setAssignDraft({ ...assignDraft, [l._id]: e.target.value })} className="border p-1 rounded">
+                      <option value="">Select Staff</option>
+                      {staff.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
+                    </select>
+                    <button onClick={() => { assignLead(l._id, assignDraft[l._id] ?? l.assignedStaff?._id ?? ""); setAssignDraft(({ [l._id]: _, ...rest }) => rest); }} className="bg-blue-600 text-white text-xs px-2 rounded">Submit</button>
+                  </div>
                 </td>
                 <td className="p-3 text-xs text-gray-500">
                   {l.acceptedAt ? new Date(l.acceptedAt).toLocaleString() : "-"}
