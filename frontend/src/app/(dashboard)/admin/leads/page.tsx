@@ -346,7 +346,6 @@ export default function LeadsPage() {
                 <div><span className="font-medium text-gray-500">Services Done:</span> {(jobModal.servicesDone || []).join(", ") || "-"}</div>
                 <div><span className="font-medium text-gray-500">Machine Serial No.:</span> {jobModal.machineSerialNo || jobModal.lead?.machineSerialNo || "-"}</div>
                 <div><span className="font-medium text-gray-500">Repair Notes:</span> {jobModal.repairNotes || "-"}</div>
-                <div><span className="font-medium text-gray-500">Gas Filled:</span> {jobModal.gasFilled || "-"}</div>
                 <div><span className="font-medium text-gray-500">Bill Amount:</span> ₹{jobModal.billAmount || 0}</div>
                 <div><span className="font-medium text-gray-500">Received Amount:</span> ₹{jobModal.receivedAmount || 0}</div>
                 <div><span className="font-medium text-gray-500">Payment Mode:</span> {jobModal.paymentMode || "-"}</div>

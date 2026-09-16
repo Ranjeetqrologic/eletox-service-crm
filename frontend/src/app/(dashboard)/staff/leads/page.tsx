@@ -273,7 +273,6 @@ export default function StaffLeads() {
                 )}
               </div>
               <input placeholder="Machine Serial No." className="border p-2 rounded w-full" value={report.machineSerialNo || ""} onChange={(e) => setReport({ ...report, machineSerialNo: e.target.value })} />
-              <input placeholder="Gas Filled" className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, gasFilled: e.target.value })} />
               <input type="number" placeholder="Bill Amount" className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, billAmount: e.target.value })} />
               <input type="number" placeholder="Received Amount" className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, receivedAmount: e.target.value })} />
               <select className="border p-2 rounded w-full" onChange={(e) => setReport({ ...report, paymentMode: e.target.value })}>
