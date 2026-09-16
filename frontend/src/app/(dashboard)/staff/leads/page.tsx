@@ -15,9 +15,7 @@ const SERVICE_OPTIONS = [
 ];
 
 const PHOTO_FIELDS: [string, string][] = [
-  ["beforePhotos", "Before Photos"],
-  ["workingPhotos", "Working Photos"],
-  ["afterPhotos", "After Photos"],
+  ["workingPhotos", "Photos"],
 ];
 
 export default function StaffLeads() {

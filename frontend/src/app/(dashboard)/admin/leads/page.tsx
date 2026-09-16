@@ -352,7 +352,7 @@ export default function LeadsPage() {
                 <div><span className="font-medium text-gray-500">Customer Feedback:</span> {jobModal.customerFeedback || "-"}</div>
                 <div><span className="font-medium text-gray-500">Rating:</span> {jobModal.rating || "-"}</div>
               </div>
-              {[["beforePhotos", "Before Photos"], ["workingPhotos", "Working Photos"], ["afterPhotos", "After Photos"]].map(([key, label]) => (
+              {[["workingPhotos", "Photos"], ["beforePhotos", "Before Photos"], ["afterPhotos", "After Photos"]].map(([key, label]) => (
                 jobModal[key]?.length > 0 && (
                   <div key={key}>
                     <h3 className="font-semibold mb-2">{label}</h3>
