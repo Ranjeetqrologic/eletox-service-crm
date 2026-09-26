@@ -6,6 +6,17 @@ import api from "@/lib/api";
 import { getImageUrl } from "@/lib/utils";
 import Logo from "@/components/Logo";
 import toast from "react-hot-toast";
+import {
+  PhoneIcon, EnvelopeIcon, MapPinIcon, ClockIcon, Bars3Icon, XMarkIcon,
+  HomeModernIcon, BuildingOffice2Icon, ArrowRightIcon, CheckIcon, ArrowUpIcon,
+  ShieldCheckIcon, BoltIcon, CurrencyRupeeIcon, WrenchScrewdriverIcon,
+} from "@heroicons/react/24/outline";
+
+const WhatsAppIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
+  <svg viewBox="0 0 32 32" fill="currentColor" className={className} aria-hidden="true">
+    <path d="M16 3C9.4 3 4 8.3 4 14.9c0 2.4.7 4.7 2 6.7L4 29l7.6-2c1.4.7 2.9 1 4.4 1 6.6 0 12-5.3 12-11.9S22.6 3 16 3zm0 21.8c-1.4 0-2.8-.4-4-1.1l-.3-.2-4.5 1.2 1.2-4.3-.2-.3a9.7 9.7 0 0 1-1.6-5.3C6.6 9.6 10.8 5.4 16 5.4s9.4 4.2 9.4 9.5-4.2 9.9-9.4 9.9zm5.2-7.2c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4-.8-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.1c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5 2.5 1 3 .8 3.6.7.5-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.2-.6-.4z" />
+  </svg>
+);
 
 const A = "/eletox-assets";
 
@@ -26,8 +37,8 @@ const defaultServices = [
 ];
 
 const heroSlides = [
-  { image: `${A}/hero-1.jpg`, title: "Elehome Provide Quality Repair Service", subtitle: "On your fingertips you have been cooling switch" },
-  { image: `${A}/hero-2.jpg`, title: "Elehome Provide Quality Repair Service", subtitle: "On your fingertips you have been cooling switch" },
+  { image: `${A}/hero-1.jpg`, title: "Quality AC & Appliance Repair Service in Jaipur", subtitle: "Certified technicians, genuine parts and same-day doorstep service — just one call away." },
+  { image: `${A}/hero-2.jpg`, title: "Trusted Repair Experts, Right At Your Doorstep", subtitle: "AC, washing machine, geyser, RO and electrical repairs with transparent pricing." },
 ];
 
 const facts = [
@@ -38,15 +49,17 @@ const facts = [
 ];
 
 const team = [
-  { name: "Demica Master", role: "Technician", image: `${A}/team-1.jpg` },
-  { name: "Margie Burman", role: "Senior Technician", image: `${A}/team-2.jpg` },
-  { name: "Gorrien Hyrick", role: "Founder Of Pixa", image: `${A}/team-3.jpg` },
-  { name: "Jonson Pierce", role: "Support Engineer", image: `${A}/team-4.jpg` },
+  { name: "AC Service Experts", role: "Split • Window • Cassette", image: `${A}/team-1.jpg` },
+  { name: "Senior Technicians", role: "10+ Years Experience", image: `${A}/team-2.jpg` },
+  { name: "Appliance Specialists", role: "Washing Machine • Geyser • RO", image: `${A}/team-3.jpg` },
+  { name: "Support Team", role: "24x7 Customer Care", image: `${A}/team-4.jpg` },
 ];
 
 const whyChoose = [
-  { title: "Expert Repairman", desc: "Certified and experienced technicians who diagnose the problem right the first time and repair it with genuine parts." },
-  { title: "Satisfied Services", desc: "Transparent pricing, same-day visit and service warranty — that is why 5000+ clients in Jaipur trust Elehome." },
+  { icon: WrenchScrewdriverIcon, title: "Expert Technicians", desc: "Certified and experienced technicians who diagnose the problem right the first time and repair it with genuine parts." },
+  { icon: BoltIcon, title: "Same-Day Service", desc: "Book in the morning, get it fixed by evening. Fast doorstep visits across Jaipur, 24x7 support." },
+  { icon: CurrencyRupeeIcon, title: "Transparent Pricing", desc: "Upfront estimates with no hidden charges. Pay only for what is repaired." },
+  { icon: ShieldCheckIcon, title: "Service Warranty", desc: "Every repair is backed by a service warranty — that is why 5000+ clients in Jaipur trust Eletox." },
 ];
 
 const blogs = [
@@ -140,9 +153,10 @@ export default function Home() {
             <span className="absolute right-0 top-0 h-full w-6 bg-white" style={{ clipPath: "polygon(100% 0, 100% 100%, 0 100%)" }} />
           </div>
           <div className="flex-1 bg-brand-light text-brand-dark flex justify-end items-center gap-8 px-6 py-2.5">
-            <span className="flex items-center gap-2"><span className="text-brand-orange">◔</span>24x7 Services</span>
-            <span className="flex items-center gap-2"><span className="text-brand-orange">⌖</span>Jaipur</span>
-            <a href={`mailto:${email}`} className="flex items-center gap-2 hover:text-brand-orange"><span className="text-brand-orange">✉</span>{email}</a>
+            <span className="flex items-center gap-2"><ClockIcon className="w-4 h-4 text-brand-orange" />24x7 Services</span>
+            <span className="flex items-center gap-2"><MapPinIcon className="w-4 h-4 text-brand-orange" />Jaipur, Rajasthan</span>
+            <a href={phoneHref} className="flex items-center gap-2 hover:text-brand-orange"><PhoneIcon className="w-4 h-4 text-brand-orange" />{phone}</a>
+            <a href={`mailto:${email}`} className="flex items-center gap-2 hover:text-brand-orange"><EnvelopeIcon className="w-4 h-4 text-brand-orange" />{email}</a>
           </div>
         </div>
       </div>
@@ -156,10 +170,12 @@ export default function Home() {
           </nav>
           <div className="flex items-center gap-3">
             <a href={phoneHref} className="hidden md:inline-flex items-center gap-2 bg-brand-orange text-white font-heading font-semibold px-6 py-3 rounded-sm hover:bg-brand-navy transition">
-              <span>☏</span> Call Now
+              <PhoneIcon className="w-5 h-5" /> Call Now
             </a>
             <Link href="/login" className="hidden md:inline-flex border border-brand-navy text-brand-navy font-heading font-semibold px-4 py-3 rounded-sm hover:bg-brand-navy hover:text-white transition">Login</Link>
-            <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden text-brand-navy text-3xl leading-none px-2" aria-label="Menu">☰</button>
+            <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden text-brand-navy p-2" aria-label="Menu">
+              {menuOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3Icon className="w-7 h-7" />}
+            </button>
           </div>
         </div>
         {menuOpen && (
@@ -204,12 +220,12 @@ export default function Home() {
         <div className="max-w-[1320px] mx-auto px-4">
           <div className="grid md:grid-cols-2 shadow-xl">
             {(["residential", "commercial"] as const).map((t) => (
-              <a key={t} href="#services" className={`flex items-center justify-between gap-6 px-12 py-10 md:py-12 text-white ${t === "residential" ? "bg-brand-orange" : "bg-brand-navy"}`}>
-                <div className="flex items-center gap-3">
-                  <span className="text-5xl opacity-70 leading-none">{t === "residential" ? "⌂" : "▦"}</span>
+              <a key={t} href="#services" className={`group flex items-center justify-between gap-6 px-12 py-10 md:py-12 text-white ${t === "residential" ? "bg-brand-orange" : "bg-brand-navy"}`}>
+                <div className="flex items-center gap-4">
+                  {t === "residential" ? <HomeModernIcon className="w-14 h-14 shrink-0 opacity-80" /> : <BuildingOffice2Icon className="w-14 h-14 shrink-0 opacity-80" />}
                   <h3 className="font-heading font-semibold text-2xl md:text-[32px] leading-tight max-w-[280px]">{t === "residential" ? "Residential Repair Service" : "Commercial Repair Service"}</h3>
                 </div>
-                <span className="w-16 h-16 shrink-0 rounded-full border border-white/40 flex items-center justify-center text-2xl">→</span>
+                <span className="w-16 h-16 shrink-0 rounded-full border border-white/40 flex items-center justify-center group-hover:bg-white group-hover:text-brand-dark transition"><ArrowRightIcon className="w-6 h-6" /></span>
               </a>
             ))}
           </div>
@@ -220,8 +236,8 @@ export default function Home() {
       <section id="services" className="py-20 bg-brand-light">
         <div className="max-w-[1320px] mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-            <SectionTitle sub="Featured Services" title="Popular repair service" />
-            <a href="#estimate" className="self-start md:self-auto bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-sm hover:bg-brand-navy transition">More Service</a>
+            <SectionTitle sub="Featured Services" title="Popular repair services" />
+            <a href="#estimate" className="self-start md:self-auto inline-flex items-center gap-2 bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-sm hover:bg-brand-navy transition">Book a Service <ArrowRightIcon className="w-4 h-4" /></a>
           </div>
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <div className="grid grid-cols-3 gap-x-4 gap-y-8 max-w-[540px] mx-auto lg:mx-0">
@@ -260,11 +276,11 @@ export default function Home() {
               {company.tagline || "Elehome Solutions PVT. LTD. (Eletox) is Jaipur's trusted AC and home appliance repair company. With 10+ years of experience, 15 professional members and 2 branches, we provide fast, honest and affordable repair for homes and businesses across Jaipur."}
             </p>
             <p className="mt-4 font-heading font-semibold text-brand-dark text-lg flex items-center gap-3">
-              <span className="w-10 h-10 rounded-full bg-brand-orange/15 text-brand-orange flex items-center justify-center">❄</span>
-              Don&apos;t feel heat when there is best air conditioning seat
+              <span className="w-10 h-10 shrink-0 rounded-full bg-brand-orange/15 text-brand-orange flex items-center justify-center"><CheckIcon className="w-5 h-5" /></span>
+              Fast, honest and affordable repairs — every single time
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-6">
-              <a href="#estimate" className="bg-brand-orange text-white font-heading font-semibold px-8 py-4 rounded-sm hover:bg-brand-navy transition">Read More</a>
+              <a href="#estimate" className="bg-brand-orange text-white font-heading font-semibold px-8 py-4 rounded-sm hover:bg-brand-navy transition">Get Free Estimate</a>
               <a href={phoneHref} className="flex items-center gap-3 font-heading">
                 <img src={`${A}/icon-cta.png`} alt="" className="w-10 h-10 object-contain" />
                 <span><span className="block text-xs text-gray-500">Call Us Anytime</span><span className="font-bold text-brand-dark">{phone}</span></span>
@@ -360,15 +376,15 @@ export default function Home() {
         <div className="absolute inset-0 bg-white/90 lg:bg-gradient-to-r lg:from-white lg:via-white/95 lg:to-white/40" />
         <div className="max-w-[1320px] mx-auto px-4 relative grid lg:grid-cols-2 gap-12">
           <div>
-            <SectionTitle sub="Why Choose Us" title="Empower lifes forever better living" />
-            <p className="mt-6 text-gray-600">Elehome combines skilled technicians, genuine parts and honest pricing so every repair lasts longer and every customer stays cool.</p>
-            <div className="mt-10 space-y-8">
+            <SectionTitle sub="Why Choose Us" title="Reliable repairs for better living" />
+            <p className="mt-6 text-gray-600">Eletox combines skilled technicians, genuine parts and honest pricing so every repair lasts longer and every customer stays cool.</p>
+            <div className="mt-10 grid sm:grid-cols-2 gap-8">
               {whyChoose.map((w) => (
-                <div key={w.title} className="flex gap-5">
-                  <div className="w-16 h-16 shrink-0 rounded-full bg-brand-orange text-white flex items-center justify-center text-2xl font-bold">✔</div>
+                <div key={w.title} className="flex gap-4">
+                  <div className="w-14 h-14 shrink-0 rounded-full bg-brand-orange text-white flex items-center justify-center"><w.icon className="w-7 h-7" /></div>
                   <div>
-                    <h4 className="font-heading font-bold text-2xl text-brand-dark mb-2">{w.title}</h4>
-                    <p className="text-gray-600">{w.desc}</p>
+                    <h4 className="font-heading font-bold text-xl text-brand-dark mb-1">{w.title}</h4>
+                    <p className="text-gray-600 text-sm">{w.desc}</p>
                   </div>
                 </div>
               ))}
@@ -390,7 +406,7 @@ export default function Home() {
                 <div className="p-7">
                   <div className="flex gap-4 text-sm text-gray-500 mb-3"><span className="text-brand-orange font-semibold">Eletox</span><span>{b.cat}</span></div>
                   <h4 className="font-heading font-bold text-xl text-brand-dark mb-4 group-hover:text-brand-orange transition">{b.title}</h4>
-                  <a href="#estimate" className="font-heading font-semibold text-brand-navy text-sm">Read More →</a>
+                  <a href="#estimate" className="inline-flex items-center gap-1 font-heading font-semibold text-brand-navy text-sm hover:text-brand-orange transition">Read More <ArrowRightIcon className="w-4 h-4" /></a>
                 </div>
               </article>
             ))}
@@ -401,8 +417,8 @@ export default function Home() {
       {/* CTA */}
       <section className="bg-brand-orange">
         <div className="max-w-[1320px] mx-auto px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-6 text-white">
-          <h3 className="font-heading font-bold text-3xl md:text-4xl">Let&apos;s started with Eletox</h3>
-          <a href={phoneHref} className="bg-white text-brand-navy font-heading font-bold px-8 py-4 rounded-sm hover:bg-brand-navy hover:text-white transition">Call Now {phone}</a>
+          <h3 className="font-heading font-bold text-3xl md:text-4xl">Need a repair today? Let&apos;s get started.</h3>
+          <a href={phoneHref} className="inline-flex items-center gap-2 bg-white text-brand-navy font-heading font-bold px-8 py-4 rounded-sm hover:bg-brand-navy hover:text-white transition"><PhoneIcon className="w-5 h-5" /> {phone}</a>
         </div>
       </section>
 
@@ -413,13 +429,21 @@ export default function Home() {
             <h4 className="text-white font-heading font-bold text-xl mb-5">About Us</h4>
             <p className="text-sm text-gray-400">{company.name || "Elehome Solutions PVT. LTD."} — quality AC, appliance and electrical repair service in Jaipur. 24x7 support, same-day visit and transparent pricing.</p>
             <div className="mt-5 flex gap-3">
-              <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-[#25d366] text-white flex items-center justify-center font-bold">W</a>
-              <a href={phoneHref} className="w-10 h-10 rounded-full bg-brand-orange text-white flex items-center justify-center">☏</a>
-              <a href={`mailto:${email}`} className="w-10 h-10 rounded-full bg-[#4170b7] text-white flex items-center justify-center">✉</a>
+              <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="w-10 h-10 rounded-full bg-[#25d366] text-white flex items-center justify-center hover:opacity-90"><WhatsAppIcon className="w-5 h-5" /></a>
+              <a href={phoneHref} aria-label="Call" className="w-10 h-10 rounded-full bg-brand-orange text-white flex items-center justify-center hover:opacity-90"><PhoneIcon className="w-5 h-5" /></a>
+              <a href={`mailto:${email}`} aria-label="Email" className="w-10 h-10 rounded-full bg-[#4170b7] text-white flex items-center justify-center hover:opacity-90"><EnvelopeIcon className="w-5 h-5" /></a>
             </div>
           </div>
           <div>
-            <h4 className="text-white font-heading font-bold text-xl mb-5">Services</h4>
+            <h4 className="text-white font-heading font-bold text-xl mb-5">Our Services</h4>
+            <ul className="space-y-2 text-sm">
+              {serviceList.slice(0, 6).map((s: any) => (
+                <li key={s._id || s.title}>
+                  {s._id ? <Link href={`/service/?slug=${s.slug}`} className="hover:text-brand-orange transition">{s.title}</Link> : <a href="#estimate" className="hover:text-brand-orange transition">{s.title}</a>}
+                </li>
+              ))}
+            </ul>
+            <h4 className="text-white font-heading font-bold text-xl mb-4 mt-8">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               {navLinks.map((n) => <li key={n.label}><a href={n.href} className="hover:text-brand-orange transition">{n.label}</a></li>)}
             </ul>
@@ -427,9 +451,10 @@ export default function Home() {
           <div>
             <h4 className="text-white font-heading font-bold text-xl mb-5">Contact Info</h4>
             <ul className="space-y-3 text-sm">
-              <li className="flex gap-2"><span className="text-brand-orange">⌖</span><span>{address}</span></li>
-              <li><span className="text-gray-400">Support:</span> <a href={phoneHref} className="text-white hover:text-brand-orange">{phone}</a></li>
-              <li><span className="text-gray-400">Email:</span> <a href={`mailto:${email}`} className="text-white hover:text-brand-orange">{email}</a></li>
+              <li className="flex gap-3"><MapPinIcon className="w-5 h-5 shrink-0 text-brand-orange" /><span>{address}</span></li>
+              <li className="flex gap-3"><PhoneIcon className="w-5 h-5 shrink-0 text-brand-orange" /><a href={phoneHref} className="text-white hover:text-brand-orange">{phone}</a></li>
+              <li className="flex gap-3"><EnvelopeIcon className="w-5 h-5 shrink-0 text-brand-orange" /><a href={`mailto:${email}`} className="text-white hover:text-brand-orange break-all">{email}</a></li>
+              <li className="flex gap-3"><ClockIcon className="w-5 h-5 shrink-0 text-brand-orange" /><span>Open 24x7 — All days</span></li>
             </ul>
           </div>
           <div>
@@ -448,7 +473,9 @@ export default function Home() {
       </footer>
 
       {/* Floating WhatsApp */}
-      <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#25d366] text-white flex items-center justify-center shadow-xl text-2xl font-bold hover:scale-110 transition">W</a>
+      <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" aria-label="Chat on WhatsApp" className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#25d366] text-white flex items-center justify-center shadow-xl hover:scale-110 transition"><WhatsAppIcon className="w-8 h-8" /></a>
+      <a href={phoneHref} aria-label="Call now" className="md:hidden fixed bottom-6 left-6 z-50 w-14 h-14 rounded-full bg-brand-orange text-white flex items-center justify-center shadow-xl"><PhoneIcon className="w-7 h-7" /></a>
+      <a href="#home" aria-label="Back to top" className="hidden md:flex fixed bottom-24 right-6 z-50 w-11 h-11 rounded-full bg-brand-navy text-white items-center justify-center shadow-lg hover:bg-brand-orange transition"><ArrowUpIcon className="w-5 h-5" /></a>
     </main>
   );
 }

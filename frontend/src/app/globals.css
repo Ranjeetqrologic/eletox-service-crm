@@ -74,3 +74,5 @@ body {
     @apply font-medium;
   }
 }
+
+html { scroll-behavior: smooth; scroll-padding-top: 90px; }
