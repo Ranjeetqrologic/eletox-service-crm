@@ -98,7 +98,7 @@ router.post(
 router.put(
   "/:id/accept",
   protect,
-  restrictTo("technician", "admin", "manager"),
+  restrictTo("superadmin", "technician", "admin", "manager"),
   asyncHandler(async (req: Request, res: Response) => {
     const job = await Job.findById(req.params.id);
     if (!job) throw new AppError("Job not found", 404);
@@ -115,7 +115,7 @@ router.put(
 router.put(
   "/:id/checkin",
   protect,
-  restrictTo("technician", "admin", "manager"),
+  restrictTo("superadmin", "technician", "admin", "manager"),
   [body("lat").optional(), body("lng").optional(), body("address").optional()],
   asyncHandler(async (req: Request, res: Response) => {
     const job = await Job.findById(req.params.id);
@@ -133,7 +133,7 @@ router.put(
 router.put(
   "/:id/report",
   protect,
-  restrictTo("technician", "admin", "manager"),
+  restrictTo("superadmin", "technician", "admin", "manager"),
   uploadReportPhotos,
   asyncHandler(async (req: Request, res: Response) => {
     const job = await Job.findById(req.params.id);
@@ -155,6 +155,7 @@ router.put(
       "workDescription",
       "gasFilled",
       "repairNotes",
+      "adminRemark",
       "machineSerialNo",
       "billAmount",
       "receivedAmount",
@@ -195,7 +196,7 @@ router.put(
 router.put(
   "/:id/checkout",
   protect,
-  restrictTo("technician", "admin", "manager"),
+  restrictTo("superadmin", "technician", "admin", "manager"),
   [body("lat").optional(), body("lng").optional(), body("address").optional()],
   asyncHandler(async (req: Request, res: Response) => {
     const job = await Job.findById(req.params.id);

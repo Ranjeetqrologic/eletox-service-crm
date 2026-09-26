@@ -26,6 +26,30 @@ export default function LeadsPage() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [jobModal, setJobModal] = useState<any>(null);
+  const [jobEdit, setJobEdit] = useState<any>(null);
+  const saveJobEdit = async () => {
+    try {
+      const payload: Record<string, any> = { ...jobEdit };
+      ["paymentMode", "billAmount", "receivedAmount", "rating"].forEach((k) => { if (payload[k] === "") delete payload[k]; });
+      const { data } = await api.put(`/jobs/${jobModal._id}/report`, payload);
+      toast.success("Job report updated");
+      setJobModal({ ...jobModal, ...data.data, lead: jobModal.lead, staff: jobModal.staff });
+      setJobEdit(null);
+      fetchLeads();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    }
+  };
+  const startJobEdit = () => setJobEdit({
+    workDescription: jobModal.workDescription || "",
+    machineSerialNo: jobModal.machineSerialNo || jobModal.lead?.machineSerialNo || "",
+    billAmount: jobModal.billAmount ?? "",
+    receivedAmount: jobModal.receivedAmount ?? "",
+    paymentMode: jobModal.paymentMode || "",
+    customerFeedback: jobModal.customerFeedback || "",
+    rating: jobModal.rating ?? "",
+    adminRemark: jobModal.adminRemark || "",
+  });
   const [loadingJob, setLoadingJob] = useState(false);
   const [locationModal, setLocationModal] = useState<any>(null);
 
@@ -328,8 +352,30 @@ export default function LeadsPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Job Details - {jobModal.lead?.leadId}</h2>
-              <button onClick={() => setJobModal(null)} className="text-gray-500 hover:text-gray-700">Close</button>
+              <button onClick={() => { setJobModal(null); setJobEdit(null); }} className="text-gray-500 hover:text-gray-700">Close</button>
             </div>
+            {jobEdit && (
+              <div className="mb-4 border border-amber-200 bg-amber-50 p-4 rounded-xl space-y-3 text-sm">
+                <h3 className="font-semibold text-amber-800">Edit Report (Admin)</h3>
+                <textarea className="border p-2 rounded w-full" rows={2} placeholder="Work Description" value={jobEdit.workDescription} onChange={(e) => setJobEdit({ ...jobEdit, workDescription: e.target.value })} />
+                <div className="grid grid-cols-2 gap-3">
+                  <input className="border p-2 rounded" placeholder="Machine Serial No." value={jobEdit.machineSerialNo} onChange={(e) => setJobEdit({ ...jobEdit, machineSerialNo: e.target.value })} />
+                  <select className="border p-2 rounded" value={jobEdit.paymentMode} onChange={(e) => setJobEdit({ ...jobEdit, paymentMode: e.target.value })}>
+                    <option value="">Payment Mode</option>
+                    <option value="cash">Cash</option><option value="upi">UPI</option><option value="card">Card</option><option value="online">Online</option>
+                  </select>
+                  <input type="number" className="border p-2 rounded" placeholder="Bill Amount" value={jobEdit.billAmount} onChange={(e) => setJobEdit({ ...jobEdit, billAmount: e.target.value })} />
+                  <input type="number" className="border p-2 rounded" placeholder="Received Amount" value={jobEdit.receivedAmount} onChange={(e) => setJobEdit({ ...jobEdit, receivedAmount: e.target.value })} />
+                  <input className="border p-2 rounded" placeholder="Customer Feedback" value={jobEdit.customerFeedback} onChange={(e) => setJobEdit({ ...jobEdit, customerFeedback: e.target.value })} />
+                  <input type="number" min={1} max={5} className="border p-2 rounded" placeholder="Rating 1-5" value={jobEdit.rating} onChange={(e) => setJobEdit({ ...jobEdit, rating: e.target.value })} />
+                </div>
+                <textarea className="border p-2 rounded w-full" rows={2} placeholder="Admin Remark (e.g. wrong info by staff, corrected...)" value={jobEdit.adminRemark} onChange={(e) => setJobEdit({ ...jobEdit, adminRemark: e.target.value })} />
+                <div className="flex gap-2">
+                  <button onClick={saveJobEdit} className="bg-blue-600 text-white px-4 py-2 rounded">Save Changes</button>
+                  <button onClick={() => setJobEdit(null)} className="bg-gray-200 px-4 py-2 rounded">Cancel</button>
+                </div>
+              </div>
+            )}
             <div className="space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl">
                 <div><span className="font-medium text-gray-500">Customer:</span> {jobModal.lead?.customerName}</div>
@@ -350,6 +396,7 @@ export default function LeadsPage() {
                 <div><span className="font-medium text-gray-500">Received Amount:</span> ₹{jobModal.receivedAmount || 0}</div>
                 <div><span className="font-medium text-gray-500">Payment Mode:</span> {jobModal.paymentMode || "-"}</div>
                 <div><span className="font-medium text-gray-500">Customer Feedback:</span> {jobModal.customerFeedback || "-"}</div>
+                <div className="col-span-2"><span className="font-medium text-amber-700">Admin Remark:</span> {jobModal.adminRemark || "-"}</div>
                 <div><span className="font-medium text-gray-500">Rating:</span> {jobModal.rating || "-"}</div>
               </div>
               {[["workingPhotos", "Photos"], ["beforePhotos", "Before Photos"], ["afterPhotos", "After Photos"]].map(([key, label]) => (
@@ -368,8 +415,9 @@ export default function LeadsPage() {
               ))}
             </div>
             <div className="mt-6 flex gap-3">
+              {!jobEdit && <button onClick={startJobEdit} className="bg-amber-500 text-white px-4 py-2 rounded">Edit / Add Remark</button>}
               <button onClick={() => { changeStatus(jobModal.lead._id, "closed"); setJobModal(null); }} className="bg-green-600 text-white px-4 py-2 rounded">Close Lead</button>
-              <button onClick={() => setJobModal(null)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+              <button onClick={() => { setJobModal(null); setJobEdit(null); }} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
             </div>
           </div>
         </div>
