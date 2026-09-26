@@ -3,12 +3,296 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeftIcon, PhoneIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowLeftIcon, PhoneIcon, CheckCircleIcon, ArrowRightIcon, ClockIcon,
+  ShieldCheckIcon, CurrencyRupeeIcon, WrenchScrewdriverIcon, MapPinIcon, EnvelopeIcon,
+} from "@heroicons/react/24/outline";
 import api from "@/lib/api";
 import { getImageUrl } from "@/lib/utils";
 import Logo from "@/components/Logo";
 
+const A = "/eletox-assets";
 const DEFAULT_PHONE = "+91 9571071342";
+const DEFAULT_EMAIL = "eletox07@gmail.com";
+const DEFAULT_ADDRESS = "Tilak Vihar, Gokulpura, near Gs Swimming Pool, Jhotwara, Jaipur, Rajasthan 302012";
+const phoneHref = `tel:${DEFAULT_PHONE.replace(/[^+\d]/g, "")}`;
+const waHref = `https://wa.me/${DEFAULT_PHONE.replace(/[^\d]/g, "")}`;
+
+type Content = {
+  image: string;
+  intro: string;
+  includes: string[];
+  problems: string[];
+  brands?: string;
+  faqs: { q: string; a: string }[];
+};
+
+const CONTENT: Record<string, Content> = {
+  "ac-repair-service": {
+    image: `${A}/service-ac-repair-service.jpg`,
+    intro:
+      "Eletox provides complete air conditioner repair and servicing in Jaipur for split, window and cassette ACs of every brand. Our certified technicians reach your doorstep, diagnose the fault with proper tools, and fix it the first time using genuine spare parts — so your home or office stays cool through the Rajasthan summer.",
+    includes: [
+      "Complete AC inspection and fault diagnosis",
+      "Filter, coil and drain-tray deep cleaning (jet / foam wash)",
+      "Gas pressure check, leak detection and gas top-up / full charge",
+      "Compressor, PCB, capacitor, fan motor and thermostat repair",
+      "Split / window AC installation, uninstallation and relocation",
+      "Annual Maintenance Contract (AMC) for homes, shops and offices",
+    ],
+    problems: [
+      "AC not cooling or cooling very slowly",
+      "Water leaking from indoor unit",
+      "Unusual noise, vibration or bad smell",
+      "AC turns off automatically / tripping",
+      "Remote or display not working",
+      "Ice formation on pipes or coil",
+    ],
+    brands: "Daikin, Voltas, LG, Samsung, Blue Star, Hitachi, Carrier, Lloyd, Whirlpool, O General, Panasonic and more.",
+    faqs: [
+      { q: "How often should I service my AC?", a: "We recommend a full service twice a year — before summer and after monsoon — to maintain cooling and lower electricity bills." },
+      { q: "Do you provide gas refilling at home?", a: "Yes. We check for leaks first, repair them, and then refill gas (R22 / R32 / R410A) at your location with proper pressure testing." },
+      { q: "Is there any warranty on the repair?", a: "Yes, every repair and replaced spare part comes with a service warranty. Details are shared on the bill." },
+    ],
+  },
+  "ac-pipe-line": {
+    image: `${A}/service-ac-pipe-line.jpg`,
+    intro:
+      "Proper copper pipe line work is the foundation of an efficient, leak-free air conditioner. Eletox installs and repairs AC copper piping, drain lines and electrical wiring with insulation sleeves and neat concealed or open routing for homes, flats, offices and showrooms across Jaipur.",
+    includes: [
+      "Copper pipe line (¼\", ⅜\", ½\", ⅝\") supply and fitting",
+      "Insulation sleeves, PVC casing and clamps for a clean finish",
+      "Drain pipe and condensate line fitting with proper slope",
+      "Brazing / welding of joints and nitrogen pressure testing",
+      "Wiring between indoor and outdoor units",
+      "Pipe line for new construction, renovation and multi-unit projects",
+    ],
+    problems: [
+      "Gas leakage from old or damaged pipe joints",
+      "Water dripping due to blocked / wrong-slope drain pipe",
+      "Ugly exposed piping — need concealed line",
+      "Extra length required when relocating the outdoor unit",
+      "Pipe insulation torn, causing sweating and energy loss",
+    ],
+    faqs: [
+      { q: "Do you do concealed pipe line for under-construction homes?", a: "Yes. We plan and lay concealed copper and drain lines at the construction stage so the AC installation later is neat and quick." },
+      { q: "Is the copper pipe genuine?", a: "We use branded, refrigeration-grade copper with proper insulation and give a fitting warranty." },
+    ],
+  },
+  "washing-machine-repair": {
+    image: `${A}/service-washing-machine-repair.jpg`,
+    intro:
+      "From a machine that won't spin to one that leaks or won't drain, Eletox repairs all top-load, front-load and semi-automatic washing machines at your home in Jaipur. We carry commonly needed spare parts so most repairs are completed in a single visit.",
+    includes: [
+      "Complete fault diagnosis and repair at home",
+      "Motor, drum, belt, bearing and gearbox repair",
+      "PCB / control board, timer and sensor replacement",
+      "Inlet valve, drain pump and door-lock repair",
+      "Drum and tub deep cleaning and descaling",
+      "Installation, demo and relocation of washing machines",
+    ],
+    problems: [
+      "Machine not starting or stopping mid-cycle",
+      "Not spinning, draining or filling water",
+      "Water leakage from bottom or door",
+      "Loud noise or heavy vibration while spinning",
+      "Error codes on display",
+      "Clothes not cleaning properly / bad smell",
+    ],
+    brands: "LG, Samsung, IFB, Whirlpool, Bosch, Haier, Godrej, Panasonic, Voltas Beko and more.",
+    faqs: [
+      { q: "Do you repair front-load machines?", a: "Yes, our technicians are trained for top-load, front-load, semi-automatic and fully automatic machines of all brands." },
+      { q: "Will the technician bring spare parts?", a: "Common parts are carried along. If a specific part is needed, we source a genuine one and complete the repair quickly." },
+    ],
+  },
+  "microwave-repair": {
+    image: `${A}/service-microwave-repair.jpg`,
+    intro:
+      "Eletox offers fast doorstep repair for solo, grill and convection microwave ovens. Whether your microwave isn't heating, is sparking, or its touch panel has stopped responding, our technicians fix it safely with genuine parts and test it thoroughly before handing it back.",
+    includes: [
+      "Magnetron, high-voltage diode and capacitor replacement",
+      "Touch panel / keypad and display repair",
+      "Turntable motor, door switch and hinge repair",
+      "Heating element and fan repair for grill / convection models",
+      "Interior cleaning and safety (radiation leakage) check",
+    ],
+    problems: [
+      "Microwave not heating food",
+      "Sparking or burning smell inside",
+      "Buttons / touch panel not working",
+      "Turntable not rotating",
+      "Door not closing or machine not starting",
+      "Excessive noise while running",
+    ],
+    brands: "LG, Samsung, IFB, Whirlpool, Bajaj, Morphy Richards, Panasonic, Godrej and more.",
+    faqs: [
+      { q: "Is it safe to repair a microwave at home?", a: "Yes. Our technicians follow proper discharge and safety procedures and check for radiation leakage after every repair." },
+      { q: "Is repair cheaper than buying a new microwave?", a: "In most cases yes — common faults like magnetron, diode or touch panel are far cheaper to repair than replacement." },
+    ],
+  },
+  "geyser-repair-service": {
+    image: `${A}/service-geyser-repair-service.jpg`,
+    intro:
+      "Hot water problems in winter? Eletox repairs and services storage, instant and gas geysers of all brands at your home in Jaipur — from heating element and thermostat replacement to descaling and safe installation.",
+    includes: [
+      "Heating element and thermostat replacement",
+      "Tank descaling and cleaning for hard-water areas",
+      "Safety valve, pressure valve and inlet/outlet repair",
+      "Electrical wiring, MCB and earthing check",
+      "Geyser installation, uninstallation and relocation",
+      "Gas geyser burner and ignition repair",
+    ],
+    problems: [
+      "Water not heating or heating slowly",
+      "Water leaking from tank or pipes",
+      "Geyser tripping MCB / electric shock",
+      "Indicator light not turning on",
+      "Low hot water pressure",
+      "Noise or smell from geyser",
+    ],
+    brands: "Bajaj, Racold, AO Smith, Havells, Crompton, V-Guard, Venus, Usha and more.",
+    faqs: [
+      { q: "Why is my geyser giving less hot water than before?", a: "Usually scale build-up on the element or inside the tank. Our descaling service restores heating and extends geyser life." },
+      { q: "Do you install new geysers?", a: "Yes — including wall drilling, pipe connections, electrical point and safety testing." },
+    ],
+  },
+  "water-purifier-repair": {
+    image: `${A}/service-water-purifier-repair.jpg`,
+    intro:
+      "Clean drinking water needs a healthy purifier. Eletox services and repairs RO, UV and UF water purifiers at home — filter and membrane replacement, TDS adjustment, leakage repair and complete sanitisation — for all major brands in Jaipur.",
+    includes: [
+      "Sediment, carbon and RO membrane filter replacement",
+      "UV lamp, SMPS / adaptor and pump repair",
+      "TDS check and adjustment for healthy mineral level",
+      "Leakage, low-flow and auto-cut (float) repair",
+      "Complete tank cleaning and sanitisation",
+      "New purifier installation and AMC plans",
+    ],
+    problems: [
+      "Slow or no water flow",
+      "Bad taste or smell in water",
+      "Water leaking from unit",
+      "Purifier not switching on / UV not glowing",
+      "Continuous waste-water drain",
+      "Filter change indicator blinking",
+    ],
+    brands: "Kent, Aquaguard (Eureka Forbes), Livpure, Pureit, Blue Star, AO Smith, Havells, Tata Swach and more.",
+    faqs: [
+      { q: "How often should RO filters be changed?", a: "Pre-filters every 6–12 months and the RO membrane every 2–3 years depending on your water quality. We check TDS and advise accordingly." },
+      { q: "Do you use original filters?", a: "Yes, we use genuine / compatible high-quality filters and membranes with warranty." },
+    ],
+  },
+  "water-dispenser-repair": {
+    image: `${A}/service-water-dispenser-repair.jpg`,
+    intro:
+      "Eletox repairs hot & cold water dispensers for homes, offices, clinics and shops. Our technicians fix cooling, heating, leakage and electrical faults on bottle-top and bottom-load dispensers of all brands, right at your location.",
+    includes: [
+      "Compressor and cooling system repair, gas charging",
+      "Heating tank / element and thermostat replacement",
+      "Tap, float valve and leakage repair",
+      "Electrical, wiring and indicator repair",
+      "Internal tank cleaning and sanitisation",
+      "Installation and AMC for offices",
+    ],
+    problems: [
+      "Water not cold or not hot",
+      "Water leaking from dispenser",
+      "Dispenser not switching on",
+      "Tap dripping or stuck",
+      "Bad taste or smell in water",
+    ],
+    brands: "Voltas, Blue Star, Usha, Atlantis, Kent, Bajaj and more.",
+    faqs: [
+      { q: "Do you service dispensers at offices?", a: "Yes. We offer on-site repair and annual maintenance contracts for offices, schools and clinics." },
+    ],
+  },
+  "water-cooler-repair": {
+    image: `${A}/service-water-cooler-repair.jpg`,
+    intro:
+      "For schools, offices, hospitals, temples and factories, Eletox provides repair and maintenance of commercial and domestic water coolers — cooling problems, gas charging, compressor repair and tank leakage — with quick turnaround across Jaipur.",
+    includes: [
+      "Compressor, condenser and fan motor repair",
+      "Gas leak detection and gas charging",
+      "Thermostat, relay and capacitor replacement",
+      "Tank leakage, tap and float valve repair",
+      "Descaling, tank cleaning and sanitisation",
+      "Installation, relocation and AMC",
+    ],
+    problems: [
+      "Water not cooling or cooling slowly",
+      "Compressor not starting / tripping",
+      "Water leaking from tank or pipes",
+      "Excess noise or vibration",
+      "Electric shock or wiring issue",
+    ],
+    brands: "Voltas, Blue Star, Usha, Sidwal, Kelvinator and local brands.",
+    faqs: [
+      { q: "Do you handle large-capacity coolers?", a: "Yes, from 20 L domestic coolers to 150 L+ commercial units for institutions and factories." },
+    ],
+  },
+  electrician: {
+    image: `${A}/service-electrician.jpg`,
+    intro:
+      "Need a reliable electrician in Jaipur? Eletox's certified electricians handle everything from a single switch or fan repair to complete house wiring, MCB / DB panel work and appliance points — safely, neatly and at transparent rates.",
+    includes: [
+      "Switch, socket, fan, light and fixture installation & repair",
+      "MCB, RCCB, distribution board and earthing work",
+      "Short-circuit, tripping and fault finding",
+      "Complete / partial house and shop wiring",
+      "AC, geyser and appliance power points",
+      "Inverter, stabiliser and meter connection work",
+    ],
+    problems: [
+      "Frequent MCB tripping or fuse blowing",
+      "Sparking switches / burning smell",
+      "Fan or light not working",
+      "Low voltage or fluctuation in some rooms",
+      "Electric shock from appliances",
+      "New point or wiring needed for renovation",
+    ],
+    faqs: [
+      { q: "Are your electricians certified?", a: "Yes. All Eletox electricians are trained, ID-verified and follow safety standards for residential and commercial work." },
+      { q: "Do you provide emergency service?", a: "Yes — call us for urgent faults like sparking, tripping or power failure; we provide same-day and emergency visits." },
+    ],
+  },
+};
+
+const GENERIC: Content = {
+  image: `${A}/choose-bg.jpg`,
+  intro:
+    "Eletox provides professional doorstep repair and maintenance in Jaipur with certified technicians, genuine spare parts and transparent pricing. Book online or call us and get your appliance working like new.",
+  includes: [
+    "Complete inspection and fault diagnosis",
+    "Repair with genuine spare parts",
+    "Cleaning, servicing and safety check",
+    "Installation, uninstallation and relocation",
+    "Annual Maintenance Contract (AMC)",
+  ],
+  problems: [
+    "Appliance not working or working slowly",
+    "Unusual noise, smell or leakage",
+    "Electrical / tripping issues",
+    "Regular servicing and maintenance",
+  ],
+  faqs: [
+    { q: "How soon can a technician come?", a: "Same-day visits are available across Jaipur. Book before noon and we usually reach the same day." },
+    { q: "Is there a warranty on repairs?", a: "Yes, every repair and replaced part comes with a service warranty mentioned on your bill." },
+  ],
+};
+
+const steps = [
+  { n: "01", t: "Book", d: "Call, WhatsApp or fill the form — choose a convenient time." },
+  { n: "02", t: "Inspect", d: "Technician visits, diagnoses the fault and shares a clear estimate." },
+  { n: "03", t: "Repair", d: "Approved work is done with genuine parts, right at your place." },
+  { n: "04", t: "Warranty", d: "You get a bill with service warranty and after-service support." },
+];
+
+const promises = [
+  { icon: WrenchScrewdriverIcon, t: "Certified Technicians" },
+  { icon: ClockIcon, t: "Same-Day Service" },
+  { icon: CurrencyRupeeIcon, t: "Transparent Pricing" },
+  { icon: ShieldCheckIcon, t: "Service Warranty" },
+];
 
 function ServiceContent() {
   const searchParams = useSearchParams();
@@ -16,6 +300,7 @@ function ServiceContent() {
   const [service, setService] = useState<any>(null);
   const [others, setOthers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openFaq, setOpenFaq] = useState(0);
 
   useEffect(() => {
     api.get("/services/public").then((res) => setOthers(res.data.data || [])).catch(() => setOthers([]));
@@ -27,6 +312,7 @@ function ServiceContent() {
       return;
     }
     setLoading(true);
+    setOpenFaq(0);
     api.get(`/services/public/${slug}`)
       .then((res) => setService(res.data.data))
       .catch(() => setService(null))
@@ -42,47 +328,199 @@ function ServiceContent() {
   if (loading) return <div className="py-24 text-center text-gray-500">Loading...</div>;
   if (!service) return empty("Service not found.");
 
+  const c = CONTENT[slug] ?? GENERIC;
+  const isIcon = !!service.image && /icon-/.test(service.image);
+  const heroImg = service.image && !isIcon ? getImageUrl(service.image) : c.image;
+
   return (
     <>
-      <section className="bg-brand-navy text-white py-14">
-        <div className="max-w-[1320px] mx-auto px-4">
-          <p className="text-sm text-white/70 mb-3"><Link href="/" className="hover:text-white">Home</Link> / <Link href="/#services" className="hover:text-white">Services</Link> / <span className="text-white">{service.title}</span></p>
-          <h1 className="font-heading font-bold text-4xl md:text-5xl">{service.title}</h1>
-          {service.shortDesc && <p className="mt-4 text-lg text-white/85 max-w-3xl">{service.shortDesc}</p>}
+      {/* Hero */}
+      <section className="relative bg-brand-navy text-white">
+        <img src={heroImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/90 to-brand-navy/60" />
+        <div className="relative max-w-[1320px] mx-auto px-4 py-20 md:py-28">
+          <p className="text-sm text-white/70 mb-4 flex items-center gap-2">
+            <Link href="/" className="hover:text-white">Home</Link> <span>/</span>
+            <Link href="/#services" className="hover:text-white">Services</Link> <span>/</span>
+            <span className="text-white">{service.title}</span>
+          </p>
+          <div className="flex items-start gap-6">
+            {isIcon && (
+              <div className="hidden md:flex w-24 h-24 bg-white rounded-2xl items-center justify-center shrink-0 shadow-lg">
+                <img src={getImageUrl(service.image)} alt="" className="w-16 h-16 object-contain" />
+              </div>
+            )}
+            <div>
+              <h1 className="font-heading font-bold text-4xl md:text-6xl leading-tight">{service.title}</h1>
+              <p className="mt-5 text-lg md:text-xl text-white/85 max-w-3xl">
+                {service.shortDesc || `Professional ${service.title.toLowerCase()} at your doorstep in Jaipur.`}
+              </p>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Link href="/#estimate" className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-8 py-4 rounded-sm">
+                  Book Now
+                </Link>
+                <a href={phoneHref} className="inline-flex items-center gap-2 border-2 border-white/60 hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-8 py-4 rounded-sm">
+                  <PhoneIcon className="w-5 h-5" /> {DEFAULT_PHONE}
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="py-16">
+      {/* Promise strip */}
+      <section className="bg-brand-orange text-white">
+        <div className="max-w-[1320px] mx-auto px-4 py-5 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {promises.map((p) => (
+            <div key={p.t} className="flex items-center gap-3 justify-center">
+              <p.icon className="w-7 h-7" />
+              <span className="font-heading font-semibold">{p.t}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="py-16 md:py-20">
         <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2">
-            <div className="bg-brand-light rounded-xl p-8 flex items-center justify-center mb-8">
-              {service.image ? <img src={getImageUrl(service.image)} alt={service.title} className="max-h-72 object-contain" /> : null}
+          <div className="lg:col-span-2 space-y-14">
+            <div>
+              <img src={heroImg} alt={service.title} className="w-full h-[280px] md:h-[440px] object-cover rounded-2xl shadow-xl" />
+              <h2 className="font-heading font-bold text-3xl text-brand-dark mt-10 mb-4">About this service</h2>
+              <p className="text-gray-700 leading-relaxed text-[17px]">{c.intro}</p>
+              {service.description && service.description !== service.shortDesc && (
+                <p className="text-gray-700 leading-relaxed text-[17px] mt-4 whitespace-pre-line">{service.description}</p>
+              )}
+              {c.brands && (
+                <p className="mt-5 text-sm text-gray-600 bg-brand-light border-l-4 border-brand-orange px-4 py-3 rounded-r-lg">
+                  <span className="font-semibold text-brand-dark">Brands we service:</span> {c.brands}
+                </p>
+              )}
             </div>
-            <div className="text-gray-700 leading-relaxed whitespace-pre-line text-[17px]">{service.description || service.shortDesc}</div>
-            <ul className="mt-8 grid sm:grid-cols-2 gap-3 text-sm text-gray-700">
-              {["Certified & experienced technicians", "Genuine spare parts", "Same-day doorstep service", "Transparent pricing, no hidden charges"].map((t) => (
-                <li key={t} className="flex items-start gap-2"><CheckCircleIcon className="w-5 h-5 text-brand-orange shrink-0" />{t}</li>
-              ))}
-            </ul>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-brand-light rounded-2xl p-7">
+                <h3 className="font-heading font-bold text-2xl text-brand-dark mb-5">What's included</h3>
+                <ul className="space-y-3">
+                  {c.includes.map((t) => (
+                    <li key={t} className="flex items-start gap-3 text-gray-700">
+                      <CheckCircleIcon className="w-6 h-6 text-brand-orange shrink-0" />
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-brand-navy text-white rounded-2xl p-7">
+                <h3 className="font-heading font-bold text-2xl mb-5">Common problems we fix</h3>
+                <ul className="space-y-3">
+                  {c.problems.map((t) => (
+                    <li key={t} className="flex items-start gap-3 text-white/90">
+                      <WrenchScrewdriverIcon className="w-5 h-5 text-brand-orange shrink-0 mt-0.5" />
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-heading font-bold text-3xl text-brand-dark mb-8">How it works</h3>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {steps.map((s) => (
+                  <div key={s.n} className="border border-gray-100 rounded-xl p-6 hover:shadow-lg transition bg-white">
+                    <div className="font-heading font-bold text-4xl text-brand-orange/30">{s.n}</div>
+                    <div className="font-heading font-bold text-lg text-brand-dark mt-2">{s.t}</div>
+                    <p className="text-sm text-gray-600 mt-2 leading-relaxed">{s.d}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-heading font-bold text-3xl text-brand-dark mb-6">Frequently asked questions</h3>
+              <div className="divide-y border rounded-2xl overflow-hidden">
+                {c.faqs.map((f, i) => (
+                  <div key={f.q}>
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaq(openFaq === i ? -1 : i)}
+                      className="w-full flex justify-between items-center text-left px-6 py-5 font-heading font-semibold text-brand-dark hover:bg-brand-light transition"
+                    >
+                      {f.q}
+                      <span className={`text-brand-orange text-2xl leading-none transition-transform ${openFaq === i ? "rotate-45" : ""}`}>+</span>
+                    </button>
+                    {openFaq === i && <p className="px-6 pb-5 text-gray-600 leading-relaxed">{f.a}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <aside className="space-y-6">
-            <div className="bg-brand-orange text-white p-7 rounded-xl shadow-lg">
-              {service.price ? <p className="text-sm uppercase tracking-wide text-white/80">Starting at</p> : null}
-              {service.price ? <p className="font-heading font-bold text-4xl mb-4">₹{service.price}</p> : <p className="font-heading font-bold text-2xl mb-4">Book this service</p>}
-              <Link href="/#estimate" className="block text-center bg-brand-navy hover:bg-brand-dark transition text-white font-heading font-semibold py-3.5 rounded-sm">Appointment Now</Link>
-              <a href={`tel:${DEFAULT_PHONE.replace(/[^+\d]/g, "")}`} className="mt-3 flex items-center justify-center gap-2 bg-white text-brand-navy font-heading font-semibold py-3.5 rounded-sm hover:bg-brand-light transition"><PhoneIcon className="w-5 h-5" /> {DEFAULT_PHONE}</a>
+
+          <aside className="space-y-6 lg:sticky lg:top-24 self-start">
+            <div className="bg-brand-orange text-white p-7 rounded-2xl shadow-lg">
+              {service.price ? (
+                <>
+                  <p className="text-sm uppercase tracking-wide text-white/80">Visit & inspection from</p>
+                  <p className="font-heading font-bold text-5xl mb-1">₹{service.price}</p>
+                  <p className="text-sm text-white/80 mb-5">Final quote shared before work starts</p>
+                </>
+              ) : (
+                <p className="font-heading font-bold text-2xl mb-4">Book this service</p>
+              )}
+              <Link href="/#estimate" className="block text-center bg-brand-navy hover:bg-brand-dark transition text-white font-heading font-semibold py-3.5 rounded-sm">
+                Book Appointment
+              </Link>
+              <a href={phoneHref} className="mt-3 flex items-center justify-center gap-2 bg-white text-brand-navy font-heading font-semibold py-3.5 rounded-sm hover:bg-brand-light transition">
+                <PhoneIcon className="w-5 h-5" /> {DEFAULT_PHONE}
+              </a>
+              <a href={waHref} target="_blank" rel="noreferrer" className="mt-3 flex items-center justify-center gap-2 bg-[#25D366] text-white font-heading font-semibold py-3.5 rounded-sm hover:brightness-110 transition">
+                Chat on WhatsApp
+              </a>
+              <div className="mt-5 pt-5 border-t border-white/30 text-sm text-white/90 space-y-2">
+                <p className="flex items-center gap-2"><ClockIcon className="w-4 h-4" /> Open 24×7 — All days</p>
+                <p className="flex items-center gap-2"><MapPinIcon className="w-4 h-4" /> Service across Jaipur</p>
+              </div>
             </div>
+
             {others.length > 1 && (
-              <div className="border rounded-xl p-6">
-                <h3 className="font-heading font-bold text-lg text-brand-dark mb-4">Other Services</h3>
-                <ul className="space-y-2 text-sm">
-                  {others.filter((o) => o.slug !== slug).slice(0, 8).map((o) => (
-                    <li key={o._id}><Link href={`/service/?slug=${o.slug}`} className="text-gray-700 hover:text-brand-orange transition">{o.title}</Link></li>
+              <div className="border border-gray-100 rounded-2xl p-6 shadow-sm">
+                <h3 className="font-heading font-bold text-xl text-brand-dark mb-4">Our Services</h3>
+                <ul className="divide-y">
+                  {others.map((o) => (
+                    <li key={o._id}>
+                      <Link
+                        href={`/service/?slug=${o.slug}`}
+                        className={`flex items-center justify-between py-3 text-sm transition ${o.slug === slug ? "text-brand-orange font-semibold" : "text-gray-700 hover:text-brand-orange"}`}
+                      >
+                        {o.title} <ArrowRightIcon className="w-4 h-4" />
+                      </Link>
+                    </li>
                   ))}
                 </ul>
               </div>
             )}
+
+            <div className="bg-brand-light rounded-2xl p-6">
+              <h3 className="font-heading font-bold text-xl text-brand-dark mb-3">Need help choosing?</h3>
+              <p className="text-sm text-gray-600 mb-4">Tell us the problem — our team will guide you and send the right technician.</p>
+              <a href={`mailto:${DEFAULT_EMAIL}`} className="flex items-center gap-2 text-sm text-brand-navy font-semibold hover:text-brand-orange">
+                <EnvelopeIcon className="w-4 h-4" /> {DEFAULT_EMAIL}
+              </a>
+            </div>
           </aside>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-brand-navy text-white">
+        <div className="max-w-[1320px] mx-auto px-4 py-14 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h3 className="font-heading font-bold text-3xl md:text-4xl">Need {service.title.toLowerCase()} today?</h3>
+            <p className="text-white/80 mt-2">Same-day doorstep service across Jaipur. Genuine parts, warranty included.</p>
+          </div>
+          <div className="flex flex-wrap gap-4">
+            <Link href="/#estimate" className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-8 py-4 rounded-sm">Get Free Estimate</Link>
+            <a href={phoneHref} className="inline-flex items-center gap-2 bg-white text-brand-navy hover:bg-brand-orange hover:text-white transition font-heading font-semibold px-8 py-4 rounded-sm"><PhoneIcon className="w-5 h-5" /> Call Now</a>
+          </div>
         </div>
       </section>
     </>
@@ -95,7 +533,12 @@ export default function ServicePage() {
       <header className="bg-white shadow-[0_2px_20px_rgba(0,0,0,0.06)] sticky top-0 z-50">
         <div className="max-w-[1320px] mx-auto px-4 py-3 flex justify-between items-center">
           <Link href="/"><Logo height={62} /></Link>
-          <Link href="/" className="inline-flex items-center gap-2 font-heading font-semibold text-brand-navy hover:text-brand-orange transition"><ArrowLeftIcon className="w-5 h-5" /> Back Home</Link>
+          <div className="flex items-center gap-6">
+            <a href={phoneHref} className="hidden md:inline-flex items-center gap-2 font-heading font-bold text-brand-dark hover:text-brand-orange transition">
+              <PhoneIcon className="w-5 h-5 text-brand-orange" /> {DEFAULT_PHONE}
+            </a>
+            <Link href="/" className="inline-flex items-center gap-2 font-heading font-semibold text-brand-navy hover:text-brand-orange transition"><ArrowLeftIcon className="w-5 h-5" /> Back Home</Link>
+          </div>
         </div>
       </header>
 
@@ -103,8 +546,25 @@ export default function ServicePage() {
         <ServiceContent />
       </Suspense>
 
-      <footer className="bg-brand-dark text-gray-400 py-6 text-center text-sm">
-        <p>&copy; {new Date().getFullYear()} ELEHOME SOLUTIONS PVT LTD - All Rights Reserved. Designed by QROLOGIC SOFTECH AND RESEARCH PRIVATE LIMITED</p>
+      <footer className="bg-brand-dark text-gray-300">
+        <div className="max-w-[1320px] mx-auto px-4 py-10 grid md:grid-cols-3 gap-8 text-sm">
+          <div>
+            <div className="bg-white rounded-lg p-3 inline-block mb-4"><Logo height={44} /></div>
+            <p className="text-gray-400 leading-relaxed">Eletox AC Services — Jaipur's trusted AC, appliance and electrical repair company. 24×7 support, same-day doorstep visit and transparent pricing.</p>
+          </div>
+          <div className="flex items-start gap-3"><MapPinIcon className="w-5 h-5 text-brand-orange shrink-0 mt-0.5" /><span>{DEFAULT_ADDRESS}</span></div>
+          <div className="space-y-3">
+            <a href={phoneHref} className="flex items-center gap-3 hover:text-white"><PhoneIcon className="w-5 h-5 text-brand-orange" /> {DEFAULT_PHONE}</a>
+            <a href={`mailto:${DEFAULT_EMAIL}`} className="flex items-center gap-3 hover:text-white"><EnvelopeIcon className="w-5 h-5 text-brand-orange" /> {DEFAULT_EMAIL}</a>
+            <p className="flex items-center gap-3"><ClockIcon className="w-5 h-5 text-brand-orange" /> Open 24×7 — All days</p>
+          </div>
+        </div>
+        <div className="border-t border-white/10">
+          <div className="max-w-[1320px] mx-auto px-4 py-5 text-sm text-gray-400 flex flex-col md:flex-row justify-between items-center gap-3 text-center md:text-left">
+            <p>&copy; {new Date().getFullYear()} Eletox AC Services — All Rights Reserved.</p>
+            <p>Designed by <span className="text-white font-semibold">QROLOGIC SOFTECH AND RESEARCH PRIVATE LIMITED</span></p>
+          </div>
+        </div>
       </footer>
     </main>
   );
