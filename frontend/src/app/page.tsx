@@ -372,22 +372,33 @@ export default function Home() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="relative py-24 bg-cover bg-center" style={{ backgroundImage: `url('${A}/choose-bg.jpg')` }}>
-        <div className="absolute inset-0 bg-white/90 lg:bg-gradient-to-r lg:from-white lg:via-white/95 lg:to-white/40" />
-        <div className="max-w-[1320px] mx-auto px-4 relative grid lg:grid-cols-2 gap-12">
+      <section className="py-24 bg-white">
+        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-14 items-center">
+          <div className="relative">
+            <img src={`${A}/choose-bg.jpg`} alt="Eletox technician at work" className="w-full h-[420px] lg:h-[560px] object-cover rounded-2xl shadow-2xl" />
+            <div className="absolute -bottom-6 left-6 md:left-10 bg-brand-navy text-white rounded-xl px-7 py-5 shadow-xl flex items-center gap-4">
+              <ShieldCheckIcon className="w-12 h-12 text-brand-orange" />
+              <div>
+                <div className="font-heading font-bold text-2xl leading-none">100% Genuine</div>
+                <div className="text-sm text-white/80 mt-1">Spare parts &amp; service warranty</div>
+              </div>
+            </div>
+          </div>
           <div>
             <SectionTitle sub="Why Choose Us" title="Reliable repairs for better living" />
-            <p className="mt-6 text-gray-600">Eletox combines skilled technicians, genuine parts and honest pricing so every repair lasts longer and every customer stays cool.</p>
-            <div className="mt-10 grid sm:grid-cols-2 gap-8">
+            <p className="mt-6 text-gray-600 text-lg">Eletox combines skilled technicians, genuine parts and honest pricing so every repair lasts longer and every customer stays cool.</p>
+            <div className="mt-10 grid sm:grid-cols-2 gap-5">
               {whyChoose.map((w) => (
-                <div key={w.title} className="flex gap-4">
-                  <div className="w-14 h-14 shrink-0 rounded-full bg-brand-orange text-white flex items-center justify-center"><w.icon className="w-7 h-7" /></div>
-                  <div>
-                    <h4 className="font-heading font-bold text-xl text-brand-dark mb-1">{w.title}</h4>
-                    <p className="text-gray-600 text-sm">{w.desc}</p>
-                  </div>
+                <div key={w.title} className="group bg-brand-light border border-gray-100 rounded-xl p-6 hover:bg-brand-navy hover:border-brand-navy transition-colors duration-300">
+                  <div className="w-14 h-14 rounded-xl bg-brand-orange text-white flex items-center justify-center mb-5 shadow-md"><w.icon className="w-7 h-7" /></div>
+                  <h4 className="font-heading font-bold text-xl text-brand-dark group-hover:text-white mb-2 transition-colors">{w.title}</h4>
+                  <p className="text-gray-600 group-hover:text-white/80 text-sm leading-relaxed transition-colors">{w.desc}</p>
                 </div>
               ))}
+            </div>
+            <div className="mt-10 flex flex-wrap items-center gap-6">
+              <a href="#estimate" className="bg-brand-orange text-white font-heading font-semibold px-8 py-4 rounded-sm hover:bg-brand-navy transition">Book a Technician</a>
+              <a href={phoneHref} className="inline-flex items-center gap-3 font-heading font-bold text-brand-dark hover:text-brand-orange transition"><PhoneIcon className="w-6 h-6 text-brand-orange" /> {phone}</a>
             </div>
           </div>
         </div>
@@ -424,51 +435,53 @@ export default function Home() {
 
       {/* Footer */}
       <footer id="contact" className="bg-brand-dark text-gray-300 pt-16 pb-6">
-        <div className="max-w-[1320px] mx-auto px-4 grid md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+        <div className="max-w-[1320px] mx-auto px-4 grid md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.3fr] gap-10 lg:gap-14 mb-14">
           <div>
-            <h4 className="text-white font-heading font-bold text-xl mb-5">About Us</h4>
-            <p className="text-sm text-gray-400">{company.name || "Elehome Solutions PVT. LTD."} — quality AC, appliance and electrical repair service in Jaipur. 24x7 support, same-day visit and transparent pricing.</p>
-            <div className="mt-5 flex gap-3">
+            <div className="inline-block bg-white rounded-lg px-3 py-2 mb-5"><Logo logoUrl={company.logo} height={44} /></div>
+            <p className="text-sm text-gray-400 leading-relaxed">{company.name || "Elehome Solutions PVT. LTD."} — Jaipur&apos;s trusted AC, appliance and electrical repair company. 24x7 support, same-day doorstep visit and transparent pricing.</p>
+            <div className="mt-6 flex gap-3">
               <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="w-10 h-10 rounded-full bg-[#25d366] text-white flex items-center justify-center hover:opacity-90"><WhatsAppIcon className="w-5 h-5" /></a>
               <a href={phoneHref} aria-label="Call" className="w-10 h-10 rounded-full bg-brand-orange text-white flex items-center justify-center hover:opacity-90"><PhoneIcon className="w-5 h-5" /></a>
               <a href={`mailto:${email}`} aria-label="Email" className="w-10 h-10 rounded-full bg-[#4170b7] text-white flex items-center justify-center hover:opacity-90"><EnvelopeIcon className="w-5 h-5" /></a>
             </div>
           </div>
           <div>
-            <h4 className="text-white font-heading font-bold text-xl mb-5">Our Services</h4>
-            <ul className="space-y-2 text-sm">
-              {serviceList.slice(0, 6).map((s: any) => (
-                <li key={s._id || s.title}>
+            <h4 className="text-white font-heading font-bold text-lg mb-5 relative pb-3 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-10 after:h-0.5 after:bg-brand-orange">Our Services</h4>
+            <ul className="space-y-2.5 text-sm">
+              {serviceList.slice(0, 7).map((s: any) => (
+                <li key={s._id || s.title} className="flex items-center gap-2">
+                  <ArrowRightIcon className="w-3.5 h-3.5 text-brand-orange shrink-0" />
                   {s._id ? <Link href={`/service/?slug=${s.slug}`} className="hover:text-brand-orange transition">{s.title}</Link> : <a href="#estimate" className="hover:text-brand-orange transition">{s.title}</a>}
                 </li>
               ))}
             </ul>
-            <h4 className="text-white font-heading font-bold text-xl mb-4 mt-8">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
-              {navLinks.map((n) => <li key={n.label}><a href={n.href} className="hover:text-brand-orange transition">{n.label}</a></li>)}
+          </div>
+          <div>
+            <h4 className="text-white font-heading font-bold text-lg mb-5 relative pb-3 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-10 after:h-0.5 after:bg-brand-orange">Quick Links</h4>
+            <ul className="space-y-2.5 text-sm">
+              {navLinks.map((n) => (
+                <li key={n.label} className="flex items-center gap-2"><ArrowRightIcon className="w-3.5 h-3.5 text-brand-orange shrink-0" /><a href={n.href} className="hover:text-brand-orange transition">{n.label}</a></li>
+              ))}
+              <li className="flex items-center gap-2"><ArrowRightIcon className="w-3.5 h-3.5 text-brand-orange shrink-0" /><a href="#estimate" className="hover:text-brand-orange transition">Free Estimate</a></li>
+              <li className="flex items-center gap-2"><ArrowRightIcon className="w-3.5 h-3.5 text-brand-orange shrink-0" /><Link href="/login" className="hover:text-brand-orange transition">Staff / Admin Login</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="text-white font-heading font-bold text-xl mb-5">Contact Info</h4>
-            <ul className="space-y-3 text-sm">
-              <li className="flex gap-3"><MapPinIcon className="w-5 h-5 shrink-0 text-brand-orange" /><span>{address}</span></li>
-              <li className="flex gap-3"><PhoneIcon className="w-5 h-5 shrink-0 text-brand-orange" /><a href={phoneHref} className="text-white hover:text-brand-orange">{phone}</a></li>
-              <li className="flex gap-3"><EnvelopeIcon className="w-5 h-5 shrink-0 text-brand-orange" /><a href={`mailto:${email}`} className="text-white hover:text-brand-orange break-all">{email}</a></li>
-              <li className="flex gap-3"><ClockIcon className="w-5 h-5 shrink-0 text-brand-orange" /><span>Open 24x7 — All days</span></li>
+            <h4 className="text-white font-heading font-bold text-lg mb-5 relative pb-3 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-10 after:h-0.5 after:bg-brand-orange">Contact Us</h4>
+            <ul className="space-y-4 text-sm">
+              <li className="flex gap-3"><span className="w-9 h-9 shrink-0 rounded-md bg-white/5 flex items-center justify-center"><MapPinIcon className="w-5 h-5 text-brand-orange" /></span><span className="leading-relaxed">{address}</span></li>
+              <li className="flex gap-3 items-center"><span className="w-9 h-9 shrink-0 rounded-md bg-white/5 flex items-center justify-center"><PhoneIcon className="w-5 h-5 text-brand-orange" /></span><a href={phoneHref} className="text-white font-semibold hover:text-brand-orange">{phone}</a></li>
+              <li className="flex gap-3 items-center"><span className="w-9 h-9 shrink-0 rounded-md bg-white/5 flex items-center justify-center"><EnvelopeIcon className="w-5 h-5 text-brand-orange" /></span><a href={`mailto:${email}`} className="text-white hover:text-brand-orange break-all">{email}</a></li>
+              <li className="flex gap-3 items-center"><span className="w-9 h-9 shrink-0 rounded-md bg-white/5 flex items-center justify-center"><ClockIcon className="w-5 h-5 text-brand-orange" /></span><span>Open 24x7 — All days</span></li>
             </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-heading font-bold text-xl mb-5">Newsletter</h4>
-            <p className="text-sm text-gray-400 mb-4">Get every week update from Eletox</p>
-            <form onSubmit={(e) => { e.preventDefault(); toast.success("Subscribed!"); }} className="flex">
-              <input type="email" placeholder="Email address" className="flex-1 p-3 text-gray-800 outline-none" required />
-              <button type="submit" className="bg-brand-orange text-white font-heading font-semibold px-4">Subscribe Now</button>
-            </form>
+            <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 bg-[#25d366] text-white font-heading font-semibold px-5 py-3 rounded-sm hover:opacity-90 transition"><WhatsAppIcon className="w-5 h-5" /> Chat on WhatsApp</a>
           </div>
         </div>
-        <div className="border-t border-white/10 pt-6 text-center text-sm text-gray-400 flex flex-col md:flex-row justify-between max-w-[1320px] mx-auto px-4 gap-2">
-          <p>&copy; {new Date().getFullYear()} ELEHOME SOLUTIONS PVT LTD - All Rights Reserved. Designed by QROLOGIC SOFTECH AND RESEARCH PRIVATE LIMITED</p>
-          <p><a href="#" className="hover:text-white">Privacy Policy</a> | <a href="#" className="hover:text-white">Terms &amp; Conditions</a> | <Link href="/login" className="hover:text-white">Admin Login</Link></p>
+        <div className="border-t border-white/10">
+          <div className="max-w-[1320px] mx-auto px-4 pt-6 text-sm text-gray-400 flex flex-col md:flex-row justify-between items-center gap-3 text-center md:text-left">
+            <p>&copy; {new Date().getFullYear()} {company.name || "Elehome Solutions PVT. LTD."} — All Rights Reserved.</p>
+            <p>Designed by <span className="text-white font-semibold">QROLOGIC SOFTECH AND RESEARCH PRIVATE LIMITED</span></p>
+          </div>
         </div>
       </footer>
 
