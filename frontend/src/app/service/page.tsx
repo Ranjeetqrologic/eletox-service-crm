@@ -514,7 +514,7 @@ function ServiceContent() {
       <section className="bg-brand-navy text-white">
         <div className="max-w-[1320px] mx-auto px-4 py-14 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
-            <h3 className="font-heading font-bold text-3xl md:text-4xl">Need {service.title.toLowerCase()} today?</h3>
+            <h3 className="font-heading font-bold text-3xl md:text-4xl">Need {service.title} today?</h3>
             <p className="text-white/80 mt-2">Same-day doorstep service across Jaipur. Genuine parts, warranty included.</p>
           </div>
           <div className="flex flex-wrap gap-4">
