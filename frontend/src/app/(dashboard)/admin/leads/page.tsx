@@ -255,7 +255,6 @@ export default function LeadsPage() {
             {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
           </select>
           <input required placeholder="Service Required*" className="border p-2 rounded" onChange={(e) => setForm({ ...form, service: e.target.value })} />
-          <input placeholder="Machine Serial No." className="border p-2 rounded" onChange={(e) => setForm({ ...form, machineSerialNo: e.target.value })} />
           <input type="date" placeholder="Preferred Date" className="border p-2 rounded" onChange={(e) => setForm({ ...form, preferredDate: e.target.value })} />
           <input type="number" step="any" placeholder="Latitude" className="border p-2 rounded" onChange={(e) => setForm({ ...form, lat: e.target.value })} />
           <input type="number" step="any" placeholder="Longitude" className="border p-2 rounded" onChange={(e) => setForm({ ...form, lng: e.target.value })} />
@@ -272,7 +271,6 @@ export default function LeadsPage() {
               <th className="p-3 text-left">Date &amp; Time</th>
               <th className="p-3 text-left">Customer</th>
               <th className="p-3 text-left">Service</th>
-              <th className="p-3 text-left">Machine Serial No.</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Assigned</th>
               <th className="p-3 text-left">Accepted At</th>
@@ -289,9 +287,6 @@ export default function LeadsPage() {
                   <div>{l.service}</div>
                   {l.subService && <div className="text-xs text-blue-700">{l.subService}</div>}
                   {l.problem && <div className="text-xs text-gray-500 max-w-[200px] truncate" title={l.problem}>{l.problem}</div>}
-                </td>
-                <td className="p-3">
-                  <input className="border p-1 rounded w-32 text-xs" placeholder="Serial No." defaultValue={l.machineSerialNo || ""} onBlur={(e) => { if (e.target.value !== (l.machineSerialNo || "")) updateLead(l._id, { machineSerialNo: e.target.value }); }} />
                 </td>
                 <td className="p-3">
                   {l.assignedStaff ? (
