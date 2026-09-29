@@ -23,8 +23,8 @@ export default function AdminDashboard() {
   }));
 
   const leadCards = [
-    { label: "New Leads (last 24 hrs, unassigned)", value: stats?.newLeads ?? 0, bg: "#3B82F6", href: "/admin/leads/?view=new" },
-    { label: "Pending Leads (24 hrs+, unassigned)", value: stats?.pendingLeads ?? 0, bg: "#F59E0B", href: "/admin/leads/?view=pending" },
+    { label: "New Leads", value: stats?.newLeads ?? 0, bg: "#3B82F6", href: "/admin/leads/?view=new" },
+    { label: "Pending Leads", value: stats?.pendingLeads ?? 0, bg: "#F59E0B", href: "/admin/leads/?view=pending" },
   ];
 
   const fixedCards = [
