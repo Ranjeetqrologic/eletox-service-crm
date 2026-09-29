@@ -162,6 +162,42 @@ router.put(
   })
 );
 
+router.get(
+  "/:id/credentials",
+  protect,
+  restrictTo("superadmin", "admin"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const staff = await Staff.findById(req.params.id).populate("user", "email");
+    if (!staff) throw new AppError("Staff not found", 404);
+    res.json({
+      success: true,
+      data: {
+        loginId: (staff.user as any)?.email || staff.email || "",
+        employeeId: staff.employeeId,
+        name: staff.name,
+      },
+    });
+  })
+);
+
+router.put(
+  "/:id/reset-password",
+  protect,
+  restrictTo("superadmin", "admin"),
+  [body("password").isLength({ min: 6 })],
+  asyncHandler(async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) throw new AppError("Password must be at least 6 characters", 400);
+    const staff = await Staff.findById(req.params.id);
+    if (!staff) throw new AppError("Staff not found", 404);
+    const user = staff.user ? await User.findById(staff.user) : null;
+    if (!user) throw new AppError("Login account not found for this staff", 404);
+    user.password = req.body.password;
+    await user.save();
+    res.json({ success: true, message: "Password reset", data: { loginId: user.email, password: req.body.password } });
+  })
+);
+
 router.delete(
   "/:id",
   protect,

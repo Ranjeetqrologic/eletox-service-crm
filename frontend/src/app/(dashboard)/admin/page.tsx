@@ -14,7 +14,7 @@ export default function AdminDashboard() {
       .catch((err) => console.error("Dashboard fetch failed:", err));
   }, []);
 
-  const statusCards = (stats?.statuses || []).map((s: any) => ({
+  const statusCards = (stats?.statuses || []).filter((s: any) => !["new", "pending"].includes(s.name)).map((s: any) => ({
     label: s.label,
     value: stats?.statusData?.[s.name] ?? 0,
     bg: s.color || "#6B7280",
@@ -22,13 +22,17 @@ export default function AdminDashboard() {
     status: s.name,
   }));
 
-  const fixedCards = [
-    { label: "Total Leads", value: stats?.totalLeads ?? 0, bg: "#3B82F6", href: "/admin/leads/" },
-    { label: "Today Leads", value: stats?.todayLeads ?? 0, bg: "#A855F7", href: "/admin/leads/?fromDate=today" },
-    { label: "Revenue", value: `₹${stats?.revenue ?? 0}`, bg: "#14B8A6", href: "/admin/payments/" },
+  const leadCards = [
+    { label: "New Leads (last 24 hrs, unassigned)", value: stats?.newLeads ?? 0, bg: "#3B82F6", href: "/admin/leads/?view=new" },
+    { label: "Pending Leads (24 hrs+, unassigned)", value: stats?.pendingLeads ?? 0, bg: "#F59E0B", href: "/admin/leads/?view=pending" },
   ];
 
-  const cards = [...statusCards, ...fixedCards];
+  const fixedCards = [
+    { label: "Total Leads", value: stats?.totalLeads ?? 0, bg: "#6366F1", href: "/admin/leads/" },
+    { label: "Today Leads", value: stats?.todayLeads ?? 0, bg: "#A855F7", href: "/admin/leads/?fromDate=today" },
+  ];
+
+  const cards = [...leadCards, ...statusCards, ...fixedCards];
 
   return (
     <div>

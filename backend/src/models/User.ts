@@ -9,6 +9,11 @@ export interface IUser extends Document {
   isActive: boolean;
   phone?: string;
   lastLogin?: Date;
+  trustedDevices: { deviceId: string; label?: string; lastUsed: Date }[];
+  otpHash?: string;
+  otpExpires?: Date;
+  otpPurpose?: string;
+  otpDeviceId?: string;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(enteredPassword: string): Promise<boolean>;
@@ -23,6 +28,11 @@ const UserSchema = new Schema<IUser>(
     isActive: { type: Boolean, default: true },
     phone: { type: String },
     lastLogin: { type: Date },
+    trustedDevices: { type: [{ deviceId: String, label: String, lastUsed: Date }], default: [], select: false },
+    otpHash: { type: String, select: false },
+    otpExpires: { type: Date, select: false },
+    otpPurpose: { type: String, select: false },
+    otpDeviceId: { type: String, select: false },
   },
   { timestamps: true }
 );

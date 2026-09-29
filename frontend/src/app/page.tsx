@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import { getImageUrl } from "@/lib/utils";
+import { subServicesFor } from "@/lib/subServices";
 import Logo from "@/components/Logo";
 import toast from "react-hot-toast";
 import {
@@ -96,7 +97,7 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [form, setForm] = useState({
     customerName: "", mobile: "", email: "", address: "", city: "Jaipur", pin: "",
-    service: "", acType: "", preferredDate: "", preferredTime: "", problem: "",
+    service: "", subService: "", acType: "", preferredDate: "", preferredTime: "", problem: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -118,8 +119,13 @@ export default function Home() {
   }, [slides.length]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    if (e.target.name === "service") {
+      setForm({ ...form, service: e.target.value, subService: "" });
+      return;
+    }
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+  const subOptions = subServicesFor(form.service);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,7 +133,7 @@ export default function Home() {
     try {
       const { data } = await api.post("/leads/public-inquiry", form);
       toast.success(data.message || "Inquiry submitted successfully");
-      setForm({ customerName: "", mobile: "", email: "", address: "", city: "Jaipur", pin: "", service: "", acType: "", preferredDate: "", preferredTime: "", problem: "" });
+      setForm({ customerName: "", mobile: "", email: "", address: "", city: "Jaipur", pin: "", service: "", subService: "", acType: "", preferredDate: "", preferredTime: "", problem: "" });
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to submit");
     } finally {
@@ -172,7 +178,7 @@ export default function Home() {
             <a href={phoneHref} className="hidden md:inline-flex items-center gap-2 bg-brand-orange text-white font-heading font-semibold px-6 py-3 rounded-sm hover:bg-brand-navy transition">
               <PhoneIcon className="w-5 h-5" /> Call Now
             </a>
-            <Link href="/login" className="hidden md:inline-flex border border-brand-navy text-brand-navy font-heading font-semibold px-4 py-3 rounded-sm hover:bg-brand-navy hover:text-white transition">Login</Link>
+            <Link href="/staff-login/" className="hidden md:inline-flex border border-brand-navy text-brand-navy font-heading font-semibold px-4 py-3 rounded-sm hover:bg-brand-navy hover:text-white transition">Login</Link>
             <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden text-brand-navy p-2" aria-label="Menu">
               {menuOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3Icon className="w-7 h-7" />}
             </button>
@@ -182,7 +188,7 @@ export default function Home() {
           <div className="lg:hidden border-t bg-white px-4 py-4 flex flex-col gap-3 font-heading font-semibold uppercase text-brand-dark">
             {navLinks.map((n) => <a key={n.label} href={n.href} onClick={() => setMenuOpen(false)}>{n.label}</a>)}
             <a href={phoneHref} className="text-brand-orange">Call Now: {phone}</a>
-            <Link href="/login">Login</Link>
+            <Link href="/staff-login/">Login</Link>
           </div>
         )}
       </header>
@@ -341,6 +347,13 @@ export default function Home() {
                 {!services.length && ["Refrigerator Repair", "AC Installation"].map((t) => <option key={t} value={t}>{t}</option>)}
                 <option value="Other">Other</option>
               </select>
+              {subOptions.length > 0 && (
+                <select name="subService" value={form.subService} onChange={handleChange} className="bg-white text-gray-800 p-4 w-full outline-none md:col-span-2" required>
+                  <option value="">Choose Category</option>
+                  {subOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+                  <option value="Other">Other</option>
+                </select>
+              )}
             </div>
             <textarea name="address" value={form.address} onChange={handleChange} placeholder="Address" className="bg-white text-gray-800 p-4 w-full outline-none mt-4" rows={2} required />
             <textarea name="problem" value={form.problem} onChange={handleChange} placeholder="Note" className="bg-white text-gray-800 p-4 w-full outline-none mt-4" rows={3} />
@@ -463,7 +476,7 @@ export default function Home() {
                 <li key={n.label} className="flex items-center gap-2"><ArrowRightIcon className="w-3.5 h-3.5 text-brand-orange shrink-0" /><a href={n.href} className="hover:text-brand-orange transition">{n.label}</a></li>
               ))}
               <li className="flex items-center gap-2"><ArrowRightIcon className="w-3.5 h-3.5 text-brand-orange shrink-0" /><a href="#estimate" className="hover:text-brand-orange transition">Free Estimate</a></li>
-              <li className="flex items-center gap-2"><ArrowRightIcon className="w-3.5 h-3.5 text-brand-orange shrink-0" /><Link href="/login" className="hover:text-brand-orange transition">Staff / Admin Login</Link></li>
+              <li className="flex items-center gap-2"><ArrowRightIcon className="w-3.5 h-3.5 text-brand-orange shrink-0" /><Link href="/staff-login/" className="hover:text-brand-orange transition">Staff Login</Link></li>
             </ul>
           </div>
           <div>

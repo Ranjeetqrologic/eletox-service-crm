@@ -38,6 +38,7 @@ export interface IJob extends Document {
   pendingAmount: number;
   customerFeedback?: string;
   rating?: number;
+  clientExperience?: string;
   startedAt?: Date;
   completedAt?: Date;
   createdAt: Date;
@@ -86,6 +87,7 @@ const JobSchema = new Schema<IJob>(
     paymentMode: { type: String, enum: ["cash", "upi", "card", "online"] },
     pendingAmount: { type: Number, default: 0 },
     customerFeedback: { type: String },
+    clientExperience: { type: String, trim: true },
     rating: { type: Number, min: 1, max: 5 },
     startedAt: { type: Date },
     completedAt: { type: Date },

@@ -37,7 +37,7 @@ router.get(
     }
 
     const jobs = await Job.find(filter)
-      .populate("lead", "customerName mobile address city status leadId machineSerialNo followUpDate followUpNote")
+      .populate("lead", "customerName mobile address city status leadId machineSerialNo followUpDate followUpNote createdAt locationLink subService service")
       .populate("staff", "name mobile employeeId")
       .sort({ createdAt: -1 });
     res.json({ success: true, count: jobs.length, data: jobs });
@@ -49,7 +49,7 @@ router.get(
   protect,
   asyncHandler(async (req: Request, res: Response) => {
     const job = await Job.findById(req.params.id)
-      .populate("lead", "customerName mobile address city lat lng status leadId machineSerialNo followUpDate followUpNote")
+      .populate("lead", "customerName mobile address city lat lng status leadId machineSerialNo followUpDate followUpNote createdAt locationLink subService service")
       .populate("staff", "name mobile employeeId");
     if (!job) throw new AppError("Job not found", 404);
     res.json({ success: true, data: job });
@@ -61,7 +61,7 @@ router.get(
   protect,
   asyncHandler(async (req: Request, res: Response) => {
     const job = await Job.findOne({ lead: req.params.leadId })
-      .populate("lead", "customerName mobile address city lat lng status leadId machineSerialNo followUpDate followUpNote")
+      .populate("lead", "customerName mobile address city lat lng status leadId machineSerialNo followUpDate followUpNote createdAt locationLink subService service")
       .populate("staff", "name mobile employeeId");
     if (!job) throw new AppError("Job not found", 404);
     res.json({ success: true, data: job });
@@ -163,6 +163,7 @@ router.put(
       "pendingAmount",
       "customerFeedback",
       "rating",
+      "clientExperience",
     ];
 
     updateFields.forEach((field) => {

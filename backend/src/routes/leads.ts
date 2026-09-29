@@ -18,14 +18,74 @@ const generateLeadId = async () => {
   return String(Date.now()).slice(-4) + yy;
 };
 
+const COORD_RE = /(-?\d{1,2}\.\d{3,}),\s*(-?\d{1,3}\.\d{3,})/;
+
+export const parseCoords = (text: string): { lat: number; lng: number } | null => {
+  const s = decodeURIComponent(text || "").replace(/\+/g, " ");
+  const patterns = [/@(-?\d+\.\d+),(-?\d+\.\d+)/, /[?&](?:q|ll|query|destination|daddr|center)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/, /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, COORD_RE];
+  for (const re of patterns) {
+    const m = s.match(re);
+    if (m) {
+      const lat = parseFloat(m[1]);
+      const lng = parseFloat(m[2]);
+      if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng };
+    }
+  }
+  return null;
+};
+
+const resolveShortUrl = async (url: string): Promise<string> => {
+  let current = url;
+  for (let i = 0; i < 5; i++) {
+    const r = await fetch(current, { method: "GET", redirect: "manual", headers: { "User-Agent": "Mozilla/5.0" } });
+    const loc = r.headers.get("location");
+    if (!loc || r.status < 300 || r.status >= 400) return current;
+    current = new URL(loc, current).toString();
+  }
+  return current;
+};
+
+router.post(
+  "/resolve-location",
+  protect,
+  [body("text").notEmpty()],
+  asyncHandler(async (req: Request, res: Response) => {
+    const text = String(req.body.text).trim();
+    let coords = parseCoords(text);
+    let link = text;
+    const urlMatch = text.match(/https?:\/\/\S+/);
+    if (urlMatch) link = urlMatch[0];
+    if (!coords && urlMatch) {
+      try {
+        const resolved = await resolveShortUrl(urlMatch[0]);
+        coords = parseCoords(resolved);
+      } catch {
+        coords = null;
+      }
+    }
+    if (!coords) throw new AppError("Could not read location from this text/link. Paste a Google Maps link or 'lat, lng'.", 400);
+    res.json({ success: true, data: { ...coords, link: urlMatch ? link : `https://www.google.com/maps?q=${coords.lat},${coords.lng}` } });
+  })
+);
+
 router.get(
   "/",
   protect,
   asyncHandler(async (req: Request, res: Response) => {
-    const { status, source, staff, search, from, to } = req.query;
+    const { status, source, staff, search, from, to, view } = req.query;
     const filter: any = {};
 
     if (status) filter.status = status;
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    if (view === "new") {
+      filter.assignedStaff = null;
+      filter.status = { $nin: ["closed", "cancelled", "completed"] };
+      filter.createdAt = { $gte: cutoff };
+    } else if (view === "pending") {
+      filter.assignedStaff = null;
+      filter.status = { $nin: ["closed", "cancelled", "completed"] };
+      filter.createdAt = { $lt: cutoff };
+    }
     if (source) filter.source = source;
     if (staff) filter.assignedStaff = staff;
     if (from || to) {
@@ -139,7 +199,7 @@ router.put(
 
     const updateFields = [
       "customerName", "mobile", "alternateMobile", "email", "address", "pin", "state", "city", "lat", "lng",
-      "source", "service", "acType", "problem", "priority", "preferredDate", "preferredTime", "remarks",
+      "source", "service", "subService", "locationLink", "acType", "problem", "priority", "preferredDate", "preferredTime", "remarks",
       "followUpDate", "followUpNote", "nextCallDate", "machineSerialNo"
     ];
     updateFields.forEach((field) => {
@@ -185,6 +245,10 @@ router.put(
   asyncHandler(async (req: Request, res: Response) => {
     const lead = await Lead.findById(req.params.id);
     if (!lead) throw new AppError("Lead not found", 404);
+
+    if (lead.assignedStaff && ["superadmin", "admin", "manager"].includes(req.user?.role || "")) {
+      throw new AppError("Status cannot be changed after the lead is assigned to staff", 403);
+    }
 
     const LeadStatus = (await import("../models/LeadStatus")).default;
     const validStatuses = await LeadStatus.find({ isActive: true }).select("name");

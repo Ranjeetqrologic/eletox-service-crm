@@ -14,6 +14,7 @@ export default function LeadsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlStatus = searchParams.get("status") || "";
+  const urlView = searchParams.get("view") || "";
 
   const [leads, setLeads] = useState<any[]>([]);
   const [staff, setStaff] = useState<any[]>([]);
@@ -22,6 +23,26 @@ export default function LeadsPage() {
   const [form, setForm] = useState<any>({ status: "new", priority: "medium", source: "manual" });
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState(urlStatus);
+  const [filterView, setFilterView] = useState(urlView);
+  const [pasteLoading, setPasteLoading] = useState(false);
+
+  const pasteLocation = async () => {
+    const text = (locationModal?.pasteText || "").trim();
+    if (!text) return toast.error("Paste the location link / coordinates first");
+    setPasteLoading(true);
+    try {
+      const { data } = await api.post("/leads/resolve-location", { text });
+      setLocationModal({ ...locationModal, lat: String(data.data.lat), lng: String(data.data.lng), locationLink: data.data.link });
+      toast.success("Location set from pasted link");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Could not read location");
+    } finally {
+      setPasteLoading(false);
+    }
+  };
+
+  const ageHours = (l: any) => (l.createdAt ? (Date.now() - new Date(l.createdAt).getTime()) / 36e5 : 0);
+  const isOpenUnassigned = (l: any) => !l.assignedStaff && !["closed", "cancelled", "completed"].includes(l.status);
   const [filterStaff, setFilterStaff] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -48,6 +69,7 @@ export default function LeadsPage() {
     paymentMode: jobModal.paymentMode || "",
     customerFeedback: jobModal.customerFeedback || "",
     rating: jobModal.rating ?? "",
+    clientExperience: jobModal.clientExperience || "",
     adminRemark: jobModal.adminRemark || "",
   });
   const [loadingJob, setLoadingJob] = useState(false);
@@ -66,6 +88,10 @@ export default function LeadsPage() {
   useEffect(() => {
     if (urlStatus) setFilterStatus(urlStatus);
   }, [urlStatus]);
+
+  useEffect(() => {
+    setFilterView(urlView);
+  }, [urlView]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,9 +157,9 @@ export default function LeadsPage() {
     }
   };
 
-  const updateLocation = async (leadId: string, lat: string, lng: string, address?: string) => {
+  const updateLocation = async (leadId: string, lat: string, lng: string, address?: string, locationLink?: string) => {
     try {
-      await api.put(`/leads/${leadId}`, { lat: lat ? parseFloat(lat) : undefined, lng: lng ? parseFloat(lng) : undefined, ...(address?.trim() ? { address: address.trim() } : {}) });
+      await api.put(`/leads/${leadId}`, { lat: lat ? parseFloat(lat) : undefined, lng: lng ? parseFloat(lng) : undefined, ...(address?.trim() ? { address: address.trim() } : {}), ...(locationLink?.trim() ? { locationLink: locationLink.trim() } : {}) });
       toast.success("Location updated");
       fetchLeads();
     } catch (err: any) {
@@ -180,10 +206,11 @@ export default function LeadsPage() {
   const filteredLeads = leads.filter((l) => {
     const matchesSearch = [l.customerName, l.mobile, l.leadId].some((x) => x?.toLowerCase().includes(search.toLowerCase()));
     const matchesStatus = !filterStatus || l.status === filterStatus;
+    const matchesView = !filterView || (filterView === "new" ? isOpenUnassigned(l) && ageHours(l) < 24 : filterView === "pending" ? isOpenUnassigned(l) && ageHours(l) >= 24 : true);
     const matchesStaff = !filterStaff || (filterStaff === "unassigned" ? !l.assignedStaff : l.assignedStaff?._id === filterStaff);
     const created = l.createdAt ? l.createdAt.split("T")[0] : "";
     const matchesDate = (!fromDate || created >= fromDate) && (!toDate || created <= toDate);
-    return matchesSearch && matchesStatus && matchesStaff && matchesDate;
+    return matchesSearch && matchesStatus && matchesView && matchesStaff && matchesDate;
   });
 
   return (
@@ -192,6 +219,11 @@ export default function LeadsPage() {
         <h1 className="text-2xl font-bold">Lead Management</h1>
         <div className="flex flex-wrap gap-2">
           <input className="border p-2 rounded flex-1 min-w-[140px]" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select className="border p-2 rounded" value={filterView} onChange={(e) => setFilterView(e.target.value)}>
+            <option value="">All Leads</option>
+            <option value="new">New (last 24 hrs, unassigned)</option>
+            <option value="pending">Pending (24 hrs+, unassigned)</option>
+          </select>
           <select className="border p-2 rounded" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             <option value="">All Status</option>
             {statuses.map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
@@ -255,15 +287,22 @@ export default function LeadsPage() {
                 <td className="p-3">{l.customerName} <br /><span className="text-gray-500">{l.mobile}</span></td>
                 <td className="p-3">
                   <div>{l.service}</div>
+                  {l.subService && <div className="text-xs text-blue-700">{l.subService}</div>}
                   {l.problem && <div className="text-xs text-gray-500 max-w-[200px] truncate" title={l.problem}>{l.problem}</div>}
                 </td>
                 <td className="p-3">
                   <input className="border p-1 rounded w-32 text-xs" placeholder="Serial No." defaultValue={l.machineSerialNo || ""} onBlur={(e) => { if (e.target.value !== (l.machineSerialNo || "")) updateLead(l._id, { machineSerialNo: e.target.value }); }} />
                 </td>
                 <td className="p-3">
-                  <select value={l.status} onChange={(e) => changeStatus(l._id, e.target.value)} className="border p-1 rounded">
-                    {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
-                  </select>
+                  {l.assignedStaff ? (
+                    <span className="inline-block px-2 py-1 rounded bg-gray-100 text-gray-700 text-xs font-medium" title="Status is locked after assignment">
+                      {statuses.find((s) => s.name === l.status)?.label || l.status}
+                    </span>
+                  ) : (
+                    <select value={l.status} onChange={(e) => changeStatus(l._id, e.target.value)} className="border p-1 rounded">
+                      {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
+                    </select>
+                  )}
                 </td>
                 <td className="p-3">
                   <div className="flex gap-1">
@@ -281,7 +320,7 @@ export default function LeadsPage() {
                   <div className="flex items-center gap-1.5 whitespace-nowrap">
                     <button onClick={() => viewJob(l._id)} title="View Job" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-100"><EyeIcon className="w-4 h-4" /> View</button>
                     <button onClick={() => setLocationModal(l)} title="Set Location" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-100"><MapPinIcon className="w-4 h-4" /> Location</button>
-                    {l.status !== "closed" && (
+                    {l.status !== "closed" && !l.assignedStaff && (
                       <button onClick={() => changeStatus(l._id, "closed")} title="Close Lead" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 border border-green-100"><CheckCircleIcon className="w-4 h-4" /> Close</button>
                     )}
                   </div>
@@ -297,6 +336,21 @@ export default function LeadsPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Set Location - {locationModal.leadId}</h2>
             <div className="space-y-3">
+              <div className="border border-green-200 bg-green-50 rounded p-3">
+                <div className="text-sm font-medium text-green-800 mb-1">Paste client location (WhatsApp / Google Maps link or "lat, lng")</div>
+                <div className="flex gap-2">
+                  <input
+                    placeholder="https://maps.app.goo.gl/... or 26.91, 75.78"
+                    className="border p-2 rounded w-full text-sm"
+                    value={locationModal.pasteText || ""}
+                    onChange={(e) => setLocationModal({ ...locationModal, pasteText: e.target.value })}
+                    onKeyDown={(e) => { if (e.key === "Enter") pasteLocation(); }}
+                  />
+                  <button onClick={pasteLocation} disabled={pasteLoading} className="bg-green-600 text-white px-3 py-2 rounded whitespace-nowrap disabled:opacity-60">{pasteLoading ? "..." : "Set"}</button>
+                </div>
+                {locationModal.locationLink && <a href={locationModal.locationLink} target="_blank" rel="noreferrer" className="text-xs text-blue-600 underline break-all block mt-1">{locationModal.locationLink}</a>}
+              </div>
+              <div className="text-xs text-gray-500 text-center">— or search by address —</div>
               <div className="flex gap-2">
                 <input
                   placeholder="Type location / address (e.g. Malviya Nagar, Jaipur)"
@@ -340,7 +394,7 @@ export default function LeadsPage() {
               </button>
             </div>
             <div className="mt-4 flex gap-3">
-              <button onClick={() => { updateLocation(locationModal._id, locationModal.lat, locationModal.lng, locationModal.address); setLocationModal(null); }} className="bg-primary-600 text-white px-4 py-2 rounded">Save Location</button>
+              <button onClick={() => { updateLocation(locationModal._id, locationModal.lat, locationModal.lng, locationModal.address, locationModal.locationLink); setLocationModal(null); }} className="bg-primary-600 text-white px-4 py-2 rounded">Save Location</button>
               <button onClick={() => setLocationModal(null)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
             </div>
           </div>
@@ -367,7 +421,14 @@ export default function LeadsPage() {
                   <input type="number" className="border p-2 rounded" placeholder="Bill Amount" value={jobEdit.billAmount} onChange={(e) => setJobEdit({ ...jobEdit, billAmount: e.target.value })} />
                   <input type="number" className="border p-2 rounded" placeholder="Received Amount" value={jobEdit.receivedAmount} onChange={(e) => setJobEdit({ ...jobEdit, receivedAmount: e.target.value })} />
                   <input className="border p-2 rounded" placeholder="Customer Feedback" value={jobEdit.customerFeedback} onChange={(e) => setJobEdit({ ...jobEdit, customerFeedback: e.target.value })} />
-                  <input type="number" min={1} max={5} className="border p-2 rounded" placeholder="Rating 1-5" value={jobEdit.rating} onChange={(e) => setJobEdit({ ...jobEdit, rating: e.target.value })} />
+                  <select className="border p-2 rounded" value={jobEdit.rating} onChange={(e) => setJobEdit({ ...jobEdit, rating: e.target.value })}>
+                    <option value="">Rating</option>
+                    {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{"★".repeat(n)} {n} Star{n > 1 ? "s" : ""}</option>)}
+                  </select>
+                  <select className="border p-2 rounded" value={jobEdit.clientExperience} onChange={(e) => setJobEdit({ ...jobEdit, clientExperience: e.target.value })}>
+                    <option value="">Client Experience</option>
+                    {["😊 Very Happy", "🙂 Happy", "😐 Satisfied", "🙁 Not Satisfied"].map((o) => <option key={o} value={o}>{o}</option>)}
+                  </select>
                 </div>
                 <textarea className="border p-2 rounded w-full" rows={2} placeholder="Admin Remark (e.g. wrong info by staff, corrected...)" value={jobEdit.adminRemark} onChange={(e) => setJobEdit({ ...jobEdit, adminRemark: e.target.value })} />
                 <div className="flex gap-2">
@@ -397,7 +458,8 @@ export default function LeadsPage() {
                 <div><span className="font-medium text-gray-500">Payment Mode:</span> {jobModal.paymentMode || "-"}</div>
                 <div><span className="font-medium text-gray-500">Customer Feedback:</span> {jobModal.customerFeedback || "-"}</div>
                 <div className="col-span-2"><span className="font-medium text-amber-700">Admin Remark:</span> {jobModal.adminRemark || "-"}</div>
-                <div><span className="font-medium text-gray-500">Rating:</span> {jobModal.rating || "-"}</div>
+                <div><span className="font-medium text-gray-500">Rating:</span> {jobModal.rating ? `${"★".repeat(Number(jobModal.rating))} (${jobModal.rating})` : "-"}</div>
+                <div><span className="font-medium text-gray-500">Client Experience:</span> {jobModal.clientExperience || "-"}</div>
               </div>
               {[["workingPhotos", "Photos"], ["beforePhotos", "Before Photos"], ["afterPhotos", "After Photos"]].map(([key, label]) => (
                 jobModal[key]?.length > 0 && (

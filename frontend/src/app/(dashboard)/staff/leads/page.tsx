@@ -18,6 +18,20 @@ const PHOTO_FIELDS: [string, string][] = [
   ["workingPhotos", "Photos"],
 ];
 
+const EXPERIENCE_OPTIONS = ["😊 Very Happy", "🙂 Happy", "😐 Satisfied", "🙁 Not Satisfied"];
+
+const receivedAt = (j: any) => {
+  const d = j.lead?.createdAt || j.createdAt;
+  return d ? new Date(d).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "-";
+};
+
+const directionsUrl = (j: any) => {
+  const lead = j.lead || {};
+  if (lead.lat && lead.lng) return `https://www.google.com/maps/dir/?api=1&destination=${lead.lat},${lead.lng}`;
+  if (lead.locationLink) return lead.locationLink;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent([lead.address, lead.city].filter(Boolean).join(", "))}`;
+};
+
 export default function StaffLeads() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [selected, setSelected] = useState<any>(null);
@@ -46,6 +60,7 @@ export default function StaffLeads() {
       machineSerialNo: job.machineSerialNo || job.lead?.machineSerialNo || "",
       customerFeedback: job.customerFeedback || "Customer satisfied with the service",
       rating: job.rating || 5,
+      clientExperience: job.clientExperience || "",
     });
     setPhotos({});
   };
@@ -147,8 +162,8 @@ export default function StaffLeads() {
             <thead className="bg-gray-100">
               <tr>
                 <th className="p-3 text-left">Lead ID</th>
+                <th className="p-3 text-left">Received Date &amp; Time</th>
                 <th className="p-3 text-left">Customer</th>
-                <th className="p-3 text-left">Machine Serial No.</th>
                 <th className="p-3 text-left">Status</th>
                 <th className="p-3 text-left">Address</th>
                 <th className="p-3 text-left">Actions</th>
@@ -158,6 +173,7 @@ export default function StaffLeads() {
               {filteredJobs.map((j) => (
                 <tr key={j._id} className="border-t">
                   <td className="p-3">{j.lead?.leadId}</td>
+                  <td className="p-3 text-xs text-gray-600 whitespace-nowrap">{receivedAt(j)}</td>
                   <td className="p-3">
                     <div className="font-medium">{j.lead?.customerName}</div>
                     <div className="flex items-center gap-2 mt-1">
@@ -167,15 +183,12 @@ export default function StaffLeads() {
                       </a>
                     </div>
                   </td>
-                  <td className="p-3">{j.machineSerialNo || j.lead?.machineSerialNo || "-"}</td>
                   <td className="p-3">{j.status}</td>
                   <td className="p-3">
                     <div>{j.lead?.address}, {j.lead?.city}</div>
-                    {(j.lead?.lat || j.lead?.lng) && (
-                      <a href={`https://www.google.com/maps/dir/?api=1&destination=${j.lead?.lat},${j.lead?.lng}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-green-600 hover:underline text-sm mt-1">
-                        Directions
-                      </a>
-                    )}
+                    <a href={directionsUrl(j)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-green-600 hover:underline text-sm mt-1">
+                      📍 Directions
+                    </a>
                   </td>
                   <td className="p-3 space-x-2">
                     {j.status === "assigned" && (
@@ -202,6 +215,7 @@ export default function StaffLeads() {
                 <div>
                   <div className="font-semibold">{j.lead?.customerName}</div>
                   <div className="text-xs text-gray-500">{j.lead?.leadId}</div>
+                  <div className="text-xs text-gray-500">Received: {receivedAt(j)}</div>
                 </div>
                 <span className="text-xs font-medium px-2 py-1 rounded bg-gray-100">{j.status}</span>
               </div>
@@ -210,12 +224,9 @@ export default function StaffLeads() {
                 {j.lead?.mobile}
               </a>
               <div className="text-sm text-gray-600">{j.lead?.address}, {j.lead?.city}</div>
-              <div className="text-xs text-gray-500">Machine Serial No.: {j.machineSerialNo || j.lead?.machineSerialNo || "-"}</div>
-              {(j.lead?.lat || j.lead?.lng) && (
-                <a href={`https://www.google.com/maps/dir/?api=1&destination=${j.lead?.lat},${j.lead?.lng}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-green-600 text-sm">
-                  Google Map Directions
-                </a>
-              )}
+              <a href={directionsUrl(j)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 bg-green-600 text-white px-3 py-1 rounded text-sm">
+                📍 Google Map Directions
+              </a>
               <div className="flex flex-wrap gap-2 pt-1">
                 {j.status === "assigned" && (
                   <button onClick={() => acceptJob(j._id)} className="bg-primary-600 text-white px-3 py-1 rounded text-sm">Accept</button>
@@ -281,7 +292,40 @@ export default function StaffLeads() {
                 <option value="online">Online</option>
               </select>
               <textarea placeholder="Customer Feedback" className="border p-2 rounded w-full" value={report.customerFeedback || ""} onChange={(e) => setReport({ ...report, customerFeedback: e.target.value })} />
-              <input type="number" placeholder="Rating 1-5" min="1" max="5" className="border p-2 rounded w-full" value={report.rating || ""} onChange={(e) => setReport({ ...report, rating: e.target.value })} />
+              <div className="border rounded p-3">
+                <div className="text-sm font-medium mb-2">Rating</div>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setReport({ ...report, rating: n })}
+                      className={`text-3xl leading-none ${Number(report.rating) >= n ? "text-yellow-400" : "text-gray-300"}`}
+                      aria-label={`${n} star`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                  <span className="self-center text-sm text-gray-600 ml-2">{report.rating ? `${report.rating} Star${Number(report.rating) > 1 ? "s" : ""}` : "Select rating"}</span>
+                </div>
+                {report.rating && (
+                  <div className="mt-3">
+                    <div className="text-sm font-medium mb-2">Client Experience</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {EXPERIENCE_OPTIONS.map((o) => (
+                        <button
+                          key={o}
+                          type="button"
+                          onClick={() => setReport({ ...report, clientExperience: o })}
+                          className={`border rounded px-3 py-2 text-sm text-left ${report.clientExperience === o ? "border-primary-600 bg-primary-50 font-semibold" : "hover:bg-gray-50"}`}
+                        >
+                          {o}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {PHOTO_FIELDS.map(([field, label]) => {
                 const list = photos[field] || [];

@@ -16,6 +16,8 @@ export interface ILead extends Document {
   lng?: number;
   source: string;
   service: string;
+  subService?: string;
+  locationLink?: string;
   acType?: string;
   problem?: string;
   priority: "low" | "medium" | "high" | "urgent";
@@ -59,6 +61,8 @@ const LeadSchema = new Schema<ILead>(
       default: "manual",
     },
     service: { type: String, required: true },
+    subService: { type: String, trim: true },
+    locationLink: { type: String, trim: true },
     acType: { type: String },
     problem: { type: String },
     priority: { type: String, enum: ["low", "medium", "high", "urgent"], default: "medium" },
