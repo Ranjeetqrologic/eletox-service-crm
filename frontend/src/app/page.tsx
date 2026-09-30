@@ -106,6 +106,12 @@ export default function Home() {
     api.get("/settings/company").then((res) => setCompany(res.data.data || {})).catch(() => setCompany({}));
     api.get("/banners/public").then((res) => setBanners(res.data.data || [])).catch(() => setBanners([]));
     api.get("/gallery/public").then((res) => setGallery(res.data.data || [])).catch(() => setGallery([]));
+    const q = new URLSearchParams(window.location.search);
+    const svc = q.get("service");
+    if (svc) {
+      setForm((f) => ({ ...f, service: svc, subService: q.get("sub") || "" }));
+      setTimeout(() => document.getElementById("estimate")?.scrollIntoView({ behavior: "smooth" }), 300);
+    }
   }, []);
 
   const slides = banners.length

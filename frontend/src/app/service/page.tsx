@@ -10,6 +10,7 @@ import {
 import api from "@/lib/api";
 import { getImageUrl } from "@/lib/utils";
 import Logo from "@/components/Logo";
+import { packagesFor } from "@/lib/packages";
 
 const A = "/eletox-assets";
 const DEFAULT_PHONE = "+91 9571071342";
@@ -329,6 +330,9 @@ function ServiceContent() {
   if (!service) return empty("Service not found.");
 
   const c = CONTENT[slug] ?? GENERIC;
+  const packages = packagesFor(slug);
+  const bookHref = (pkg?: string) =>
+    `/?service=${encodeURIComponent(service.title)}${pkg ? `&sub=${encodeURIComponent(pkg)}` : ""}#estimate`;
   const isIcon = !!service.image && /icon-/.test(service.image);
   const heroImg = service.image && !isIcon ? getImageUrl(service.image) : c.image;
 
@@ -356,9 +360,14 @@ function ServiceContent() {
                 {service.shortDesc || `Professional ${service.title.toLowerCase()} at your doorstep in Jaipur.`}
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
-                <Link href="/#estimate" className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-8 py-4 rounded-sm">
+                <Link href={bookHref()} className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-8 py-4 rounded-sm">
                   Book Now
                 </Link>
+                {packages.length > 0 && (
+                  <a href="#packages" className="inline-flex items-center gap-2 bg-white text-brand-navy hover:bg-brand-orange hover:text-white transition font-heading font-semibold px-8 py-4 rounded-sm">
+                    View Rates
+                  </a>
+                )}
                 <a href={phoneHref} className="inline-flex items-center gap-2 border-2 border-white/60 hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-8 py-4 rounded-sm">
                   <PhoneIcon className="w-5 h-5" /> {DEFAULT_PHONE}
                 </a>
@@ -383,6 +392,50 @@ function ServiceContent() {
       <section className="py-16 md:py-20">
         <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2 space-y-14">
+            {packages.length > 0 && (
+              <div id="packages">
+                <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
+                  <div>
+                    <p className="text-brand-orange font-heading font-semibold uppercase tracking-wider text-sm">Rates & Packages</p>
+                    <h2 className="font-heading font-bold text-3xl text-brand-dark mt-1">{service.title} — Price List</h2>
+                  </div>
+                  <p className="text-sm text-gray-500">Transparent pricing · 18% GST extra · Spare parts charged separately</p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-5">
+                  {packages.map((p) => (
+                    <div key={p.name} className="bg-white border border-gray-100 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 transition overflow-hidden flex flex-col">
+                      <div className="flex gap-4 p-5 flex-1">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-heading font-bold text-lg text-brand-dark leading-snug">{p.name}</h3>
+                          <p className="mt-2 text-sm text-gray-500">Starts at</p>
+                          <p className="font-heading font-bold text-3xl text-brand-orange leading-none">
+                            {/^\d/.test(p.price) ? `₹${p.price}` : p.price}
+                          </p>
+                          {p.gst && <span className="inline-block mt-2 text-xs font-semibold bg-brand-light text-brand-navy px-2.5 py-1 rounded-full">+ {p.gst}</span>}
+                          <p className="mt-3 text-sm text-gray-600 leading-relaxed line-clamp-3">
+                            {p.desc || `Doorstep ${p.name.toLowerCase()} by trained Eletox technician. Final quote shared before work starts.`}
+                          </p>
+                        </div>
+                        {p.img && (
+                          <div className="w-28 h-28 md:w-32 md:h-32 shrink-0 rounded-xl overflow-hidden bg-brand-light">
+                            <img src={p.img} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 border-t border-gray-100">
+                        <a href={phoneHref} className="flex items-center justify-center gap-2 py-3 text-sm font-heading font-semibold text-brand-navy hover:bg-brand-light transition border-r border-gray-100">
+                          <PhoneIcon className="w-4 h-4" /> Call Now
+                        </a>
+                        <Link href={bookHref(p.name)} className="flex items-center justify-center gap-2 py-3 text-sm font-heading font-semibold bg-brand-orange text-white hover:bg-brand-navy transition">
+                          Book Now <ArrowRightIcon className="w-4 h-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div>
               <img src={heroImg} alt={service.title} className="w-full h-[280px] md:h-[440px] object-cover rounded-2xl shadow-xl" />
               <h2 className="font-heading font-bold text-3xl text-brand-dark mt-10 mb-4">About this service</h2>
@@ -466,7 +519,7 @@ function ServiceContent() {
               ) : (
                 <p className="font-heading font-bold text-2xl mb-4">Book this service</p>
               )}
-              <Link href="/#estimate" className="block text-center bg-brand-navy hover:bg-brand-dark transition text-white font-heading font-semibold py-3.5 rounded-sm">
+              <Link href={bookHref()} className="block text-center bg-brand-navy hover:bg-brand-dark transition text-white font-heading font-semibold py-3.5 rounded-sm">
                 Book Appointment
               </Link>
               <a href={phoneHref} className="mt-3 flex items-center justify-center gap-2 bg-white text-brand-navy font-heading font-semibold py-3.5 rounded-sm hover:bg-brand-light transition">
@@ -518,7 +571,7 @@ function ServiceContent() {
             <p className="text-white/80 mt-2">Same-day doorstep service across Jaipur. Genuine parts, warranty included.</p>
           </div>
           <div className="flex flex-wrap gap-4">
-            <Link href="/#estimate" className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-8 py-4 rounded-sm">Get Free Estimate</Link>
+            <Link href={bookHref()} className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-8 py-4 rounded-sm">Get Free Estimate</Link>
             <a href={phoneHref} className="inline-flex items-center gap-2 bg-white text-brand-navy hover:bg-brand-orange hover:text-white transition font-heading font-semibold px-8 py-4 rounded-sm"><PhoneIcon className="w-5 h-5" /> Call Now</a>
           </div>
         </div>
