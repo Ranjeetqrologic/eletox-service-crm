@@ -56,11 +56,19 @@ router.get(
     });
 
     const totalLeads = await Lead.countDocuments({ ...leadFilter, ...staffFilter });
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const openUnassigned = { ...staffFilter, assignedStaff: null, status: { $nin: ["closed", "cancelled", "completed"] } };
+    const [newLeads, pendingLeads] = await Promise.all([
+      Lead.countDocuments({ ...openUnassigned, createdAt: { $gte: cutoff } }),
+      Lead.countDocuments({ ...openUnassigned, createdAt: { $lt: cutoff } }),
+    ]);
 
     res.json({
       success: true,
       data: {
         totalLeads,
+        newLeads,
+        pendingLeads,
         todayLeads,
         todayVisits,
         revenue: (revenue as any)?.[0]?.total || 0,

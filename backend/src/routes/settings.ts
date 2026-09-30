@@ -10,8 +10,38 @@ const router = express.Router();
 router.get(
   "/company",
   asyncHandler(async (_req: Request, res: Response) => {
-    const company = await Company.findOne();
+    const company = await Company.findOne().select("-emailSmtp");
     res.json({ success: true, data: company || {} });
+  })
+);
+
+router.get(
+  "/smtp",
+  protect,
+  restrictTo("superadmin", "admin"),
+  asyncHandler(async (_req: Request, res: Response) => {
+    const company = await Company.findOne().select("emailSmtp");
+    const s = company?.emailSmtp || {};
+    res.json({ success: true, data: { host: s.host || "", port: s.port || 587, user: s.user || "", secure: !!s.secure, hasPass: !!s.pass } });
+  })
+);
+
+router.put(
+  "/smtp",
+  protect,
+  restrictTo("superadmin", "admin"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const company = (await Company.findOne().select("emailSmtp")) || new Company();
+    const cur = company.emailSmtp || {};
+    company.emailSmtp = {
+      host: req.body.host ?? cur.host,
+      port: req.body.port ? Number(req.body.port) : cur.port || 587,
+      user: req.body.user ?? cur.user,
+      pass: req.body.pass ? req.body.pass : cur.pass,
+      secure: req.body.secure === true || req.body.secure === "true",
+    };
+    await company.save();
+    res.json({ success: true, message: "SMTP settings saved" });
   })
 );
 

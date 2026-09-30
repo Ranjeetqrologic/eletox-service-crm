@@ -10,6 +10,11 @@ export default function PaymentsPage() {
   const [search, setSearch] = useState("");
   const [form, setForm] = useState<any>({ lead: "", amount: "", mode: "cash", status: "received", transactionId: "", notes: "" });
   const [editing, setEditing] = useState<string | null>(null);
+  const [listSearch, setListSearch] = useState("");
+  const [filterMode, setFilterMode] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   useEffect(() => {
     fetchPayments();
@@ -69,8 +74,18 @@ export default function PaymentsPage() {
     }
   };
 
-  const totalReceived = payments.filter((p) => p.status === "received").reduce((sum, p) => sum + p.amount, 0);
-  const totalAdvance = payments.filter((p) => p.status === "advance").reduce((sum, p) => sum + p.amount, 0);
+  const filteredPayments = payments.filter((p) => {
+    const q = listSearch.toLowerCase();
+    const matchesSearch = !q || [p.lead?.customerName, p.lead?.mobile, p.lead?.leadId, p.transactionId].some((x: string) => x?.toLowerCase().includes(q));
+    const matchesMode = !filterMode || p.mode === filterMode;
+    const matchesStatus = !filterStatus || p.status === filterStatus;
+    const created = p.createdAt ? p.createdAt.split("T")[0] : "";
+    const matchesDate = (!fromDate || created >= fromDate) && (!toDate || created <= toDate);
+    return matchesSearch && matchesMode && matchesStatus && matchesDate;
+  });
+
+  const totalReceived = filteredPayments.filter((p) => p.status === "received").reduce((sum, p) => sum + p.amount, 0);
+  const totalAdvance = filteredPayments.filter((p) => p.status === "advance").reduce((sum, p) => sum + p.amount, 0);
 
   return (
     <div className="space-y-6">
@@ -113,13 +128,32 @@ export default function PaymentsPage() {
         </div>
       </form>
 
+      <div className="bg-white p-4 rounded-xl shadow flex flex-wrap gap-2">
+        <input className="border p-2 rounded flex-1 min-w-[160px]" placeholder="Search customer, mobile, lead ID, txn..." value={listSearch} onChange={(e) => setListSearch(e.target.value)} />
+        <select className="border p-2 rounded" value={filterMode} onChange={(e) => setFilterMode(e.target.value)}>
+          <option value="">All Modes</option>
+          <option value="cash">Cash</option>
+          <option value="upi">UPI</option>
+          <option value="card">Card</option>
+          <option value="online">Online</option>
+        </select>
+        <select className="border p-2 rounded" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+          <option value="">All Status</option>
+          <option value="received">Received</option>
+          <option value="advance">Advance</option>
+          <option value="pending">Pending</option>
+        </select>
+        <input type="date" className="border p-2 rounded" value={fromDate} onChange={(e) => setFromDate(e.target.value)} title="From date" />
+        <input type="date" className="border p-2 rounded" value={toDate} onChange={(e) => setToDate(e.target.value)} title="To date" />
+      </div>
+
       <div className="bg-white rounded-xl shadow overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-100">
             <tr><th className="p-3 text-left">Date</th><th className="p-3 text-left">Lead</th><th className="p-3 text-left">Amount</th><th className="p-3 text-left">Mode</th><th className="p-3 text-left">Status</th><th className="p-3 text-left">Txn ID</th><th className="p-3 text-left">Actions</th></tr>
           </thead>
           <tbody>
-            {payments.map((p) => (
+            {filteredPayments.map((p) => (
               <tr key={p._id} className="border-t">
                 <td className="p-3">{new Date(p.createdAt).toLocaleDateString()}</td>
                 <td className="p-3">{p.lead?.customerName} ({p.lead?.leadId})</td>

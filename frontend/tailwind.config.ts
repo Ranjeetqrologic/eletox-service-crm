@@ -17,11 +17,20 @@ const config: Config = {
           700: "#1d4ed8",
           900: "#1e3a8a",
         },
+        brand: {
+          navy: "#3336a5",
+          orange: "#e78b18",
+          dark: "#151735",
+          light: "#f3f5f9",
+        },
         accent: {
           400: "#fbbf24",
           500: "#f59e0b",
           600: "#f97316",
         },
+      },
+      fontFamily: {
+        heading: ["var(--font-saira)", "sans-serif"],
       },
     },
   },

@@ -16,6 +16,8 @@ export interface ILead extends Document {
   lng?: number;
   source: string;
   service: string;
+  subService?: string;
+  locationLink?: string;
   acType?: string;
   problem?: string;
   priority: "low" | "medium" | "high" | "urgent";
@@ -33,6 +35,7 @@ export interface ILead extends Document {
   cancelledReason?: string;
   followUpDate?: Date;
   followUpNote?: string;
+  machineSerialNo?: string;
   nextCallDate?: Date;
   images: string[];
   createdAt: Date;
@@ -58,6 +61,8 @@ const LeadSchema = new Schema<ILead>(
       default: "manual",
     },
     service: { type: String, required: true },
+    subService: { type: String, trim: true },
+    locationLink: { type: String, trim: true },
     acType: { type: String },
     problem: { type: String },
     priority: { type: String, enum: ["low", "medium", "high", "urgent"], default: "medium" },
@@ -78,6 +83,7 @@ const LeadSchema = new Schema<ILead>(
     cancelledReason: { type: String },
     followUpDate: { type: Date },
     followUpNote: { type: String },
+    machineSerialNo: { type: String, trim: true },
     nextCallDate: { type: Date },
     images: [{ type: String }],
   },

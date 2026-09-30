@@ -27,15 +27,18 @@ export default function ReportsPage() {
     fetchData();
   }, []);
 
+  const statusCards = (dashboard?.statuses || []).map((s: any) => ({
+    label: s.label,
+    value: dashboard?.statusData?.[s.name] ?? 0,
+    bg: s.color || "#6B7280",
+  }));
+
   const exportCSV = () => {
     const rows = [
       ["Metric", "Value"],
       ["Total Leads", dashboard?.totalLeads],
-      ["New", dashboard?.newLeads],
-      ["Assigned", dashboard?.assigned],
-      ["Working", dashboard?.working],
-      ["Completed", dashboard?.completed],
-      ["Cancelled", dashboard?.cancelled],
+      ...statusCards.map((c: any) => [c.label, c.value]),
+      ["Today Leads", dashboard?.todayLeads],
       ["Revenue", dashboard?.revenue],
     ];
     const csv = rows.map((r) => r.join(",")).join("\n");
@@ -62,16 +65,12 @@ export default function ReportsPage() {
       {dashboard && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Total Leads", value: dashboard.totalLeads, color: "bg-blue-500" },
-            { label: "New", value: dashboard.newLeads, color: "bg-gray-500" },
-            { label: "Assigned", value: dashboard.assigned, color: "bg-yellow-500" },
-            { label: "Working", value: dashboard.working, color: "bg-orange-500" },
-            { label: "Completed", value: dashboard.completed, color: "bg-green-500" },
-            { label: "Cancelled", value: dashboard.cancelled, color: "bg-red-500" },
-            { label: "Today Leads", value: dashboard.todayLeads, color: "bg-purple-500" },
-            { label: "Revenue", value: `₹${dashboard.revenue}`, color: "bg-teal-500" },
-          ].map((c) => (
-            <div key={c.label} className={`${c.color} text-white p-4 rounded-xl shadow`}>
+            { label: "Total Leads", value: dashboard.totalLeads, bg: "#3B82F6" },
+            ...statusCards,
+            { label: "Today Leads", value: dashboard.todayLeads, bg: "#A855F7" },
+            { label: "Revenue", value: `₹${dashboard.revenue}`, bg: "#14B8A6" },
+          ].map((c: any) => (
+            <div key={c.label} className="text-white p-4 rounded-xl shadow" style={{ backgroundColor: c.bg }}>
               <div className="text-2xl font-bold">{c.value}</div>
               <div className="text-sm opacity-90">{c.label}</div>
             </div>
