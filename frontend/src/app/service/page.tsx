@@ -295,6 +295,14 @@ const promises = [
   { icon: ShieldCheckIcon, t: "Service Warranty" },
 ];
 
+const priceParts = (price: string) => {
+  const m = price.match(/^(\d+)(.*)$/);
+  if (!m) return null;
+  const n = parseInt(m[1], 10);
+  const mrp = Math.round((n * 1.3) / 10) * 10 - 1;
+  return { n, mrp, suffix: m[2] };
+};
+
 function ServiceContent() {
   const searchParams = useSearchParams();
   const slug = searchParams.get("slug");
@@ -415,9 +423,17 @@ function ServiceContent() {
                           <div className="flex items-start justify-between gap-3">
                             <h3 className="font-heading font-bold text-base text-brand-dark leading-snug">{p.name}</h3>
                             <div className="text-right shrink-0">
-                              <p className="font-heading font-bold text-xl text-brand-orange leading-none">
-                                {/^\d/.test(p.price) ? `₹${p.price}` : p.price}
-                              </p>
+                              {(() => {
+                                const pp = priceParts(p.price);
+                                return pp ? (
+                                  <>
+                                    <p className="text-xs text-gray-400 leading-none"><span className="line-through">₹{pp.mrp}</span> <span className="text-green-600 font-semibold">30% OFF</span></p>
+                                    <p className="font-heading font-bold text-xl text-brand-orange leading-none mt-1">₹{pp.n}{pp.suffix}</p>
+                                  </>
+                                ) : (
+                                  <p className="font-heading font-bold text-xl text-brand-orange leading-none">{p.price}</p>
+                                );
+                              })()}
                               {p.gst && <p className="text-[11px] text-gray-500 mt-0.5">+ {p.gst}</p>}
                             </div>
                           </div>
