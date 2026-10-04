@@ -28,9 +28,9 @@ export const uploadReportPhotos = multer({
   storage: createStorage(PHOTO_DIR),
   limits: { fileSize: 20 * 1024 * 1024 },
 }).fields([
-  { name: "beforePhotos", maxCount: 10 },
-  { name: "workingPhotos", maxCount: 10 },
-  { name: "afterPhotos", maxCount: 10 },
+  { name: "beforePhotos", maxCount: 30 },
+  { name: "workingPhotos", maxCount: 30 },
+  { name: "afterPhotos", maxCount: 30 },
 ]);
 
 export const uploadDocs = multer({

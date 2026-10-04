@@ -1,18 +1,64 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import { useAuthStore } from "@/store/authStore";
+import { IMPERSONATE_KEY } from "@/store/authStore";
 import toast from "react-hot-toast";
 
+const availablePermissions = [
+  "dashboard", "leads", "lead_status", "staff", "roles", "services",
+  "payments", "reports", "settings", "banners", "gallery",
+];
+
 export default function StaffPage() {
-  const router = useRouter();
-  const { setAuth } = useAuthStore();
   const [staff, setStaff] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [showKyc, setShowKyc] = useState<any>(null);
+  const [roleEdit, setRoleEdit] = useState<any>(null);
+  const [creds, setCreds] = useState<any>(null);
+  const [newPwd, setNewPwd] = useState("");
+
+  const openCreds = async (s: any) => {
+    try {
+      const { data } = await api.get(`/staff/${s._id}/credentials`);
+      setCreds({ staffId: s._id, ...data.data });
+      setNewPwd("");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    }
+  };
+
+  const copyText = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copied`);
+    } catch {
+      toast.error("Copy failed");
+    }
+  };
+
+  const resetPassword = async () => {
+    if (newPwd.length < 6) return toast.error("Password must be at least 6 characters");
+    try {
+      await api.put(`/staff/${creds.staffId}/reset-password`, { password: newPwd });
+      toast.success("Password reset");
+      setCreds({ ...creds, password: newPwd });
+      setNewPwd("");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    }
+  };
+
+  const genPassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    let p = "";
+    for (let i = 0; i < 8; i++) p += chars[Math.floor(Math.random() * chars.length)];
+    setNewPwd(p + "@" + Math.floor(10 + Math.random() * 89));
+  };
+  const [roleForm, setRoleForm] = useState<{ roleId: string; role: string; permissions: string[] }>({ roleId: "", role: "", permissions: [] });
+  const [roleSaving, setRoleSaving] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState<any>({
     employeeId: "",
     name: "",
@@ -30,6 +76,17 @@ export default function StaffPage() {
     upi: "",
   });
   const [docs, setDocs] = useState<any>({});
+  const [search, setSearch] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [filterActive, setFilterActive] = useState("");
+
+  const filteredStaff = staff.filter((s) => {
+    const q = search.toLowerCase();
+    const matchesSearch = !q || [s.name, s.email, s.mobile, s.employeeId].some((x: string) => x?.toLowerCase().includes(q));
+    const matchesRole = !filterRole || s.role === filterRole;
+    const matchesActive = !filterActive || (filterActive === "active" ? s.isActive : !s.isActive);
+    return matchesSearch && matchesRole && matchesActive;
+  });
 
   const fetchStaff = () => {
     api.get("/staff").then((res) => setStaff(res.data.data));
@@ -55,13 +112,14 @@ export default function StaffPage() {
     });
 
     try {
-      await api.post("/staff", data, { headers: { "Content-Type": "multipart/form-data" } });
-      toast.success("Staff registered");
-      setForm({
-        employeeId: "", name: "", email: "", password: "", mobile: "", address: "", role: "", roleId: "",
-        joiningDate: "", emergencyContact: "", bankName: "", accountNumber: "", ifsc: "", upi: "",
-      });
-      setDocs({});
+      if (editing) {
+        await api.put(`/staff/${editing._id}`, data, { headers: { "Content-Type": "multipart/form-data" } });
+        toast.success("Staff updated");
+      } else {
+        await api.post("/staff", data, { headers: { "Content-Type": "multipart/form-data" } });
+        toast.success("Staff registered");
+      }
+      resetForm();
       fetchStaff();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
@@ -70,14 +128,85 @@ export default function StaffPage() {
     }
   };
 
+  const resetForm = () => {
+    setEditing(null);
+    setForm({
+      employeeId: "", name: "", email: "", password: "", mobile: "", address: "", role: "", roleId: "",
+      joiningDate: "", emergencyContact: "", bankName: "", accountNumber: "", ifsc: "", upi: "",
+    });
+    setDocs({});
+  };
+
+  const startEdit = (s: any) => {
+    const current = roles.find((r) => r._id === s.roleId) || roles.find((r) => r.name === s.role);
+    setEditing(s);
+    setForm({
+      employeeId: s.employeeId || "",
+      name: s.name || "",
+      email: s.user?.email || s.email || "",
+      password: "",
+      mobile: s.mobile || "",
+      address: s.address || "",
+      role: s.role || "",
+      roleId: current?._id || "",
+      joiningDate: s.joiningDate ? String(s.joiningDate).slice(0, 10) : "",
+      emergencyContact: s.emergencyContact || "",
+      bankName: s.bankDetails?.bankName || "",
+      accountNumber: s.bankDetails?.accountNumber || "",
+      ifsc: s.bankDetails?.ifsc || "",
+      upi: s.bankDetails?.upi || "",
+    });
+    setDocs({});
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const loginAs = async (userId: string) => {
     try {
       const { data } = await api.post(`/auth/impersonate/${userId}`);
-      setAuth(data.user, data.token);
-      toast.success("Logged in as staff");
-      router.replace(data.user.role === "technician" ? "/staff/" : "/admin/");
+      localStorage.setItem(IMPERSONATE_KEY, JSON.stringify({ user: data.user, token: data.token }));
+      const tab = window.open("/login/?impersonate=1", "_blank");
+      if (!tab) {
+        localStorage.removeItem(IMPERSONATE_KEY);
+        toast.error("Popup blocked - please allow popups for this site");
+        return;
+      }
+      toast.success(`Opened ${data.user.name}'s dashboard in a new tab`);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
+    }
+  };
+
+  const openRoleEdit = (s: any) => {
+    const current = roles.find((r) => r._id === s.roleId) || roles.find((r) => r.name === s.role);
+    setRoleForm({ roleId: current?._id || "", role: current?.name || s.role || "", permissions: current?.permissions || [] });
+    setRoleEdit(s);
+  };
+
+  const selectRole = (roleId: string) => {
+    const r = roles.find((x) => x._id === roleId);
+    setRoleForm({ roleId, role: r?.name || "", permissions: r?.permissions || [] });
+  };
+
+  const togglePermission = (perm: string) => {
+    const perms = new Set(roleForm.permissions);
+    if (perms.has(perm)) perms.delete(perm); else perms.add(perm);
+    setRoleForm({ ...roleForm, permissions: Array.from(perms) });
+  };
+
+  const saveRole = async () => {
+    if (!roleForm.roleId) return toast.error("Select a role");
+    setRoleSaving(true);
+    try {
+      await api.put(`/roles/${roleForm.roleId}`, { permissions: roleForm.permissions });
+      await api.put(`/staff/${roleEdit._id}`, { role: roleForm.role, roleId: roleForm.roleId });
+      toast.success("Role & permissions updated");
+      setRoleEdit(null);
+      fetchStaff();
+      fetchRoles();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    } finally {
+      setRoleSaving(false);
     }
   };
 
@@ -94,15 +223,32 @@ export default function StaffPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Staff Management</h1>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 className="text-2xl font-bold">Staff Management</h1>
+        <div className="flex flex-wrap gap-2">
+          <input className="border p-2 rounded flex-1 min-w-[160px]" placeholder="Search name, email, mobile, ID..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select className="border p-2 rounded" value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
+            <option value="">All Roles</option>
+            {roles.map((r) => <option key={r._id} value={r.name}>{r.name}</option>)}
+          </select>
+          <select className="border p-2 rounded" value={filterActive} onChange={(e) => setFilterActive(e.target.value)}>
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
-        <h2 className="font-semibold text-lg">Register New Staff</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-lg">{editing ? `Edit Staff - ${editing.name}` : "Register New Staff"}</h2>
+          {editing && <button type="button" onClick={resetForm} className="text-sm text-gray-500 hover:underline">Cancel edit</button>}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input className="border p-2 rounded" placeholder="Employee ID*" value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })} required />
+          <input className="border p-2 rounded" placeholder="Employee ID (auto: EMP001)" value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })} />
           <input className="border p-2 rounded" placeholder="Name*" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           <input className="border p-2 rounded" placeholder="Email*" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-          <input className="border p-2 rounded" type="password" placeholder="Password*" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+          <input className="border p-2 rounded" type="password" placeholder={editing ? "New Password (leave blank to keep)" : "Password*"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required={!editing} />
           <input className="border p-2 rounded" placeholder="Mobile*" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} required />
           <input className="border p-2 rounded" placeholder="Address*" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
           <select
@@ -130,7 +276,10 @@ export default function StaffPage() {
             </label>
           ))}
         </div>
-        <button className="bg-primary-600 text-white px-4 py-2 rounded" disabled={loading}>{loading ? "Saving..." : "Register Staff"}</button>
+        <div className="flex gap-2">
+          <button className="bg-primary-600 text-white px-4 py-2 rounded" disabled={loading}>{loading ? "Saving..." : editing ? "Update Staff" : "Register Staff"}</button>
+          {editing && <button type="button" onClick={resetForm} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>}
+        </div>
       </form>
 
       <div className="bg-white rounded-xl shadow overflow-x-auto">
@@ -147,7 +296,7 @@ export default function StaffPage() {
             </tr>
           </thead>
           <tbody>
-            {staff.map((s) => (
+            {filteredStaff.map((s) => (
               <tr key={s._id} className="border-t">
                 <td className="p-3">{s.employeeId}</td>
                 <td className="p-3">{s.name}</td>
@@ -159,7 +308,10 @@ export default function StaffPage() {
                   {s.user?._id && (
                     <button onClick={() => loginAs(s.user._id)} className="text-blue-600 hover:underline">Login As</button>
                   )}
+                  <button onClick={() => openCreds(s)} className="text-amber-600 hover:underline">Login ID / Password</button>
+                  <button onClick={() => startEdit(s)} className="text-indigo-600 hover:underline">Edit</button>
                   <button onClick={() => setShowKyc(s)} className="text-green-600 hover:underline">KYC & Bank</button>
+                  <button onClick={() => openRoleEdit(s)} className="text-purple-600 hover:underline">Role & Permissions</button>
                   <button onClick={() => deactivate(s._id)} className="text-red-600 hover:underline">Deactivate</button>
                 </td>
               </tr>
@@ -167,6 +319,88 @@ export default function StaffPage() {
           </tbody>
         </table>
       </div>
+
+      {creds && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Login Details - {creds.name}</h2>
+              <button onClick={() => setCreds(null)} className="text-gray-500 hover:text-gray-700">Close</button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Staff Login URL</label>
+                <div className="flex gap-2">
+                  <input readOnly className="border p-2 rounded w-full bg-gray-50 text-sm" value={`${window.location.origin}/staff-login/`} />
+                  <button onClick={() => copyText(`${window.location.origin}/staff-login/`, "URL")} className="bg-gray-700 text-white px-3 rounded text-sm">Copy</button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Login ID (Email)</label>
+                <div className="flex gap-2">
+                  <input readOnly className="border p-2 rounded w-full bg-gray-50" value={creds.loginId} />
+                  <button onClick={() => copyText(creds.loginId, "Login ID")} className="bg-gray-700 text-white px-3 rounded text-sm">Copy</button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Password</label>
+                {creds.password ? (
+                  <div className="flex gap-2">
+                    <input readOnly className="border p-2 rounded w-full bg-gray-50 font-mono" value={creds.password} />
+                    <button onClick={() => copyText(creds.password, "Password")} className="bg-gray-700 text-white px-3 rounded text-sm">Copy</button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">Passwords are stored encrypted and cannot be viewed. Use Reset below to set a new password — it will be shown here once so you can copy and share it with the staff.</p>
+                )}
+              </div>
+              <div className="border-t pt-3">
+                <label className="block text-sm font-medium mb-1">Reset Password</label>
+                <div className="flex gap-2">
+                  <input className="border p-2 rounded w-full" placeholder="New password (min 6)" value={newPwd} onChange={(e) => setNewPwd(e.target.value)} />
+                  <button onClick={genPassword} className="bg-gray-200 px-3 rounded text-sm whitespace-nowrap">Generate</button>
+                  <button onClick={resetPassword} className="bg-primary-600 text-white px-3 rounded text-sm">Reset</button>
+                </div>
+              </div>
+              <button
+                onClick={() => copyText(`Eletox Staff Login\nURL: ${window.location.origin}/staff-login/\nLogin ID: ${creds.loginId}\nPassword: ${creds.password || "(reset required)"}`, "Login details")}
+                className="w-full bg-green-600 text-white py-2 rounded"
+              >
+                Copy All (URL + ID + Password)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {roleEdit && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Role & Permissions - {roleEdit.name}</h2>
+              <button onClick={() => setRoleEdit(null)} className="text-gray-500 hover:text-gray-700">Close</button>
+            </div>
+            <label className="block text-sm font-medium mb-1">Role</label>
+            <select className="border p-2 rounded w-full mb-4" value={roleForm.roleId} onChange={(e) => selectRole(e.target.value)}>
+              <option value="">Select Role</option>
+              {roles.map((r) => <option key={r._id} value={r._id}>{r.name}</option>)}
+            </select>
+            <div className="font-medium text-sm mb-2">Permissions</div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm mb-4">
+              {availablePermissions.map((perm) => (
+                <label key={perm} className="flex items-center gap-2">
+                  <input type="checkbox" checked={roleForm.permissions.includes(perm)} onChange={() => togglePermission(perm)} disabled={!roleForm.roleId} />
+                  <span className="capitalize">{perm.replace("_", " ")}</span>
+                </label>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mb-4">Permissions apply to the selected role (all staff with this role).</p>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setRoleEdit(null)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+              <button onClick={saveRole} disabled={roleSaving} className="bg-primary-600 text-white px-4 py-2 rounded">{roleSaving ? "Saving..." : "Save"}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showKyc && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
