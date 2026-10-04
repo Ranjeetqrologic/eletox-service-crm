@@ -205,7 +205,7 @@ export default function Home() {
         {slides.map((s, i) => (
           <div key={i} className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${i === activeBanner % slides.length ? "opacity-100" : "opacity-0"}`} style={{ backgroundImage: `url('${s.image}')` }} />
         ))}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/10 md:from-black/60 md:via-black/30 md:to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/10 md:from-black/75 md:via-black/45 md:to-black/10" />
         <div className="max-w-[1320px] mx-auto px-4 relative w-full py-14 md:py-20 pb-24 md:pb-28">
           <div className="max-w-2xl text-white">
             <span className="inline-flex items-center gap-2 font-heading font-semibold uppercase text-brand-orange tracking-wide">
@@ -221,13 +221,13 @@ export default function Home() {
         </div>
         {slides.length > 1 && (
           <>
-            <button type="button" onClick={() => setActiveBanner((i) => (i - 1 + slides.length) % slides.length)} aria-label="Previous slide" className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 hover:bg-brand-orange text-white items-center justify-center backdrop-blur transition">
+            <button type="button" onClick={() => setActiveBanner((i) => (i - 1 + slides.length) % slides.length)} aria-label="Previous slide" className="hidden md:flex absolute right-20 bottom-24 w-11 h-11 rounded-full bg-white/15 hover:bg-brand-orange text-white items-center justify-center backdrop-blur transition">
               <ChevronLeftIcon className="w-6 h-6" />
             </button>
-            <button type="button" onClick={() => setActiveBanner((i) => (i + 1) % slides.length)} aria-label="Next slide" className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 hover:bg-brand-orange text-white items-center justify-center backdrop-blur transition">
+            <button type="button" onClick={() => setActiveBanner((i) => (i + 1) % slides.length)} aria-label="Next slide" className="hidden md:flex absolute right-6 bottom-24 w-11 h-11 rounded-full bg-white/15 hover:bg-brand-orange text-white items-center justify-center backdrop-blur transition">
               <ChevronRightIcon className="w-6 h-6" />
             </button>
-            <div className="absolute bottom-20 md:bottom-24 left-4 md:left-1/2 md:-translate-x-1/2 flex gap-2">
+            <div className="absolute bottom-20 md:bottom-[108px] left-4 md:left-[max(1rem,calc((100%-1320px)/2+1rem))] flex gap-2">
               {slides.map((_, i) => (
                 <button key={i} onClick={() => setActiveBanner(i)} className={`h-2.5 rounded-full transition-all ${i === activeBanner % slides.length ? "bg-brand-orange w-7" : "bg-white/60 w-2.5"}`} aria-label={`Slide ${i + 1}`} />
               ))}
