@@ -181,8 +181,8 @@ export default function Home() {
 
       {/* Header */}
       <header className="bg-white sticky top-0 z-50 shadow-[0_2px_20px_rgba(0,0,0,0.06)]">
-        <div className="max-w-[1320px] mx-auto px-4 py-3 flex justify-between items-center">
-          <Logo logoUrl={company.logo} height={62} />
+        <div className="max-w-[1320px] mx-auto px-4 py-1.5 md:py-2 flex justify-between items-center">
+          <Logo logoUrl={company.logo} height={48} className="[&_img]:h-10 md:[&_img]:h-12" />
           <nav className="hidden lg:flex items-center gap-8 font-heading font-semibold text-[15px] uppercase text-brand-dark">
             {navLinks.map((n) => <a key={n.label} href={n.href} className="hover:text-brand-orange transition">{n.label}</a>)}
           </nav>
@@ -191,7 +191,7 @@ export default function Home() {
               <PhoneIcon className="w-5 h-5" /> Call Now
             </a>
             <Link href="/staff-login/" className="hidden md:inline-flex border border-brand-navy text-brand-navy font-heading font-semibold px-4 py-3 rounded-sm hover:bg-brand-navy hover:text-white transition">Login</Link>
-            <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden text-brand-navy p-2" aria-label="Menu">
+            <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden text-brand-navy p-1.5" aria-label="Menu">
               {menuOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3Icon className="w-7 h-7" />}
             </button>
           </div>
@@ -206,7 +206,7 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="bg-brand-light pt-3 md:pt-5">
+      <section className="bg-brand-light pt-2 md:pt-4">
         <div className="max-w-[1320px] mx-auto px-4">
           <div className="relative overflow-hidden rounded-2xl md:rounded-3xl shadow-lg bg-brand-navy">
             <div className="flex transition-transform duration-700 ease-out" style={{ transform: `translateX(-${(activeBanner % slides.length) * 100}%)` }}>
@@ -250,16 +250,16 @@ export default function Home() {
       </section>
 
       {/* Residential / Commercial tabs */}
-      <section className="relative z-10 bg-brand-light pt-4 md:pt-5 pb-2">
+      <section className="relative z-10 bg-brand-light pt-2 md:pt-4 pb-1">
         <div className="max-w-[1320px] mx-auto px-4">
-          <div className="grid md:grid-cols-2 shadow-lg rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-2 shadow-lg rounded-xl md:rounded-2xl overflow-hidden">
             {(["residential", "commercial"] as const).map((t) => (
-              <a key={t} href="#services" className={`group flex items-center justify-between gap-4 px-6 md:px-12 py-6 md:py-10 text-white ${t === "residential" ? "bg-brand-orange" : "bg-brand-navy"}`}>
-                <div className="flex items-center gap-4">
-                  {t === "residential" ? <HomeModernIcon className="w-10 h-10 md:w-14 md:h-14 shrink-0 opacity-80" /> : <BuildingOffice2Icon className="w-10 h-10 md:w-14 md:h-14 shrink-0 opacity-80" />}
-                  <h3 className="font-heading font-semibold text-xl md:text-[30px] leading-tight max-w-[280px]">{t === "residential" ? "Residential Repair Service" : "Commercial Repair Service"}</h3>
+              <a key={t} href="#services" className={`group flex items-center justify-between gap-2 md:gap-4 px-3 md:px-10 py-3 md:py-7 text-white ${t === "residential" ? "bg-brand-orange" : "bg-brand-navy"}`}>
+                <div className="flex items-center gap-2 md:gap-4 min-w-0">
+                  {t === "residential" ? <HomeModernIcon className="w-7 h-7 md:w-12 md:h-12 shrink-0 opacity-80" /> : <BuildingOffice2Icon className="w-7 h-7 md:w-12 md:h-12 shrink-0 opacity-80" />}
+                  <h3 className="font-heading font-semibold text-[13px] sm:text-base md:text-2xl leading-tight">{t === "residential" ? "Residential Repair" : "Commercial Repair"}<span className="hidden md:inline"> Service</span></h3>
                 </div>
-                <span className="w-11 h-11 md:w-16 md:h-16 shrink-0 rounded-full border border-white/40 flex items-center justify-center group-hover:bg-white group-hover:text-brand-dark transition"><ArrowRightIcon className="w-6 h-6" /></span>
+                <span className="hidden sm:flex w-9 h-9 md:w-14 md:h-14 shrink-0 rounded-full border border-white/40 items-center justify-center group-hover:bg-white group-hover:text-brand-dark transition"><ArrowRightIcon className="w-5 h-5 md:w-6 md:h-6" /></span>
               </a>
             ))}
           </div>
