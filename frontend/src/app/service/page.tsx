@@ -11,6 +11,7 @@ import api from "@/lib/api";
 import { getImageUrl } from "@/lib/utils";
 import Logo from "@/components/Logo";
 import { packagesFor } from "@/lib/packages";
+import SocialLinks from "@/components/SocialLinks";
 
 const A = "/eletox-assets";
 const DEFAULT_PHONE = "+91 9571071342";
@@ -600,6 +601,10 @@ function ServiceContent() {
 }
 
 export default function ServicePage() {
+  const [company, setCompany] = useState<any>({});
+  useEffect(() => {
+    api.get("/settings/company").then((res) => setCompany(res.data.data || {})).catch(() => setCompany({}));
+  }, []);
   return (
     <main className="min-h-screen bg-white text-gray-800">
       <header className="bg-white shadow-[0_2px_20px_rgba(0,0,0,0.06)] sticky top-0 z-50">
@@ -623,6 +628,7 @@ export default function ServicePage() {
           <div>
             <div className="bg-white rounded-lg p-3 inline-block mb-4"><Logo height={44} /></div>
             <p className="text-gray-400 leading-relaxed">Eletox AC Services — Jaipur's trusted AC, appliance and electrical repair company. 24×7 support, same-day doorstep visit and transparent pricing.</p>
+            <SocialLinks links={company.socialLinks} className="mt-4" />
           </div>
           <div className="flex items-start gap-3"><MapPinIcon className="w-5 h-5 text-brand-orange shrink-0 mt-0.5" /><span>{DEFAULT_ADDRESS}</span></div>
           <div className="space-y-3">

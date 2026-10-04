@@ -59,7 +59,9 @@ export default function SettingsPage() {
     setLoading(true);
     const data = new FormData();
     Object.keys(company).forEach((key) => {
-      if (key !== "logo") data.append(key, company[key] || "");
+      if (key === "logo") return;
+      if (key === "socialLinks") data.append(key, JSON.stringify(company.socialLinks || {}));
+      else data.append(key, company[key] || "");
     });
     if (logo) data.append("logo", logo);
 
@@ -84,6 +86,13 @@ export default function SettingsPage() {
     { name: "gstNumber", label: "GST Number" },
     { name: "upiId", label: "UPI ID" },
   ];
+  const socialFields = [
+    { name: "facebook", label: "Facebook", placeholder: "https://facebook.com/eletox" },
+    { name: "instagram", label: "Instagram", placeholder: "https://instagram.com/eletox" },
+    { name: "youtube", label: "YouTube", placeholder: "https://youtube.com/@eletox" },
+    { name: "twitter", label: "Twitter / X", placeholder: "https://x.com/eletox" },
+    { name: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/company/eletox" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -104,6 +113,22 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium mb-1">Logo</label>
             <input type="file" className="border p-2 rounded w-full" onChange={(e) => setLogo(e.target.files?.[0] || null)} />
             {company.logo && <img src={getImageUrl(company.logo)} alt="Current logo" className="mt-2 h-16 object-contain" />}
+          </div>
+        </div>
+        <div>
+          <h3 className="font-semibold mb-2">Social Links <span className="text-xs font-normal text-gray-500">(footer icons — leave blank to hide)</span></h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {socialFields.map((f) => (
+              <div key={f.name}>
+                <label className="block text-sm font-medium mb-1">{f.label}</label>
+                <input
+                  className="border p-2 rounded w-full"
+                  placeholder={f.placeholder}
+                  value={company.socialLinks?.[f.name] || ""}
+                  onChange={(e) => setCompany({ ...company, socialLinks: { ...(company.socialLinks || {}), [f.name]: e.target.value } })}
+                />
+              </div>
+            ))}
           </div>
         </div>
         <button className="bg-primary-600 text-white px-4 py-2 rounded" disabled={loading}>{loading ? "Saving..." : "Save Settings"}</button>

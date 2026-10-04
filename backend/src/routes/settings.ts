@@ -54,6 +54,9 @@ router.put(
     const file = req.file as Express.Multer.File;
     const update = { ...req.body };
     if (file) update.logo = getFileUrl(file);
+    if (typeof update.socialLinks === "string") {
+      try { update.socialLinks = JSON.parse(update.socialLinks); } catch { delete update.socialLinks; }
+    }
 
     const company = await Company.findOneAndUpdate({}, update, { upsert: true, new: true });
     res.json({ success: true, data: company });

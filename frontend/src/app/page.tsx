@@ -7,6 +7,7 @@ import { getImageUrl } from "@/lib/utils";
 import { subServicesFor } from "@/lib/subServices";
 import Logo from "@/components/Logo";
 import toast from "react-hot-toast";
+import SocialLinks from "@/components/SocialLinks";
 import {
   ChevronLeftIcon, ChevronRightIcon,
   PhoneIcon, EnvelopeIcon, MapPinIcon, ClockIcon, Bars3Icon, XMarkIcon,
@@ -533,6 +534,7 @@ export default function Home() {
               <a href={phoneHref} aria-label="Call" className="w-10 h-10 rounded-full bg-brand-orange text-white flex items-center justify-center hover:opacity-90"><PhoneIcon className="w-5 h-5" /></a>
               <a href={`mailto:${email}`} aria-label="Email" className="w-10 h-10 rounded-full bg-[#4170b7] text-white flex items-center justify-center hover:opacity-90"><EnvelopeIcon className="w-5 h-5" /></a>
             </div>
+            <SocialLinks links={company.socialLinks} className="mt-3" />
           </div>
           <div>
             <h4 className="text-white font-heading font-bold text-lg mb-5 relative pb-3 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-10 after:h-0.5 after:bg-brand-orange">Our Services</h4>
