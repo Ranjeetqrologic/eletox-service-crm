@@ -116,9 +116,14 @@ export default function Home() {
     }
   }, []);
 
+  const bannerLink = (l?: string) => {
+    if (!l) return "#estimate";
+    if (l.startsWith("#")) return ["#services", "#about", "#gallery", "#estimate", "#team", "#blog", "#contact"].includes(l) ? l : "#estimate";
+    return l;
+  };
   const slides = banners.length
-    ? banners.map((b) => ({ image: getImageUrl(b.image) || heroSlides[0].image, title: b.title || heroSlides[0].title, subtitle: b.subtitle || heroSlides[0].subtitle, link: b.buttonLink, button: b.buttonText }))
-    : heroSlides.map((s) => ({ ...s, link: undefined, button: undefined }));
+    ? banners.map((b) => ({ image: getImageUrl(b.image) || heroSlides[0].image, title: b.title || heroSlides[0].title, subtitle: b.subtitle || heroSlides[0].subtitle, link: bannerLink(b.buttonLink), button: b.buttonText }))
+    : heroSlides.map((s) => ({ ...s, link: "#estimate", button: undefined }));
 
   useEffect(() => {
     if (slides.length <= 1) return;
@@ -155,7 +160,6 @@ export default function Home() {
   const email = company.email || DEFAULT_EMAIL;
   const address = company.address || DEFAULT_ADDRESS;
   const serviceList = services.length ? services : defaultServices;
-  const slide = slides[activeBanner % slides.length];
 
   return (
     <main id="home" className="min-h-screen bg-white text-gray-700">
@@ -202,45 +206,53 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="relative min-h-[440px] md:min-h-[640px] flex items-center overflow-hidden">
-        {slides.map((s, i) => (
-          <div key={i} className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${i === activeBanner % slides.length ? "opacity-100" : "opacity-0"}`} style={{ backgroundImage: `url('${s.image}')` }} />
-        ))}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/10 md:from-black/75 md:via-black/45 md:to-black/10" />
-        <div className="max-w-[1320px] mx-auto px-4 relative w-full py-14 md:py-20 pb-24 md:pb-28">
-          <div className="max-w-2xl text-white">
-            <span className="inline-flex items-center gap-2 font-heading font-semibold uppercase text-brand-orange tracking-wide">
-              <img src={`${A}/icon-subtitle.png`} alt="" className="w-5 h-5" /> Residential &amp; Commercial
-            </span>
-            <h1 className="font-heading font-bold text-3xl sm:text-4xl md:text-[60px] leading-[1.1] mt-3 mb-4 drop-shadow">{slide.title}</h1>
-            <p className="text-base md:text-xl mb-6 md:mb-8 text-white/90 drop-shadow">{slide.subtitle}</p>
-            <div className="flex flex-wrap gap-3 md:gap-4">
-              <a href={slide.link || "#estimate"} className="bg-brand-navy text-white font-heading font-semibold px-6 md:px-8 py-3 md:py-4 rounded-sm hover:bg-brand-orange transition">{slide.button || "Appointment Now"}</a>
-              <a href={phoneHref} className="inline-flex items-center gap-2 bg-brand-orange text-white font-heading font-semibold px-6 md:px-8 py-3 md:py-4 rounded-sm hover:bg-brand-navy transition"><PhoneIcon className="w-5 h-5" /> Call Now</a>
-            </div>
-          </div>
-        </div>
-        {slides.length > 1 && (
-          <>
-            <button type="button" onClick={() => setActiveBanner((i) => (i - 1 + slides.length) % slides.length)} aria-label="Previous slide" className="hidden md:flex absolute right-20 bottom-24 w-11 h-11 rounded-full bg-white/15 hover:bg-brand-orange text-white items-center justify-center backdrop-blur transition">
-              <ChevronLeftIcon className="w-6 h-6" />
-            </button>
-            <button type="button" onClick={() => setActiveBanner((i) => (i + 1) % slides.length)} aria-label="Next slide" className="hidden md:flex absolute right-6 bottom-24 w-11 h-11 rounded-full bg-white/15 hover:bg-brand-orange text-white items-center justify-center backdrop-blur transition">
-              <ChevronRightIcon className="w-6 h-6" />
-            </button>
-            <div className="absolute bottom-20 md:bottom-[108px] left-4 md:left-[max(1rem,calc((100%-1320px)/2+1rem))] flex gap-2">
-              {slides.map((_, i) => (
-                <button key={i} onClick={() => setActiveBanner(i)} className={`h-2.5 rounded-full transition-all ${i === activeBanner % slides.length ? "bg-brand-orange w-7" : "bg-white/60 w-2.5"}`} aria-label={`Slide ${i + 1}`} />
+      <section className="bg-brand-light pt-3 md:pt-5">
+        <div className="max-w-[1320px] mx-auto px-4">
+          <div className="relative overflow-hidden rounded-2xl md:rounded-3xl shadow-lg bg-brand-navy">
+            <div className="flex transition-transform duration-700 ease-out" style={{ transform: `translateX(-${(activeBanner % slides.length) * 100}%)` }}>
+              {slides.map((s, i) => (
+                <div key={i} className="relative w-full shrink-0 aspect-[16/9] sm:aspect-[32/15] md:aspect-auto md:h-[460px] lg:h-[520px]">
+                  <img src={s.image} alt={s.title} className="absolute inset-0 w-full h-full object-cover" loading={i === 0 ? "eager" : "lazy"} />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent" />
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="px-5 sm:px-8 md:px-14 max-w-xl lg:max-w-2xl text-white">
+                      <span className="hidden sm:inline-flex items-center gap-2 font-heading font-semibold uppercase text-brand-orange tracking-wide text-xs md:text-sm">
+                        <img src={`${A}/icon-subtitle.png`} alt="" className="w-4 h-4 md:w-5 md:h-5" /> Residential &amp; Commercial
+                      </span>
+                      <h2 className="font-heading font-bold text-xl sm:text-3xl md:text-5xl leading-tight sm:mt-2 mb-1.5 sm:mb-3 drop-shadow">{s.title}</h2>
+                      <p className="hidden sm:block text-sm md:text-lg mb-4 md:mb-6 text-white/90 drop-shadow">{s.subtitle}</p>
+                      <div className="flex flex-wrap gap-2 md:gap-3 mt-2 sm:mt-0">
+                        <a href={s.link} className="bg-brand-orange text-white font-heading font-semibold text-xs sm:text-sm md:text-base px-4 md:px-7 py-2 md:py-3 rounded-lg hover:bg-white hover:text-brand-navy transition shadow">{s.button || "Book Now"}</a>
+                        <a href={phoneHref} className="inline-flex items-center gap-2 bg-white/15 backdrop-blur border border-white/50 text-white font-heading font-semibold text-xs sm:text-sm md:text-base px-4 md:px-7 py-2 md:py-3 rounded-lg hover:bg-white hover:text-brand-navy transition"><PhoneIcon className="w-4 h-4 md:w-5 md:h-5" /> Call Now</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
-          </>
-        )}
+            {slides.length > 1 && (
+              <>
+                <button type="button" onClick={() => setActiveBanner((i) => (i - 1 + slides.length) % slides.length)} aria-label="Previous slide" className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-11 md:h-11 rounded-full bg-white/20 hover:bg-brand-orange text-white flex items-center justify-center backdrop-blur transition">
+                  <ChevronLeftIcon className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
+                <button type="button" onClick={() => setActiveBanner((i) => (i + 1) % slides.length)} aria-label="Next slide" className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-11 md:h-11 rounded-full bg-white/20 hover:bg-brand-orange text-white flex items-center justify-center backdrop-blur transition">
+                  <ChevronRightIcon className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
+                <div className="absolute bottom-3 md:bottom-5 left-1/2 -translate-x-1/2 flex gap-2">
+                  {slides.map((_, i) => (
+                    <button key={i} onClick={() => setActiveBanner(i)} className={`h-2 md:h-2.5 rounded-full transition-all ${i === activeBanner % slides.length ? "bg-brand-orange w-6 md:w-7" : "bg-white/70 w-2 md:w-2.5"}`} aria-label={`Slide ${i + 1}`} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </section>
 
       {/* Residential / Commercial tabs */}
-      <section className="relative z-10 -mt-14 md:-mt-[60px] mb-0">
+      <section className="relative z-10 bg-brand-light pt-4 md:pt-5 pb-2">
         <div className="max-w-[1320px] mx-auto px-4">
-          <div className="grid md:grid-cols-2 shadow-xl">
+          <div className="grid md:grid-cols-2 shadow-lg rounded-2xl overflow-hidden">
             {(["residential", "commercial"] as const).map((t) => (
               <a key={t} href="#services" className={`group flex items-center justify-between gap-4 px-6 md:px-12 py-6 md:py-10 text-white ${t === "residential" ? "bg-brand-orange" : "bg-brand-navy"}`}>
                 <div className="flex items-center gap-4">
