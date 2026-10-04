@@ -340,12 +340,11 @@ function ServiceContent() {
     <>
       {/* Hero */}
       <section className="relative bg-brand-navy text-white overflow-hidden">
-        <img src={heroImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-10 lg:hidden" />
-        <div className="relative max-w-[1320px] mx-auto px-4 py-8 md:py-12 grid lg:grid-cols-5 gap-8 items-center">
-          <div className="lg:col-span-3">
-            <p className="text-xs md:text-sm text-white/70 mb-3 flex items-center gap-2">
+        <div className="relative max-w-[1320px] mx-auto px-4 py-5 md:py-7">
+          <div>
+            <p className="text-xs md:text-sm text-white/70 mb-2 flex items-center gap-2">
               <Link href="/" className="hover:text-white">Home</Link> <span>/</span>
-              <Link href="/#services" className="hover:text-white">Services</Link> <span>/</span>
+              <a href="#packages" className="hover:text-white">Services</a> <span>/</span>
               <span className="text-white">{service.title}</span>
             </p>
             <div className="flex items-center gap-4">
@@ -354,27 +353,24 @@ function ServiceContent() {
                   <img src={getImageUrl(service.image)} alt="" className="w-10 h-10 object-contain" />
                 </div>
               )}
-              <h1 className="font-heading font-bold text-3xl md:text-5xl leading-tight">{service.title}</h1>
+              <h1 className="font-heading font-bold text-2xl md:text-4xl leading-tight">{service.title}</h1>
             </div>
-            <p className="mt-3 text-base md:text-lg text-white/85 max-w-2xl">
+            <p className="mt-2 text-sm md:text-base text-white/85 max-w-2xl">
               {service.shortDesc || `Professional ${service.title.toLowerCase()} at your doorstep in Jaipur.`}
             </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Link href={bookHref()} className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-6 py-3 rounded-sm text-sm md:text-base">
+            <div className="mt-4 flex flex-wrap gap-2 md:gap-3">
+              <Link href={bookHref()} className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-5 py-2.5 rounded-sm text-sm">
                 Book Now
               </Link>
               {packages.length > 0 && (
-                <a href="#packages" className="inline-flex items-center gap-2 bg-white text-brand-navy hover:bg-brand-orange hover:text-white transition font-heading font-semibold px-6 py-3 rounded-sm text-sm md:text-base">
+                <a href="#packages" className="inline-flex items-center gap-2 bg-white text-brand-navy hover:bg-brand-orange hover:text-white transition font-heading font-semibold px-5 py-2.5 rounded-sm text-sm">
                   View Rates
                 </a>
               )}
-              <a href={phoneHref} className="inline-flex items-center gap-2 border border-white/50 hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-6 py-3 rounded-sm text-sm md:text-base">
+              <a href={phoneHref} className="inline-flex items-center gap-2 border border-white/50 hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-5 py-2.5 rounded-sm text-sm">
                 <PhoneIcon className="w-5 h-5" /> {DEFAULT_PHONE}
               </a>
             </div>
-          </div>
-          <div className="hidden lg:block lg:col-span-2">
-            <img src={heroImg} alt={service.title} className="w-full h-[260px] object-cover rounded-2xl shadow-2xl ring-4 ring-white/10" />
           </div>
         </div>
       </section>
@@ -395,7 +391,7 @@ function ServiceContent() {
         <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-3 gap-10">
           <div className="lg:col-span-2 space-y-12">
             {packages.length > 0 && (
-              <div id="packages">
+              <div id="packages" className="scroll-mt-24">
                 <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
                   <div>
                     <p className="text-brand-orange font-heading font-semibold uppercase tracking-wider text-sm">Rates & Packages</p>
