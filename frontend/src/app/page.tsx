@@ -86,7 +86,7 @@ const SectionTitle = ({ sub, title, light = false, center = false }: { sub: stri
       <img src={`${A}/icon-subtitle.png`} alt="" className="w-5 h-5" />
       {sub}
     </span>
-    <h2 className={`font-heading font-bold text-[26px] md:text-[38px] leading-tight mt-2 ${light ? "text-white" : "text-brand-dark"}`}>{title}</h2>
+    <h2 className={`font-heading font-bold text-[22px] sm:text-[26px] md:text-[38px] leading-tight mt-1.5 md:mt-2 ${light ? "text-white" : "text-brand-dark"}`}>{title}</h2>
   </div>
 );
 
@@ -267,14 +267,14 @@ export default function Home() {
       </section>
 
       {/* Services */}
-      <section id="services" className="py-10 md:py-14 bg-brand-light">
+      <section id="services" className="py-8 md:py-14 bg-brand-light scroll-mt-16 md:scroll-mt-24">
         <div className="max-w-[1320px] mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+          <div className="flex flex-row items-end justify-between gap-3 mb-5 md:mb-8">
             <SectionTitle sub="Featured Services" title="Popular repair services" />
-            <a href="#estimate" className="self-start md:self-auto inline-flex items-center gap-2 bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-sm hover:bg-brand-navy transition">Book a Service <ArrowRightIcon className="w-4 h-4" /></a>
+            <a href="#estimate" className="shrink-0 inline-flex items-center gap-1.5 md:gap-2 bg-brand-orange text-white font-heading font-semibold text-sm md:text-base px-4 md:px-7 py-2.5 md:py-3.5 rounded-lg hover:bg-brand-navy transition">Book<span className="hidden sm:inline"> a Service</span> <ArrowRightIcon className="w-4 h-4" /></a>
           </div>
           <div className="grid lg:grid-cols-[1fr_0.9fr] gap-8 items-stretch">
-            <div className="grid grid-cols-3 gap-x-4 gap-y-5 max-w-[560px] mx-auto lg:mx-0">
+            <div className="grid grid-cols-3 gap-x-3 gap-y-4 md:gap-x-4 md:gap-y-5 max-w-[560px] mx-auto lg:mx-0">
               {serviceList.map((s: any, i: number) => {
                 const inner = (
                   <>
@@ -311,7 +311,7 @@ export default function Home() {
       </section>
 
       {/* About */}
-      <section id="about" className="py-10 md:py-16 bg-white">
+      <section id="about" className="scroll-mt-16 md:scroll-mt-24 py-10 md:py-16 bg-white">
         <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           <div className="relative">
             <div className="grid grid-cols-5 gap-4 items-end">
@@ -379,7 +379,7 @@ export default function Home() {
 
       {/* Gallery (optional, admin-managed) */}
       {gallery.length > 0 && (
-        <section id="gallery" className="py-10 md:py-16 max-w-[1320px] mx-auto px-4">
+        <section id="gallery" className="scroll-mt-16 md:scroll-mt-24 py-10 md:py-16 max-w-[1320px] mx-auto px-4">
           <SectionTitle sub="Our Work" title="Service gallery" center />
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
             {gallery.map((g) => (
@@ -393,7 +393,7 @@ export default function Home() {
       )}
 
       {/* Free estimate */}
-      <section id="estimate" className="py-10 md:py-16 bg-white">
+      <section id="estimate" className="scroll-mt-16 md:scroll-mt-24 py-10 md:py-16 bg-white">
         <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           <div className="hidden lg:flex flex-col gap-5">
             <SectionTitle sub="Contact Us" title="Book a free visit — we'll call you back" />
@@ -454,7 +454,7 @@ export default function Home() {
       </section>
 
       {/* Team */}
-      <section id="team" className="bg-brand-navy py-12 md:py-16">
+      <section id="team" className="scroll-mt-16 md:scroll-mt-24 bg-brand-navy py-12 md:py-16">
         <div className="max-w-[1320px] mx-auto px-4">
           <SectionTitle sub="Technician Team" title="Our dedicated & expert team member" light center />
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
@@ -507,7 +507,7 @@ export default function Home() {
       </section>
 
       {/* Blog */}
-      <section id="blog" className="py-12 md:py-16 bg-brand-light">
+      <section id="blog" className="scroll-mt-16 md:scroll-mt-24 py-12 md:py-16 bg-brand-light">
         <div className="max-w-[1320px] mx-auto px-4">
           <SectionTitle sub="Recent Blogs" title="Every single update story from our journal" center />
           <div className="grid md:grid-cols-3 gap-8 mt-10">
@@ -536,7 +536,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="bg-brand-dark text-gray-300 pt-16 pb-6">
+      <footer id="contact" className="scroll-mt-16 md:scroll-mt-24 bg-brand-dark text-gray-300 pt-16 pb-6">
         <div className="max-w-[1320px] mx-auto px-4 grid md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.3fr] gap-10 lg:gap-14 mb-14">
           <div>
             <div className="inline-block bg-white rounded-lg px-3 py-2 mb-5"><Logo logoUrl={company.logo} height={44} /></div>
