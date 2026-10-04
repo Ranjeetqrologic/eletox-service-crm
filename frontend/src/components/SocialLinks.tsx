@@ -9,12 +9,10 @@ const ICONS: { key: keyof Links; label: string; bg: string; d: string }[] = [
 ];
 
 export default function SocialLinks({ links, className = "" }: { links?: Links; className?: string }) {
-  const items = ICONS.filter((i) => links?.[i.key]?.trim());
-  if (!items.length) return null;
   return (
     <div className={`flex flex-wrap gap-3 ${className}`}>
-      {items.map((i) => (
-        <a key={i.key} href={links![i.key]} target="_blank" rel="noopener noreferrer" aria-label={i.label} title={i.label}
+      {ICONS.map((i) => (
+        <a key={i.key} href={links?.[i.key]?.trim() || "#"} target={links?.[i.key]?.trim() ? "_blank" : undefined} rel="noopener noreferrer" aria-label={i.label} title={i.label}
           style={{ backgroundColor: i.bg }} className="w-10 h-10 rounded-full text-white flex items-center justify-center hover:opacity-90 hover:-translate-y-0.5 transition">
           <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor"><path d={i.d} /></svg>
         </a>
