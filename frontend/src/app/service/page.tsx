@@ -339,72 +339,74 @@ function ServiceContent() {
   return (
     <>
       {/* Hero */}
-      <section className="relative bg-brand-navy text-white">
-        <img src={heroImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/90 to-brand-navy/60" />
-        <div className="relative max-w-[1320px] mx-auto px-4 py-20 md:py-28">
-          <p className="text-sm text-white/70 mb-4 flex items-center gap-2">
-            <Link href="/" className="hover:text-white">Home</Link> <span>/</span>
-            <Link href="/#services" className="hover:text-white">Services</Link> <span>/</span>
-            <span className="text-white">{service.title}</span>
-          </p>
-          <div className="flex items-start gap-6">
-            {isIcon && (
-              <div className="hidden md:flex w-24 h-24 bg-white rounded-2xl items-center justify-center shrink-0 shadow-lg">
-                <img src={getImageUrl(service.image)} alt="" className="w-16 h-16 object-contain" />
-              </div>
-            )}
-            <div>
-              <h1 className="font-heading font-bold text-4xl md:text-6xl leading-tight">{service.title}</h1>
-              <p className="mt-5 text-lg md:text-xl text-white/85 max-w-3xl">
-                {service.shortDesc || `Professional ${service.title.toLowerCase()} at your doorstep in Jaipur.`}
-              </p>
-              <div className="mt-8 flex flex-wrap gap-4">
-                <Link href={bookHref()} className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-8 py-4 rounded-sm">
-                  Book Now
-                </Link>
-                {packages.length > 0 && (
-                  <a href="#packages" className="inline-flex items-center gap-2 bg-white text-brand-navy hover:bg-brand-orange hover:text-white transition font-heading font-semibold px-8 py-4 rounded-sm">
-                    View Rates
-                  </a>
-                )}
-                <a href={phoneHref} className="inline-flex items-center gap-2 border-2 border-white/60 hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-8 py-4 rounded-sm">
-                  <PhoneIcon className="w-5 h-5" /> {DEFAULT_PHONE}
-                </a>
-              </div>
+      <section className="relative bg-brand-navy text-white overflow-hidden">
+        <img src={heroImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-10 lg:hidden" />
+        <div className="relative max-w-[1320px] mx-auto px-4 py-8 md:py-12 grid lg:grid-cols-5 gap-8 items-center">
+          <div className="lg:col-span-3">
+            <p className="text-xs md:text-sm text-white/70 mb-3 flex items-center gap-2">
+              <Link href="/" className="hover:text-white">Home</Link> <span>/</span>
+              <Link href="/#services" className="hover:text-white">Services</Link> <span>/</span>
+              <span className="text-white">{service.title}</span>
+            </p>
+            <div className="flex items-center gap-4">
+              {isIcon && (
+                <div className="flex w-14 h-14 md:w-16 md:h-16 bg-white rounded-xl items-center justify-center shrink-0 shadow-lg">
+                  <img src={getImageUrl(service.image)} alt="" className="w-10 h-10 object-contain" />
+                </div>
+              )}
+              <h1 className="font-heading font-bold text-3xl md:text-5xl leading-tight">{service.title}</h1>
             </div>
+            <p className="mt-3 text-base md:text-lg text-white/85 max-w-2xl">
+              {service.shortDesc || `Professional ${service.title.toLowerCase()} at your doorstep in Jaipur.`}
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link href={bookHref()} className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-6 py-3 rounded-sm text-sm md:text-base">
+                Book Now
+              </Link>
+              {packages.length > 0 && (
+                <a href="#packages" className="inline-flex items-center gap-2 bg-white text-brand-navy hover:bg-brand-orange hover:text-white transition font-heading font-semibold px-6 py-3 rounded-sm text-sm md:text-base">
+                  View Rates
+                </a>
+              )}
+              <a href={phoneHref} className="inline-flex items-center gap-2 border border-white/50 hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-6 py-3 rounded-sm text-sm md:text-base">
+                <PhoneIcon className="w-5 h-5" /> {DEFAULT_PHONE}
+              </a>
+            </div>
+          </div>
+          <div className="hidden lg:block lg:col-span-2">
+            <img src={heroImg} alt={service.title} className="w-full h-[260px] object-cover rounded-2xl shadow-2xl ring-4 ring-white/10" />
           </div>
         </div>
       </section>
 
       {/* Promise strip */}
       <section className="bg-brand-orange text-white">
-        <div className="max-w-[1320px] mx-auto px-4 py-5 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="max-w-[1320px] mx-auto px-4 py-3 md:py-4 grid grid-cols-2 md:grid-cols-4 gap-3">
           {promises.map((p) => (
             <div key={p.t} className="flex items-center gap-3 justify-center">
-              <p.icon className="w-7 h-7" />
-              <span className="font-heading font-semibold">{p.t}</span>
+              <p.icon className="w-6 h-6 shrink-0" />
+              <span className="font-heading font-semibold text-sm md:text-base">{p.t}</span>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="py-16 md:py-20">
-        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2 space-y-14">
+      <section className="py-10 md:py-14">
+        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-3 gap-10">
+          <div className="lg:col-span-2 space-y-12">
             {packages.length > 0 && (
               <div id="packages">
                 <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
                   <div>
                     <p className="text-brand-orange font-heading font-semibold uppercase tracking-wider text-sm">Rates & Packages</p>
-                    <h2 className="font-heading font-bold text-3xl text-brand-dark mt-1">{service.title} — Price List</h2>
+                    <h2 className="font-heading font-bold text-2xl md:text-3xl text-brand-dark mt-1">{service.title} — Price List</h2>
                   </div>
                   <p className="text-sm text-gray-500">Transparent pricing · 18% GST extra · Spare parts charged separately</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-5">
                   {packages.map((p) => (
                     <div key={p.name} className="bg-white border border-gray-100 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 transition overflow-hidden flex flex-col">
-                      <div className="flex gap-4 p-5 flex-1">
+                      <div className="flex gap-4 p-4 md:p-5 flex-1">
                         <div className="flex-1 min-w-0">
                           <h3 className="font-heading font-bold text-lg text-brand-dark leading-snug">{p.name}</h3>
                           <p className="mt-2 text-sm text-gray-500">Starts at</p>
@@ -417,7 +419,7 @@ function ServiceContent() {
                           </p>
                         </div>
                         {p.img && (
-                          <div className="w-28 h-28 md:w-32 md:h-32 shrink-0 rounded-xl overflow-hidden bg-brand-light">
+                          <div className="w-24 h-24 md:w-32 md:h-32 shrink-0 rounded-xl overflow-hidden bg-brand-light">
                             <img src={p.img} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
                           </div>
                         )}
@@ -437,8 +439,8 @@ function ServiceContent() {
             )}
 
             <div>
-              <img src={heroImg} alt={service.title} className="w-full h-[280px] md:h-[440px] object-cover rounded-2xl shadow-xl" />
-              <h2 className="font-heading font-bold text-3xl text-brand-dark mt-10 mb-4">About this service</h2>
+              <img src={heroImg} alt={service.title} className="w-full h-[220px] md:h-[360px] object-cover rounded-2xl shadow-xl" />
+              <h2 className="font-heading font-bold text-2xl md:text-3xl text-brand-dark mt-8 mb-4">About this service</h2>
               <p className="text-gray-700 leading-relaxed text-[17px]">{c.intro}</p>
               {service.description && service.description !== service.shortDesc && (
                 <p className="text-gray-700 leading-relaxed text-[17px] mt-4 whitespace-pre-line">{service.description}</p>
@@ -565,9 +567,9 @@ function ServiceContent() {
 
       {/* CTA */}
       <section className="bg-brand-navy text-white">
-        <div className="max-w-[1320px] mx-auto px-4 py-14 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="max-w-[1320px] mx-auto px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div>
-            <h3 className="font-heading font-bold text-3xl md:text-4xl">Need {service.title} today?</h3>
+            <h3 className="font-heading font-bold text-2xl md:text-4xl">Need {service.title} today?</h3>
             <p className="text-white/80 mt-2">Same-day doorstep service across Jaipur. Genuine parts, warranty included.</p>
           </div>
           <div className="flex flex-wrap gap-4">

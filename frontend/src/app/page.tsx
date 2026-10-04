@@ -8,6 +8,7 @@ import { subServicesFor } from "@/lib/subServices";
 import Logo from "@/components/Logo";
 import toast from "react-hot-toast";
 import {
+  ChevronLeftIcon, ChevronRightIcon,
   PhoneIcon, EnvelopeIcon, MapPinIcon, ClockIcon, Bars3Icon, XMarkIcon,
   HomeModernIcon, BuildingOffice2Icon, ArrowRightIcon, CheckIcon, ArrowUpIcon,
   ShieldCheckIcon, BoltIcon, CurrencyRupeeIcon, WrenchScrewdriverIcon,
@@ -200,44 +201,52 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="relative min-h-[520px] md:min-h-[720px] flex items-center overflow-hidden">
+      <section className="relative min-h-[440px] md:min-h-[640px] flex items-center overflow-hidden">
         {slides.map((s, i) => (
           <div key={i} className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${i === activeBanner % slides.length ? "opacity-100" : "opacity-0"}`} style={{ backgroundImage: `url('${s.image}')` }} />
         ))}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/30 to-transparent" />
-        <div className="max-w-[1320px] mx-auto px-4 relative w-full py-20">
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/10 md:from-black/60 md:via-black/30 md:to-transparent" />
+        <div className="max-w-[1320px] mx-auto px-4 relative w-full py-14 md:py-20 pb-24 md:pb-28">
           <div className="max-w-2xl text-white">
             <span className="inline-flex items-center gap-2 font-heading font-semibold uppercase text-brand-orange tracking-wide">
               <img src={`${A}/icon-subtitle.png`} alt="" className="w-5 h-5" /> Residential &amp; Commercial
             </span>
-            <h1 className="font-heading font-bold text-4xl md:text-[64px] leading-[1.1] mt-4 mb-5">{slide.title}</h1>
-            <p className="text-lg md:text-xl mb-8 text-white/90">{slide.subtitle}</p>
-            <div className="flex flex-wrap gap-4">
-              <a href={slide.link || "#estimate"} className="bg-brand-navy text-white font-heading font-semibold px-8 py-4 rounded-sm hover:bg-brand-orange transition">{slide.button || "Appointment Now"}</a>
-              <a href={phoneHref} className="bg-brand-orange text-white font-heading font-semibold px-8 py-4 rounded-sm hover:bg-brand-navy transition">Call Now</a>
+            <h1 className="font-heading font-bold text-3xl sm:text-4xl md:text-[60px] leading-[1.1] mt-3 mb-4 drop-shadow">{slide.title}</h1>
+            <p className="text-base md:text-xl mb-6 md:mb-8 text-white/90 drop-shadow">{slide.subtitle}</p>
+            <div className="flex flex-wrap gap-3 md:gap-4">
+              <a href={slide.link || "#estimate"} className="bg-brand-navy text-white font-heading font-semibold px-6 md:px-8 py-3 md:py-4 rounded-sm hover:bg-brand-orange transition">{slide.button || "Appointment Now"}</a>
+              <a href={phoneHref} className="inline-flex items-center gap-2 bg-brand-orange text-white font-heading font-semibold px-6 md:px-8 py-3 md:py-4 rounded-sm hover:bg-brand-navy transition"><PhoneIcon className="w-5 h-5" /> Call Now</a>
             </div>
           </div>
         </div>
         {slides.length > 1 && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-            {slides.map((_, i) => (
-              <button key={i} onClick={() => setActiveBanner(i)} className={`w-3 h-3 rounded-full ${i === activeBanner % slides.length ? "bg-brand-orange" : "bg-white/50"}`} aria-label={`Slide ${i + 1}`} />
-            ))}
-          </div>
+          <>
+            <button type="button" onClick={() => setActiveBanner((i) => (i - 1 + slides.length) % slides.length)} aria-label="Previous slide" className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 hover:bg-brand-orange text-white items-center justify-center backdrop-blur transition">
+              <ChevronLeftIcon className="w-6 h-6" />
+            </button>
+            <button type="button" onClick={() => setActiveBanner((i) => (i + 1) % slides.length)} aria-label="Next slide" className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 hover:bg-brand-orange text-white items-center justify-center backdrop-blur transition">
+              <ChevronRightIcon className="w-6 h-6" />
+            </button>
+            <div className="absolute bottom-20 md:bottom-24 left-4 md:left-1/2 md:-translate-x-1/2 flex gap-2">
+              {slides.map((_, i) => (
+                <button key={i} onClick={() => setActiveBanner(i)} className={`h-2.5 rounded-full transition-all ${i === activeBanner % slides.length ? "bg-brand-orange w-7" : "bg-white/60 w-2.5"}`} aria-label={`Slide ${i + 1}`} />
+              ))}
+            </div>
+          </>
         )}
       </section>
 
       {/* Residential / Commercial tabs */}
-      <section className="relative z-10 -mt-14 md:-mt-[60px] mb-16">
+      <section className="relative z-10 -mt-14 md:-mt-[60px] mb-10 md:mb-16">
         <div className="max-w-[1320px] mx-auto px-4">
           <div className="grid md:grid-cols-2 shadow-xl">
             {(["residential", "commercial"] as const).map((t) => (
-              <a key={t} href="#services" className={`group flex items-center justify-between gap-6 px-12 py-10 md:py-12 text-white ${t === "residential" ? "bg-brand-orange" : "bg-brand-navy"}`}>
+              <a key={t} href="#services" className={`group flex items-center justify-between gap-4 px-6 md:px-12 py-6 md:py-10 text-white ${t === "residential" ? "bg-brand-orange" : "bg-brand-navy"}`}>
                 <div className="flex items-center gap-4">
-                  {t === "residential" ? <HomeModernIcon className="w-14 h-14 shrink-0 opacity-80" /> : <BuildingOffice2Icon className="w-14 h-14 shrink-0 opacity-80" />}
-                  <h3 className="font-heading font-semibold text-2xl md:text-[32px] leading-tight max-w-[280px]">{t === "residential" ? "Residential Repair Service" : "Commercial Repair Service"}</h3>
+                  {t === "residential" ? <HomeModernIcon className="w-10 h-10 md:w-14 md:h-14 shrink-0 opacity-80" /> : <BuildingOffice2Icon className="w-10 h-10 md:w-14 md:h-14 shrink-0 opacity-80" />}
+                  <h3 className="font-heading font-semibold text-xl md:text-[30px] leading-tight max-w-[280px]">{t === "residential" ? "Residential Repair Service" : "Commercial Repair Service"}</h3>
                 </div>
-                <span className="w-16 h-16 shrink-0 rounded-full border border-white/40 flex items-center justify-center group-hover:bg-white group-hover:text-brand-dark transition"><ArrowRightIcon className="w-6 h-6" /></span>
+                <span className="w-11 h-11 md:w-16 md:h-16 shrink-0 rounded-full border border-white/40 flex items-center justify-center group-hover:bg-white group-hover:text-brand-dark transition"><ArrowRightIcon className="w-6 h-6" /></span>
               </a>
             ))}
           </div>
@@ -245,7 +254,7 @@ export default function Home() {
       </section>
 
       {/* Services */}
-      <section id="services" className="py-20 bg-brand-light">
+      <section id="services" className="py-12 md:py-20 bg-brand-light">
         <div className="max-w-[1320px] mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <SectionTitle sub="Featured Services" title="Popular repair services" />
@@ -272,11 +281,11 @@ export default function Home() {
       </section>
 
       {/* About */}
-      <section id="about" className="py-24">
+      <section id="about" className="py-12 md:py-24">
         <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-14 items-center">
-          <div className="relative pb-16 pr-10">
-            <img src={`${A}/about-1.jpg`} alt="About Elehome" className="w-full h-[420px] object-cover" />
-            <img src={`${A}/about-2.jpg`} alt="Technician" className="absolute bottom-0 right-0 w-[55%] h-64 object-cover border-8 border-white shadow-xl" />
+          <div className="relative pb-12 pr-6 md:pb-16 md:pr-10">
+            <img src={`${A}/about-1.jpg`} alt="About Elehome" className="w-full h-[300px] md:h-[420px] object-cover" />
+            <img src={`${A}/about-2.jpg`} alt="Technician" className="absolute bottom-0 right-0 w-[55%] h-44 md:h-64 object-cover border-4 md:border-8 border-white shadow-xl" />
             <div className="absolute left-6 bottom-6 bg-brand-orange text-white font-heading px-6 py-4 shadow-xl">
               <div className="text-3xl font-bold leading-none">1000+</div>
               <div className="text-sm font-semibold">Project Done</div>
@@ -303,13 +312,13 @@ export default function Home() {
       </section>
 
       {/* Facts */}
-      <section className="bg-brand-navy py-16 text-white">
-        <div className="max-w-[1320px] mx-auto px-4 grid grid-cols-2 lg:grid-cols-4 gap-8">
+      <section className="bg-brand-navy py-10 md:py-16 text-white">
+        <div className="max-w-[1320px] mx-auto px-4 grid grid-cols-2 lg:grid-cols-4 gap-5 md:gap-8">
           {facts.map((f) => (
-            <div key={f.l2} className="flex items-center gap-5">
-              <img src={f.icon} alt="" className="w-16 h-16 object-contain" />
-              <div>
-                <div className="font-heading font-bold text-4xl md:text-5xl leading-none">{f.value}</div>
+            <div key={f.l2} className="flex items-center gap-3 md:gap-5 min-w-0">
+              <img src={f.icon} alt="" className="w-11 h-11 md:w-16 md:h-16 object-contain shrink-0" />
+              <div className="min-w-0">
+                <div className="font-heading font-bold text-2xl md:text-5xl leading-none">{f.value}</div>
                 <div className="font-heading text-white/85 text-sm mt-1 leading-tight">{f.l1}<br />{f.l2}</div>
               </div>
             </div>
@@ -333,7 +342,7 @@ export default function Home() {
       )}
 
       {/* Free estimate */}
-      <section id="estimate" className="py-24 bg-white">
+      <section id="estimate" className="py-12 md:py-24 bg-white">
         <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
           <div className="relative">
             <img src={`${A}/contact.png`} alt="Technician" className="w-full max-w-lg mx-auto" />
