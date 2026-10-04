@@ -215,7 +215,7 @@ export default function Home() {
                   <img src={s.image} alt={s.title} className="absolute inset-0 w-full h-full object-cover" loading={i === 0 ? "eager" : "lazy"} />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent" />
                   <div className="absolute inset-0 flex items-center">
-                    <div className="px-5 sm:px-8 md:px-14 max-w-xl lg:max-w-2xl text-white">
+                    <div className="pl-12 pr-10 sm:px-16 md:px-20 max-w-xl lg:max-w-2xl text-white">
                       <span className="hidden sm:inline-flex items-center gap-2 font-heading font-semibold uppercase text-brand-orange tracking-wide text-xs md:text-sm">
                         <img src={`${A}/icon-subtitle.png`} alt="" className="w-4 h-4 md:w-5 md:h-5" /> Residential &amp; Commercial
                       </span>
