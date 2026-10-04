@@ -509,7 +509,7 @@ export default function Home() {
         <div className="border-t border-white/10">
           <div className="max-w-[1320px] mx-auto px-4 pt-6 text-sm text-gray-400 flex flex-col md:flex-row justify-between items-center gap-3 text-center md:text-left">
             <p>&copy; {new Date().getFullYear()} {company.name || "Elehome Solutions PVT. LTD."} — All Rights Reserved.</p>
-            <p>Designed by <span className="text-white font-semibold">QROLOGIC SOFTECH AND RESEARCH PRIVATE LIMITED</span></p>
+            <p>Designed by <a href="https://qrologic.com" target="_blank" rel="noopener noreferrer" className="text-white font-semibold hover:text-brand-orange transition">QROLOGIC SOFTECH AND RESEARCH PRIVATE LIMITED</a></p>
           </div>
         </div>
       </footer>
