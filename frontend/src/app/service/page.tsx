@@ -302,6 +302,7 @@ function ServiceContent() {
   const [others, setOthers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [openFaq, setOpenFaq] = useState(0);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     api.get("/services/public").then((res) => setOthers(res.data.data || [])).catch(() => setOthers([]));
@@ -404,29 +405,35 @@ function ServiceContent() {
                 <div className="grid md:grid-cols-2 gap-5">
                   {packages.map((p) => (
                     <div key={p.name} className="bg-white border border-gray-100 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 transition overflow-hidden flex flex-col">
-                      <div className="flex gap-4 p-4 md:p-5 flex-1">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-heading font-bold text-lg text-brand-dark leading-snug">{p.name}</h3>
-                          <p className="mt-2 text-sm text-gray-500">Starts at</p>
-                          <p className="font-heading font-bold text-3xl text-brand-orange leading-none">
-                            {/^\d/.test(p.price) ? `₹${p.price}` : p.price}
-                          </p>
-                          {p.gst && <span className="inline-block mt-2 text-xs font-semibold bg-brand-light text-brand-navy px-2.5 py-1 rounded-full">+ {p.gst}</span>}
-                          <p className="mt-3 text-sm text-gray-600 leading-relaxed line-clamp-3">
-                            {p.desc || `Doorstep ${p.name.toLowerCase()} by trained Eletox technician. Final quote shared before work starts.`}
-                          </p>
-                        </div>
+                      <div className="flex gap-3 p-3 md:p-4 flex-1">
                         {p.img && (
-                          <div className="w-24 h-24 md:w-32 md:h-32 shrink-0 rounded-xl overflow-hidden bg-brand-light">
+                          <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-lg overflow-hidden bg-brand-light">
                             <img src={p.img} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
                           </div>
                         )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-3">
+                            <h3 className="font-heading font-bold text-base text-brand-dark leading-snug">{p.name}</h3>
+                            <div className="text-right shrink-0">
+                              <p className="font-heading font-bold text-xl text-brand-orange leading-none">
+                                {/^\d/.test(p.price) ? `₹${p.price}` : p.price}
+                              </p>
+                              {p.gst && <p className="text-[11px] text-gray-500 mt-0.5">+ {p.gst}</p>}
+                            </div>
+                          </div>
+                          <p className={`mt-1.5 text-[13px] text-gray-600 leading-snug ${expanded[p.name] ? "" : "line-clamp-1"}`}>
+                            {p.desc || `Doorstep ${p.name.toLowerCase()} by trained Eletox technician. Final quote shared before work starts.`}
+                          </p>
+                          <button type="button" onClick={() => setExpanded((e) => ({ ...e, [p.name]: !e[p.name] }))} className="mt-1 text-xs font-semibold text-brand-navy hover:text-brand-orange">
+                            {expanded[p.name] ? "Read less" : "Read more"}
+                          </button>
+                        </div>
                       </div>
                       <div className="grid grid-cols-2 border-t border-gray-100">
-                        <a href={phoneHref} className="flex items-center justify-center gap-2 py-3 text-sm font-heading font-semibold text-brand-navy hover:bg-brand-light transition border-r border-gray-100">
+                        <a href={phoneHref} className="flex items-center justify-center gap-2 py-2.5 text-sm font-heading font-semibold text-brand-navy hover:bg-brand-light transition border-r border-gray-100">
                           <PhoneIcon className="w-4 h-4" /> Call Now
                         </a>
-                        <Link href={bookHref(p.name)} className="flex items-center justify-center gap-2 py-3 text-sm font-heading font-semibold bg-brand-orange text-white hover:bg-brand-navy transition">
+                        <Link href={bookHref(p.name)} className="flex items-center justify-center gap-2 py-2.5 text-sm font-heading font-semibold bg-brand-orange text-white hover:bg-brand-navy transition">
                           Book Now <ArrowRightIcon className="w-4 h-4" />
                         </Link>
                       </div>
