@@ -295,6 +295,8 @@ const promises = [
   { icon: ShieldCheckIcon, t: "Service Warranty" },
 ];
 
+const VISIT_CHARGE = 349;
+
 const priceParts = (price: string) => {
   const m = price.match(/^(\d+)(.*)$/);
   if (!m) return null;
@@ -408,7 +410,7 @@ function ServiceContent() {
                     <p className="text-brand-orange font-heading font-semibold uppercase tracking-wider text-sm">Rates & Packages</p>
                     <h2 className="font-heading font-bold text-2xl md:text-3xl text-brand-dark mt-1">{service.title} — Price List</h2>
                   </div>
-                  <p className="text-sm text-gray-500">Transparent pricing · 18% GST extra · Spare parts charged separately</p>
+                  <p className="text-sm text-gray-500">Transparent pricing · 18% GST extra · Visit charge ₹{VISIT_CHARGE} on every service · Spare parts charged separately</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-5">
                   {packages.map((p) => (
@@ -533,15 +535,9 @@ function ServiceContent() {
 
           <aside className="space-y-6 lg:sticky lg:top-24 self-start">
             <div className="bg-brand-orange text-white p-7 rounded-2xl shadow-lg">
-              {service.price ? (
-                <>
-                  <p className="text-sm uppercase tracking-wide text-white/80">Visit & inspection from</p>
-                  <p className="font-heading font-bold text-5xl mb-1">₹{service.price}</p>
-                  <p className="text-sm text-white/80 mb-5">Final quote shared before work starts</p>
-                </>
-              ) : (
-                <p className="font-heading font-bold text-2xl mb-4">Book this service</p>
-              )}
+              <p className="text-sm uppercase tracking-wide text-white/80">Visit &amp; inspection charge</p>
+              <p className="font-heading font-bold text-5xl mb-1">₹{VISIT_CHARGE}</p>
+              <p className="text-sm text-white/80 mb-5">Applies on every service · adjusted in final bill</p>
               <Link href={bookHref()} className="block text-center bg-brand-navy hover:bg-brand-dark transition text-white font-heading font-semibold py-3.5 rounded-sm">
                 Book Appointment
               </Link>
