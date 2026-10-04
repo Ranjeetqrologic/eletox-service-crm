@@ -81,11 +81,11 @@ const navLinks = [
 
 const SectionTitle = ({ sub, title, light = false, center = false }: { sub: string; title: string; light?: boolean; center?: boolean }) => (
   <div className={center ? "text-center" : ""}>
-    <span className={`inline-flex items-center gap-2 font-heading font-semibold uppercase tracking-wide text-sm ${light ? "text-white" : "text-brand-orange"}`}>
+    <span className={`inline-flex items-center gap-2 font-heading font-semibold uppercase tracking-wider text-xs ${light ? "text-white" : "text-brand-orange"}`}>
       <img src={`${A}/icon-subtitle.png`} alt="" className="w-5 h-5" />
       {sub}
     </span>
-    <h2 className={`font-heading font-bold text-3xl md:text-[44px] leading-tight mt-3 ${light ? "text-white" : "text-brand-dark"}`}>{title}</h2>
+    <h2 className={`font-heading font-bold text-[26px] md:text-[38px] leading-tight mt-2 ${light ? "text-white" : "text-brand-dark"}`}>{title}</h2>
   </div>
 );
 
@@ -237,7 +237,7 @@ export default function Home() {
       </section>
 
       {/* Residential / Commercial tabs */}
-      <section className="relative z-10 -mt-14 md:-mt-[60px] mb-10 md:mb-16">
+      <section className="relative z-10 -mt-14 md:-mt-[60px] mb-0">
         <div className="max-w-[1320px] mx-auto px-4">
           <div className="grid md:grid-cols-2 shadow-xl">
             {(["residential", "commercial"] as const).map((t) => (
@@ -254,35 +254,35 @@ export default function Home() {
       </section>
 
       {/* Services */}
-      <section id="services" className="py-12 md:py-20 bg-brand-light">
+      <section id="services" className="py-10 md:py-14 bg-brand-light">
         <div className="max-w-[1320px] mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
             <SectionTitle sub="Featured Services" title="Popular repair services" />
             <a href="#estimate" className="self-start md:self-auto inline-flex items-center gap-2 bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-sm hover:bg-brand-navy transition">Book a Service <ArrowRightIcon className="w-4 h-4" /></a>
           </div>
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <div className="grid grid-cols-3 gap-x-4 gap-y-8 max-w-[540px] mx-auto lg:mx-0">
+          <div className="grid lg:grid-cols-[1fr_0.9fr] gap-8 items-center">
+            <div className="grid grid-cols-3 gap-x-4 gap-y-5 max-w-[560px] mx-auto lg:mx-0">
               {serviceList.map((s: any, i: number) => {
                 const inner = (
                   <>
                     <div className="w-full aspect-square bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center p-5 group-hover:shadow-lg group-hover:-translate-y-1 transition">
                       {s.image ? <img src={getImageUrl(s.image)} alt={s.title} className="w-full h-full object-contain" /> : <span className="text-3xl">❄</span>}
                     </div>
-                    <p className="mt-3 text-center text-[13px] leading-tight text-gray-700 group-hover:text-brand-orange transition">{s.title}</p>
+                    <p className="mt-2 text-center text-[13px] font-medium leading-tight text-gray-700 group-hover:text-brand-orange transition">{s.title}</p>
                   </>
                 );
                 const cls = "group block";
                 return s._id ? <Link key={s._id} href={`/service/?slug=${s.slug}`} className={cls}>{inner}</Link> : <a key={i} href="#estimate" className={cls}>{inner}</a>;
               })}
             </div>
-            <img src={`${A}/icon-service.jpg`} alt="AC repair service" className="w-full h-[420px] lg:h-[510px] object-cover rounded-sm hidden md:block" />
+            <img src={`${A}/icon-service.jpg`} alt="AC repair service" className="w-full h-[360px] lg:h-[440px] object-cover rounded-xl shadow-md hidden lg:block" />
           </div>
         </div>
       </section>
 
       {/* About */}
-      <section id="about" className="py-12 md:py-24">
-        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-14 items-center">
+      <section id="about" className="py-10 md:py-16">
+        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <div className="relative pb-12 pr-6 md:pb-16 md:pr-10">
             <img src={`${A}/about-1.jpg`} alt="About Elehome" className="w-full h-[300px] md:h-[420px] object-cover" />
             <img src={`${A}/about-2.jpg`} alt="Technician" className="absolute bottom-0 right-0 w-[55%] h-44 md:h-64 object-cover border-4 md:border-8 border-white shadow-xl" />
@@ -293,15 +293,15 @@ export default function Home() {
           </div>
           <div>
             <SectionTitle sub="About company" title="We are most popular repair company" />
-            <p className="mt-6 text-gray-600">
+            <p className="mt-4 text-gray-600 leading-relaxed">
               {company.tagline || "Elehome Solutions PVT. LTD. (Eletox) is Jaipur's trusted AC and home appliance repair company. With 10+ years of experience, 15 professional members and 2 branches, we provide fast, honest and affordable repair for homes and businesses across Jaipur."}
             </p>
             <p className="mt-4 font-heading font-semibold text-brand-dark text-lg flex items-center gap-3">
               <span className="w-10 h-10 shrink-0 rounded-full bg-brand-orange/15 text-brand-orange flex items-center justify-center"><CheckIcon className="w-5 h-5" /></span>
               Fast, honest and affordable repairs — every single time
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-6">
-              <a href="#estimate" className="bg-brand-orange text-white font-heading font-semibold px-8 py-4 rounded-sm hover:bg-brand-navy transition">Get Free Estimate</a>
+            <div className="mt-6 flex flex-wrap items-center gap-6">
+              <a href="#estimate" className="bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-sm hover:bg-brand-navy transition">Get Free Estimate</a>
               <a href={phoneHref} className="flex items-center gap-3 font-heading">
                 <img src={`${A}/icon-cta.png`} alt="" className="w-10 h-10 object-contain" />
                 <span><span className="block text-xs text-gray-500">Call Us Anytime</span><span className="font-bold text-brand-dark">{phone}</span></span>
@@ -312,13 +312,13 @@ export default function Home() {
       </section>
 
       {/* Facts */}
-      <section className="bg-brand-navy py-10 md:py-16 text-white">
+      <section className="bg-brand-navy py-8 md:py-12 text-white">
         <div className="max-w-[1320px] mx-auto px-4 grid grid-cols-2 lg:grid-cols-4 gap-5 md:gap-8">
           {facts.map((f) => (
             <div key={f.l2} className="flex items-center gap-3 md:gap-5 min-w-0">
               <img src={f.icon} alt="" className="w-11 h-11 md:w-16 md:h-16 object-contain shrink-0" />
               <div className="min-w-0">
-                <div className="font-heading font-bold text-2xl md:text-5xl leading-none">{f.value}</div>
+                <div className="font-heading font-bold text-2xl md:text-4xl leading-none">{f.value}</div>
                 <div className="font-heading text-white/85 text-sm mt-1 leading-tight">{f.l1}<br />{f.l2}</div>
               </div>
             </div>
@@ -328,11 +328,11 @@ export default function Home() {
 
       {/* Gallery (optional, admin-managed) */}
       {gallery.length > 0 && (
-        <section id="gallery" className="py-20 max-w-[1320px] mx-auto px-4">
+        <section id="gallery" className="py-10 md:py-16 max-w-[1320px] mx-auto px-4">
           <SectionTitle sub="Our Work" title="Service gallery" center />
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
             {gallery.map((g) => (
-              <div key={g._id} className="overflow-hidden shadow-md group">
+              <div key={g._id} className="overflow-hidden rounded-xl shadow-md group">
                 <img src={getImageUrl(g.image)} alt={g.title} className="w-full h-56 object-cover group-hover:scale-105 transition duration-500" />
                 {g.title && <div className="p-3 bg-white text-center font-medium text-sm">{g.title}</div>}
               </div>
@@ -342,37 +342,38 @@ export default function Home() {
       )}
 
       {/* Free estimate */}
-      <section id="estimate" className="py-12 md:py-24 bg-white">
-        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
-          <div className="relative">
-            <img src={`${A}/contact.png`} alt="Technician" className="w-full max-w-lg mx-auto" />
+      <section id="estimate" className="py-10 md:py-16 bg-white">
+        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="relative hidden lg:block">
+            <img src={`${A}/contact.png`} alt="Technician" className="w-full max-w-md mx-auto" />
             <div className="absolute top-6 left-0 bg-brand-navy text-white font-heading px-6 py-4 shadow-xl flex items-center gap-4">
               <div className="text-5xl font-bold leading-none">10</div>
               <div className="text-sm font-semibold leading-tight">10+Year<br />Working Experience</div>
             </div>
           </div>
-          <form onSubmit={handleSubmit} className="bg-brand-orange p-8 md:p-12 text-white">
-            <h2 className="font-heading font-bold text-4xl mb-8">Free Estimate</h2>
+          <form onSubmit={handleSubmit} className="bg-brand-orange p-6 md:p-10 rounded-2xl shadow-xl text-white">
+            <h2 className="font-heading font-bold text-3xl md:text-4xl mb-1">Free Estimate</h2>
+            <p className="text-white/85 text-sm mb-6">Fill the form — our team will call you back shortly.</p>
             <div className="grid md:grid-cols-2 gap-4">
-              <input name="customerName" value={form.customerName} onChange={handleChange} placeholder="Full Name" className="bg-white text-gray-800 p-4 w-full outline-none" required />
-              <input name="mobile" value={form.mobile} onChange={handleChange} placeholder="Phone Number" className="bg-white text-gray-800 p-4 w-full outline-none" required />
-              <select name="service" value={form.service} onChange={handleChange} className="bg-white text-gray-800 p-4 w-full outline-none md:col-span-2" required>
+              <input name="customerName" value={form.customerName} onChange={handleChange} placeholder="Full Name" className="bg-white text-gray-800 text-sm p-3.5 rounded-lg w-full outline-none focus:ring-2 focus:ring-brand-navy/40" required />
+              <input name="mobile" value={form.mobile} onChange={handleChange} placeholder="Phone Number" className="bg-white text-gray-800 text-sm p-3.5 rounded-lg w-full outline-none focus:ring-2 focus:ring-brand-navy/40" required />
+              <select name="service" value={form.service} onChange={handleChange} className="bg-white text-gray-800 text-sm p-3.5 rounded-lg w-full outline-none focus:ring-2 focus:ring-brand-navy/40 md:col-span-2" required>
                 <option value="">Choose Service</option>
                 {serviceList.map((s: any) => <option key={s._id || s.title} value={s.title}>{s.title}</option>)}
                 {!services.length && ["Refrigerator Repair", "AC Installation"].map((t) => <option key={t} value={t}>{t}</option>)}
                 <option value="Other">Other</option>
               </select>
               {subOptions.length > 0 && (
-                <select name="subService" value={form.subService} onChange={handleChange} className="bg-white text-gray-800 p-4 w-full outline-none md:col-span-2" required>
+                <select name="subService" value={form.subService} onChange={handleChange} className="bg-white text-gray-800 text-sm p-3.5 rounded-lg w-full outline-none focus:ring-2 focus:ring-brand-navy/40 md:col-span-2" required>
                   <option value="">Choose Category</option>
                   {subOptions.map((s) => <option key={s} value={s}>{s}</option>)}
                   <option value="Other">Other</option>
                 </select>
               )}
             </div>
-            <textarea name="address" value={form.address} onChange={handleChange} placeholder="Address" className="bg-white text-gray-800 p-4 w-full outline-none mt-4" rows={2} required />
-            <textarea name="problem" value={form.problem} onChange={handleChange} placeholder="Note" className="bg-white text-gray-800 p-4 w-full outline-none mt-4" rows={3} />
-            <button type="submit" disabled={loading} className="mt-6 bg-brand-navy text-white font-heading font-semibold px-10 py-4 rounded-sm hover:bg-brand-dark disabled:opacity-60 transition">
+            <textarea name="address" value={form.address} onChange={handleChange} placeholder="Address" className="bg-white text-gray-800 text-sm p-3.5 rounded-lg w-full outline-none focus:ring-2 focus:ring-brand-navy/40 mt-4" rows={2} required />
+            <textarea name="problem" value={form.problem} onChange={handleChange} placeholder="Note" className="bg-white text-gray-800 text-sm p-3.5 rounded-lg w-full outline-none focus:ring-2 focus:ring-brand-navy/40 mt-4" rows={3} />
+            <button type="submit" disabled={loading} className="mt-5 bg-brand-navy text-white font-heading font-semibold px-8 py-3.5 rounded-lg hover:bg-brand-dark disabled:opacity-60 transition">
               {loading ? "Submitting..." : "Appointment Now"}
             </button>
           </form>
@@ -380,10 +381,10 @@ export default function Home() {
       </section>
 
       {/* Team */}
-      <section id="team" className="bg-brand-navy py-24">
+      <section id="team" className="bg-brand-navy py-12 md:py-16">
         <div className="max-w-[1320px] mx-auto px-4">
           <SectionTitle sub="Technician Team" title="Our dedicated & expert team member" light center />
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
             {team.map((m) => (
               <div key={m.name} className="bg-white group overflow-hidden">
                 <div className="overflow-hidden">
@@ -400,8 +401,8 @@ export default function Home() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="py-24 bg-white">
-        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-14 items-center">
+      <section className="py-12 md:py-16 bg-white">
+        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <div className="relative">
             <img src={`${A}/choose-bg.jpg`} alt="Eletox technician at work" className="w-full h-[420px] lg:h-[560px] object-cover rounded-2xl shadow-2xl" />
             <div className="absolute -bottom-6 left-6 md:left-10 bg-brand-navy text-white rounded-xl px-7 py-5 shadow-xl flex items-center gap-4">
@@ -433,10 +434,10 @@ export default function Home() {
       </section>
 
       {/* Blog */}
-      <section id="blog" className="py-24 bg-brand-light">
+      <section id="blog" className="py-12 md:py-16 bg-brand-light">
         <div className="max-w-[1320px] mx-auto px-4">
           <SectionTitle sub="Recent Blogs" title="Every single update story from our journal" center />
-          <div className="grid md:grid-cols-3 gap-8 mt-14">
+          <div className="grid md:grid-cols-3 gap-8 mt-10">
             {blogs.map((b) => (
               <article key={b.title} className="bg-white group overflow-hidden shadow-sm hover:shadow-xl transition">
                 <div className="overflow-hidden">
