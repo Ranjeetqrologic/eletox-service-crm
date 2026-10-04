@@ -381,12 +381,34 @@ export default function Home() {
 
       {/* Free estimate */}
       <section id="estimate" className="py-10 md:py-16 bg-white">
-        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          <div className="relative hidden lg:block">
-            <img src={`${A}/contact.png`} alt="Technician" className="w-full max-w-md mx-auto" />
-            <div className="absolute top-6 left-0 bg-brand-navy text-white font-heading px-6 py-4 shadow-xl flex items-center gap-4">
-              <div className="text-5xl font-bold leading-none">10</div>
-              <div className="text-sm font-semibold leading-tight">10+Year<br />Working Experience</div>
+        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+          <div className="hidden lg:flex flex-col gap-5">
+            <SectionTitle sub="Contact Us" title="Book a free visit — we'll call you back" />
+            <p className="text-gray-600 leading-relaxed">Tell us what needs fixing and our team will confirm your appointment within minutes. Same-day doorstep service across Jaipur.</p>
+            <div className="relative rounded-2xl overflow-hidden shadow-lg">
+              <img src={`${A}/service-washing-machine-repair.jpg`} alt="Eletox technician" className="w-full h-[300px] object-cover object-top" />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/20 to-transparent" />
+              <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between text-white">
+                <div><div className="font-heading font-bold text-xl leading-none">Eletox Expert Team</div><div className="text-sm text-white/85 mt-1">Certified &amp; background-verified technicians</div></div>
+                <div className="bg-brand-orange font-heading font-bold px-4 py-2 rounded-lg text-sm shrink-0">24x7 Support</div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { icon: PhoneIcon, l: "Call Us", v: phone, href: phoneHref },
+                { icon: EnvelopeIcon, l: "Email", v: email, href: `mailto:${email}` },
+                { icon: MapPinIcon, l: "Visit Us", v: address, href: `https://www.google.com/maps/search/${encodeURIComponent(address)}` },
+                { icon: ClockIcon, l: "Working Hours", v: "Mon - Sun, 24x7 Service" },
+              ].map((c) => {
+                const inner = (
+                  <>
+                    <span className="w-10 h-10 shrink-0 rounded-lg bg-brand-orange/15 text-brand-orange flex items-center justify-center"><c.icon className="w-5 h-5" /></span>
+                    <span className="min-w-0"><span className="block text-xs text-gray-500">{c.l}</span><span className="block font-heading font-semibold text-brand-dark text-sm leading-snug">{c.v}</span></span>
+                  </>
+                );
+                const cls = "flex items-start gap-3 bg-brand-light rounded-xl p-4 hover:shadow-md transition";
+                return c.href ? <a key={c.l} href={c.href} className={cls}>{inner}</a> : <div key={c.l} className={cls}>{inner}</div>;
+              })}
             </div>
           </div>
           <form onSubmit={handleSubmit} className="bg-brand-orange p-6 md:p-10 rounded-2xl shadow-xl text-white">
