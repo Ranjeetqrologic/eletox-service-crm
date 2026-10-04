@@ -298,29 +298,50 @@ export default function Home() {
       </section>
 
       {/* About */}
-      <section id="about" className="py-10 md:py-16">
-        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          <div className="relative pb-12 pr-6 md:pb-16 md:pr-10">
-            <img src={`${A}/about-1.jpg`} alt="About Elehome" className="w-full h-[300px] md:h-[420px] object-cover" />
-            <img src={`${A}/about-2.jpg`} alt="Technician" className="absolute bottom-0 right-0 w-[55%] h-44 md:h-64 object-cover border-4 md:border-8 border-white shadow-xl" />
-            <div className="absolute left-6 bottom-6 bg-brand-orange text-white font-heading px-6 py-4 shadow-xl">
-              <div className="text-3xl font-bold leading-none">1000+</div>
-              <div className="text-sm font-semibold">Project Done</div>
+      <section id="about" className="py-10 md:py-16 bg-white">
+        <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+          <div className="relative">
+            <div className="grid grid-cols-5 gap-4 items-end">
+              <div className="col-span-3 rounded-2xl overflow-hidden shadow-lg">
+                <img src={`${A}/about-1.jpg`} alt="Eletox technician servicing an AC" className="w-full h-[280px] md:h-[400px] object-cover" />
+              </div>
+              <div className="col-span-2 space-y-4">
+                <div className="bg-brand-orange text-white rounded-2xl p-5 shadow-lg">
+                  <div className="font-heading font-bold text-4xl leading-none">10<span className="text-2xl">+</span></div>
+                  <div className="text-sm font-semibold mt-1 leading-tight">Years of Trusted Service in Jaipur</div>
+                </div>
+                <div className="rounded-2xl overflow-hidden shadow-lg">
+                  <img src={`${A}/about-2.jpg`} alt="Eletox technician" className="w-full h-[170px] md:h-[240px] object-cover" />
+                </div>
+              </div>
+            </div>
+            <div className="hidden md:flex absolute -bottom-6 left-6 bg-white rounded-xl shadow-xl border border-gray-100 px-5 py-3 items-center gap-3">
+              <span className="w-10 h-10 rounded-full bg-brand-navy text-white flex items-center justify-center"><CheckIcon className="w-5 h-5" /></span>
+              <div><div className="font-heading font-bold text-brand-dark leading-none">1000+ Repairs Done</div><div className="text-xs text-gray-500 mt-1">Rated 4.8/5 by happy customers</div></div>
             </div>
           </div>
           <div>
-            <SectionTitle sub="About company" title="We are most popular repair company" />
+            <SectionTitle sub="About Eletox" title="Jaipur's trusted AC & appliance repair experts" />
             <p className="mt-4 text-gray-600 leading-relaxed">
-              {company.tagline || "Elehome Solutions PVT. LTD. (Eletox) is Jaipur's trusted AC and home appliance repair company. With 10+ years of experience, 15 professional members and 2 branches, we provide fast, honest and affordable repair for homes and businesses across Jaipur."}
+              {company.name || "Elehome Solutions PVT. LTD."} (Eletox) has been keeping Jaipur homes and businesses comfortable for over a decade. Our certified technicians repair, install and service air conditioners, washing machines, geysers, microwaves, water purifiers and complete electrical systems — with genuine spare parts, upfront pricing and a service warranty on every job.
             </p>
-            <p className="mt-4 font-heading font-semibold text-brand-dark text-lg flex items-center gap-3">
-              <span className="w-10 h-10 shrink-0 rounded-full bg-brand-orange/15 text-brand-orange flex items-center justify-center"><CheckIcon className="w-5 h-5" /></span>
-              Fast, honest and affordable repairs — every single time
-            </p>
-            <div className="mt-6 flex flex-wrap items-center gap-6">
-              <a href="#estimate" className="bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-sm hover:bg-brand-navy transition">Get Free Estimate</a>
+            <div className="mt-6 grid sm:grid-cols-2 gap-4">
+              {[
+                { t: "Certified Technicians", d: "Trained, background-verified professionals in Eletox uniform." },
+                { t: "Same-Day Doorstep Service", d: "Book before noon and we reach you the same day, 24x7 support." },
+                { t: "Transparent Pricing", d: "Fixed rate card, 18% GST — no hidden charges, quote before work." },
+                { t: "Genuine Parts & Warranty", d: "Original spares with service warranty for complete peace of mind." },
+              ].map((f) => (
+                <div key={f.t} className="flex gap-3">
+                  <span className="w-9 h-9 shrink-0 rounded-lg bg-brand-orange/15 text-brand-orange flex items-center justify-center"><CheckIcon className="w-5 h-5" /></span>
+                  <div><div className="font-heading font-semibold text-brand-dark">{f.t}</div><div className="text-sm text-gray-500 leading-snug mt-0.5">{f.d}</div></div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-7 flex flex-wrap items-center gap-6">
+              <a href="#estimate" className="bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-lg hover:bg-brand-navy transition">Get Free Estimate</a>
               <a href={phoneHref} className="flex items-center gap-3 font-heading">
-                <img src={`${A}/icon-cta.png`} alt="" className="w-10 h-10 object-contain" />
+                <span className="w-11 h-11 rounded-full bg-brand-navy/10 text-brand-navy flex items-center justify-center"><PhoneIcon className="w-5 h-5" /></span>
                 <span><span className="block text-xs text-gray-500">Call Us Anytime</span><span className="font-bold text-brand-dark">{phone}</span></span>
               </a>
             </div>
