@@ -206,16 +206,16 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="bg-brand-light pt-2 md:pt-4">
-        <div className="max-w-[1320px] mx-auto px-4">
-          <div className="relative overflow-hidden rounded-2xl md:rounded-3xl shadow-lg bg-brand-navy">
+      <section className="bg-brand-light">
+        <div className="w-full">
+          <div className="relative overflow-hidden bg-brand-navy">
             <div className="flex transition-transform duration-700 ease-out" style={{ transform: `translateX(-${(activeBanner % slides.length) * 100}%)` }}>
               {slides.map((s, i) => (
-                <div key={i} className="relative w-full shrink-0 aspect-[16/9] sm:aspect-[32/15] md:aspect-auto md:h-[460px] lg:h-[520px]">
+                <div key={i} className="relative w-full shrink-0 aspect-[16/9] sm:aspect-[2/1] md:aspect-auto md:h-[480px] lg:h-[560px]">
                   <img src={s.image} alt={s.title} className="absolute inset-0 w-full h-full object-cover" loading={i === 0 ? "eager" : "lazy"} />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent" />
                   <div className="absolute inset-0 flex items-center">
-                    <div className="pl-12 pr-10 sm:px-16 md:px-20 max-w-xl lg:max-w-2xl text-white">
+                    <div className="pl-12 pr-10 sm:px-16 md:pl-[max(5rem,calc((100%-1320px)/2+1rem))] md:pr-20 max-w-xl md:max-w-none lg:max-w-none text-white"><div className="max-w-xl lg:max-w-2xl">
                       <span className="hidden sm:inline-flex items-center gap-2 font-heading font-semibold uppercase text-brand-orange tracking-wide text-xs md:text-sm">
                         <img src={`${A}/icon-subtitle.png`} alt="" className="w-4 h-4 md:w-5 md:h-5" /> Residential &amp; Commercial
                       </span>
@@ -224,6 +224,7 @@ export default function Home() {
                       <div className="flex flex-wrap gap-2 md:gap-3 mt-2 sm:mt-0">
                         <a href={s.link} className="bg-brand-orange text-white font-heading font-semibold text-xs sm:text-sm md:text-base px-4 md:px-7 py-2 md:py-3 rounded-lg hover:bg-white hover:text-brand-navy transition shadow">{s.button || "Book Now"}</a>
                         <a href={phoneHref} className="inline-flex items-center gap-2 bg-white/15 backdrop-blur border border-white/50 text-white font-heading font-semibold text-xs sm:text-sm md:text-base px-4 md:px-7 py-2 md:py-3 rounded-lg hover:bg-white hover:text-brand-navy transition"><PhoneIcon className="w-4 h-4 md:w-5 md:h-5" /> Call Now</a>
+                      </div>
                       </div>
                     </div>
                   </div>
@@ -488,13 +489,13 @@ export default function Home() {
           </div>
           <div>
             <SectionTitle sub="Why Choose Us" title="Reliable repairs for better living" />
-            <p className="mt-6 text-gray-600 text-lg">Eletox combines skilled technicians, genuine parts and honest pricing so every repair lasts longer and every customer stays cool.</p>
-            <div className="mt-10 grid sm:grid-cols-2 gap-5">
+            <p className="mt-3 md:mt-6 text-gray-600 text-sm md:text-lg">Eletox combines skilled technicians, genuine parts and honest pricing so every repair lasts longer and every customer stays cool.</p>
+            <div className="mt-6 md:mt-10 grid grid-cols-2 gap-3 md:gap-5">
               {whyChoose.map((w) => (
-                <div key={w.title} className="group bg-brand-light border border-gray-100 rounded-xl p-6 hover:bg-brand-navy hover:border-brand-navy transition-colors duration-300">
-                  <div className="w-14 h-14 rounded-xl bg-brand-orange text-white flex items-center justify-center mb-5 shadow-md"><w.icon className="w-7 h-7" /></div>
-                  <h4 className="font-heading font-bold text-xl text-brand-dark group-hover:text-white mb-2 transition-colors">{w.title}</h4>
-                  <p className="text-gray-600 group-hover:text-white/80 text-sm leading-relaxed transition-colors">{w.desc}</p>
+                <div key={w.title} className="group bg-brand-light border border-gray-100 rounded-xl p-3.5 md:p-6 hover:bg-brand-navy hover:border-brand-navy transition-colors duration-300">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-brand-orange text-white flex items-center justify-center mb-3 md:mb-5 shadow-md"><w.icon className="w-5 h-5 md:w-7 md:h-7" /></div>
+                  <h4 className="font-heading font-bold text-sm md:text-xl text-brand-dark group-hover:text-white mb-1 md:mb-2 transition-colors">{w.title}</h4>
+                  <p className="text-gray-600 group-hover:text-white/80 text-xs md:text-sm leading-snug md:leading-relaxed transition-colors">{w.desc}</p>
                 </div>
               ))}
             </div>
