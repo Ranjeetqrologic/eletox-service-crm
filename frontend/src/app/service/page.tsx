@@ -340,37 +340,39 @@ function ServiceContent() {
     <>
       {/* Hero */}
       <section className="relative bg-brand-navy text-white overflow-hidden">
-        <div className="relative max-w-[1320px] mx-auto px-4 py-5 md:py-7">
-          <div>
-            <p className="text-xs md:text-sm text-white/70 mb-2 flex items-center gap-2">
+        <div className="relative max-w-[1320px] mx-auto px-4 py-4 md:py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6">
+          <div className="min-w-0">
+            <p className="text-xs text-white/70 mb-1.5 flex items-center gap-2">
               <Link href="/" className="hover:text-white">Home</Link> <span>/</span>
               <a href="#packages" className="hover:text-white">Services</a> <span>/</span>
               <span className="text-white">{service.title}</span>
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               {isIcon && (
-                <div className="flex w-14 h-14 md:w-16 md:h-16 bg-white rounded-xl items-center justify-center shrink-0 shadow-lg">
-                  <img src={getImageUrl(service.image)} alt="" className="w-10 h-10 object-contain" />
+                <div className="flex w-10 h-10 md:w-12 md:h-12 bg-white rounded-lg items-center justify-center shrink-0 shadow">
+                  <img src={getImageUrl(service.image)} alt="" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
                 </div>
               )}
-              <h1 className="font-heading font-bold text-2xl md:text-4xl leading-tight">{service.title}</h1>
+              <div className="min-w-0">
+                <h1 className="font-heading font-bold text-xl md:text-3xl leading-tight">{service.title}</h1>
+                <p className="text-xs md:text-sm text-white/80 truncate">
+                  {service.shortDesc || `Professional ${service.title.toLowerCase()} at your doorstep in Jaipur.`}
+                </p>
+              </div>
             </div>
-            <p className="mt-2 text-sm md:text-base text-white/85 max-w-2xl">
-              {service.shortDesc || `Professional ${service.title.toLowerCase()} at your doorstep in Jaipur.`}
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2 md:gap-3">
-              <Link href={bookHref()} className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-5 py-2.5 rounded-sm text-sm">
-                Book Now
-              </Link>
-              {packages.length > 0 && (
-                <a href="#packages" className="inline-flex items-center gap-2 bg-white text-brand-navy hover:bg-brand-orange hover:text-white transition font-heading font-semibold px-5 py-2.5 rounded-sm text-sm">
-                  View Rates
-                </a>
-              )}
-              <a href={phoneHref} className="inline-flex items-center gap-2 border border-white/50 hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-5 py-2.5 rounded-sm text-sm">
-                <PhoneIcon className="w-5 h-5" /> {DEFAULT_PHONE}
+          </div>
+          <div className="flex flex-wrap gap-2 shrink-0">
+            <Link href={bookHref()} className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-4 py-2 rounded-sm text-sm">
+              Book Now
+            </Link>
+            {packages.length > 0 && (
+              <a href="#packages" className="inline-flex items-center gap-2 bg-white text-brand-navy hover:bg-brand-orange hover:text-white transition font-heading font-semibold px-4 py-2 rounded-sm text-sm">
+                View Rates
               </a>
-            </div>
+            )}
+            <a href={phoneHref} className="inline-flex items-center gap-2 border border-white/50 hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-4 py-2 rounded-sm text-sm">
+              <PhoneIcon className="w-4 h-4" /> {DEFAULT_PHONE}
+            </a>
           </div>
         </div>
       </section>
