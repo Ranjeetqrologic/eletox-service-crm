@@ -260,7 +260,7 @@ export default function Home() {
             <SectionTitle sub="Featured Services" title="Popular repair services" />
             <a href="#estimate" className="self-start md:self-auto inline-flex items-center gap-2 bg-brand-orange text-white font-heading font-semibold px-7 py-3.5 rounded-sm hover:bg-brand-navy transition">Book a Service <ArrowRightIcon className="w-4 h-4" /></a>
           </div>
-          <div className="grid lg:grid-cols-[1fr_0.9fr] gap-8 items-center">
+          <div className="grid lg:grid-cols-[1fr_0.9fr] gap-8 items-stretch">
             <div className="grid grid-cols-3 gap-x-4 gap-y-5 max-w-[560px] mx-auto lg:mx-0">
               {serviceList.map((s: any, i: number) => {
                 const inner = (
@@ -275,7 +275,24 @@ export default function Home() {
                 return s._id ? <Link key={s._id} href={`/service/?slug=${s.slug}`} className={cls}>{inner}</Link> : <a key={i} href="#estimate" className={cls}>{inner}</a>;
               })}
             </div>
-            <img src={`${A}/icon-service.jpg`} alt="AC repair service" className="w-full h-[360px] lg:h-[440px] object-cover rounded-xl shadow-md hidden lg:block" />
+            <div className="relative hidden lg:block self-stretch min-h-[440px] rounded-2xl overflow-hidden shadow-lg group">
+              <img src={`${A}/icon-service.jpg`} alt="AC repair service" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/95 via-brand-navy/40 to-transparent" />
+              <div className="absolute top-5 left-5 bg-brand-orange text-white font-heading font-bold px-4 py-2 rounded-lg shadow-lg text-sm">10+ Years Experience</div>
+              <div className="absolute inset-x-0 bottom-0 p-7 text-white">
+                <p className="font-heading font-semibold uppercase tracking-wider text-xs text-brand-orange mb-2">Why Eletox</p>
+                <h3 className="font-heading font-bold text-2xl xl:text-3xl leading-tight mb-4">Expert repair for every appliance, right at your doorstep</h3>
+                <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-white/90 mb-5">
+                  {["Certified technicians", "Same-day service", "Genuine spare parts", "Transparent pricing"].map((t) => (
+                    <li key={t} className="flex items-center gap-2"><CheckIcon className="w-4 h-4 text-brand-orange shrink-0" />{t}</li>
+                  ))}
+                </ul>
+                <div className="flex items-center gap-4">
+                  <a href="#estimate" className="bg-brand-orange hover:bg-white hover:text-brand-navy transition text-white font-heading font-semibold px-5 py-2.5 rounded-lg text-sm">Get Free Estimate</a>
+                  <a href={phoneHref} className="inline-flex items-center gap-2 font-heading font-semibold text-sm"><PhoneIcon className="w-4 h-4 text-brand-orange" />{phone}</a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
