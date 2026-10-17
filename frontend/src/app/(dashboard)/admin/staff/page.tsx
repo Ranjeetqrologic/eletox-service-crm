@@ -59,6 +59,7 @@ export default function StaffPage() {
   const [roleForm, setRoleForm] = useState<{ roleId: string; role: string; permissions: string[] }>({ roleId: "", role: "", permissions: [] });
   const [roleSaving, setRoleSaving] = useState(false);
   const [editing, setEditing] = useState<any>(null);
+  const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<any>({
     employeeId: "",
     name: "",
@@ -130,6 +131,7 @@ export default function StaffPage() {
 
   const resetForm = () => {
     setEditing(null);
+    setShowForm(false);
     setForm({
       employeeId: "", name: "", email: "", password: "", mobile: "", address: "", role: "", roleId: "",
       joiningDate: "", emergencyContact: "", bankName: "", accountNumber: "", ifsc: "", upi: "",
@@ -138,6 +140,7 @@ export default function StaffPage() {
   };
 
   const startEdit = (s: any) => {
+    setShowForm(true);
     const current = roles.find((r) => r._id === s.roleId) || roles.find((r) => r.name === s.role);
     setEditing(s);
     setForm({
@@ -226,6 +229,7 @@ export default function StaffPage() {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <h1 className="text-2xl font-bold">Staff Management</h1>
         <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => { if (showForm) resetForm(); else setShowForm(true); }} className="bg-primary-600 text-white px-4 py-2 rounded font-medium">{showForm ? "Close" : "+ Create New Staff"}</button>
           <input className="border p-2 rounded flex-1 min-w-[160px]" placeholder="Search name, email, mobile, ID..." value={search} onChange={(e) => setSearch(e.target.value)} />
           <select className="border p-2 rounded" value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
             <option value="">All Roles</option>
@@ -239,10 +243,10 @@ export default function StaffPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
+      {showForm && <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-lg">{editing ? `Edit Staff - ${editing.name}` : "Register New Staff"}</h2>
-          {editing && <button type="button" onClick={resetForm} className="text-sm text-gray-500 hover:underline">Cancel edit</button>}
+          <button type="button" onClick={resetForm} className="text-sm text-gray-500 hover:underline">{editing ? "Cancel edit" : "Close"}</button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input className="border p-2 rounded" placeholder="Employee ID (auto: EMP001)" value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })} />
@@ -280,7 +284,7 @@ export default function StaffPage() {
           <button className="bg-primary-600 text-white px-4 py-2 rounded" disabled={loading}>{loading ? "Saving..." : editing ? "Update Staff" : "Register Staff"}</button>
           {editing && <button type="button" onClick={resetForm} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>}
         </div>
-      </form>
+      </form>}
 
       <div className="bg-white rounded-xl shadow overflow-x-auto">
         <table className="w-full text-sm">
