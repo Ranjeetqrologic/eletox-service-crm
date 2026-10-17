@@ -40,6 +40,10 @@ export default function StaffLeads() {
   const [services, setServices] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  useEffect(() => {
+    const st = new URLSearchParams(window.location.search).get("status");
+    if (st) setFilterStatus(st);
+  }, []);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
