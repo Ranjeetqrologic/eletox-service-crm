@@ -10,6 +10,8 @@ const availablePermissions = [
   "payments", "reports", "settings", "banners", "gallery",
 ];
 
+const btn = "px-2.5 py-1 rounded-md border text-xs font-medium transition";
+
 export default function StaffPage() {
   const [staff, setStaff] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
@@ -308,15 +310,17 @@ export default function StaffPage() {
                 <td className="p-3">{s.mobile}</td>
                 <td className="p-3">{s.role}</td>
                 <td className="p-3">{s.isActive ? "Active" : "Inactive"}</td>
-                <td className="p-3 space-x-2">
-                  {s.user?._id && (
-                    <button onClick={() => loginAs(s.user._id)} className="text-blue-600 hover:underline">Login As</button>
-                  )}
-                  <button onClick={() => openCreds(s)} className="text-amber-600 hover:underline">Login ID / Password</button>
-                  <button onClick={() => startEdit(s)} className="text-indigo-600 hover:underline">Edit</button>
-                  <button onClick={() => setShowKyc(s)} className="text-green-600 hover:underline">KYC & Bank</button>
-                  <button onClick={() => openRoleEdit(s)} className="text-purple-600 hover:underline">Role & Permissions</button>
-                  <button onClick={() => deactivate(s._id)} className="text-red-600 hover:underline">Deactivate</button>
+                <td className="p-3">
+                  <div className="flex flex-wrap gap-1.5 min-w-[260px]">
+                    {s.user?._id && (
+                      <button onClick={() => loginAs(s.user._id)} className={`${btn} bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-600 hover:text-white`}>Login As</button>
+                    )}
+                    <button onClick={() => openCreds(s)} className={`${btn} bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-500 hover:text-white`}>Login ID / Password</button>
+                    <button onClick={() => startEdit(s)} className={`${btn} bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-600 hover:text-white`}>Edit</button>
+                    <button onClick={() => setShowKyc(s)} className={`${btn} bg-green-50 text-green-700 border-green-200 hover:bg-green-600 hover:text-white`}>KYC & Bank</button>
+                    <button onClick={() => openRoleEdit(s)} className={`${btn} bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-600 hover:text-white`}>Role & Permissions</button>
+                    <button onClick={() => deactivate(s._id)} className={`${btn} bg-red-50 text-red-700 border-red-200 hover:bg-red-600 hover:text-white`}>Deactivate</button>
+                  </div>
                 </td>
               </tr>
             ))}
