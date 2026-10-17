@@ -3,7 +3,7 @@ import { body, validationResult } from "express-validator";
 import Lead from "../models/Lead";
 import Job from "../models/Job";
 import Staff from "../models/Staff";
-import { protect, restrictTo } from "../middleware/auth";
+import { protect, restrictTo, isStaffRole } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
 import { uploadSingle, uploadPhotos, getFileUrl } from "../middleware/upload";
 
@@ -94,7 +94,7 @@ router.get(
       if (to) filter.createdAt.$lte = new Date(to as string);
     }
 
-    if (req.user?.role === "technician") {
+    if (req.user && isStaffRole(req.user.role)) {
       const technicianStaff = await (await import("../models/Staff")).default.findOne({ user: req.user._id });
       if (technicianStaff) filter.assignedStaff = technicianStaff._id;
     }

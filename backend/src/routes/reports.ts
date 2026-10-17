@@ -4,7 +4,7 @@ import LeadStatus from "../models/LeadStatus";
 import Job from "../models/Job";
 import Payment from "../models/Payment";
 import Staff from "../models/Staff";
-import { protect, restrictTo } from "../middleware/auth";
+import { protect, restrictTo, isStaffRole } from "../middleware/auth";
 import { asyncHandler } from "../middleware/errorHandler";
 
 const router = express.Router();
@@ -31,7 +31,7 @@ router.get(
     let leadFilter: any = Object.keys(dateFilter).length ? { createdAt: dateFilter } : {};
     let staffFilter: any = {};
 
-    if (req.user?.role === "technician") {
+    if (req.user && isStaffRole(req.user.role)) {
       const technicianStaff = await Staff.findOne({ user: req.user._id });
       if (technicianStaff) {
         staffFilter = { assignedStaff: technicianStaff._id };

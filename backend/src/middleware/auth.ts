@@ -34,8 +34,9 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
 
 const BUILTIN_ROLES = ["superadmin", "admin", "manager", "technician", "account"];
 
-// Custom roles created from the Roles page get manager-level access.
-const effectiveRole = (role: string) => (BUILTIN_ROLES.includes(role) ? role : "manager");
+// Custom roles created from the Roles page are staff-level (see only their own assigned work).
+export const effectiveRole = (role: string) => (BUILTIN_ROLES.includes(role) ? role : "technician");
+export const isStaffRole = (role?: string) => effectiveRole(role || "") === "technician";
 
 export const restrictTo = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {

@@ -3,7 +3,7 @@ import { body, validationResult } from "express-validator";
 import Job from "../models/Job";
 import Lead from "../models/Lead";
 import Staff from "../models/Staff";
-import { protect, restrictTo } from "../middleware/auth";
+import { protect, restrictTo, isStaffRole } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
 import { uploadReportPhotos, getFileUrl } from "../middleware/upload";
 
@@ -31,7 +31,7 @@ router.get(
     if (lead) filter.lead = lead;
     if (staff) filter.staff = staff;
 
-    if (req.user?.role === "technician") {
+    if (req.user && isStaffRole(req.user.role)) {
       const technicianStaff = await Staff.findOne({ user: req.user._id });
       if (technicianStaff) filter.staff = technicianStaff._id;
     }
