@@ -130,6 +130,24 @@ router.put(
   })
 );
 
+router.post(
+  "/:id/photos",
+  protect,
+  restrictTo("superadmin", "technician", "admin", "manager"),
+  uploadReportPhotos,
+  asyncHandler(async (req: Request, res: Response) => {
+    const job = await Job.findById(req.params.id);
+    if (!job) throw new AppError("Job not found", 404);
+    const photos = getPhotoArrays(req.files);
+    job.beforePhotos.push(...photos.beforePhotos);
+    job.workingPhotos.push(...photos.workingPhotos);
+    job.afterPhotos.push(...photos.afterPhotos);
+    job.videos.push(...photos.videos);
+    await job.save();
+    res.json({ success: true, data: job });
+  })
+);
+
 router.put(
   "/:id/report",
   protect,

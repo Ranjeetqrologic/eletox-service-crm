@@ -72,9 +72,22 @@ export default function StaffLeads() {
   const toggleService = (name: string) =>
     setServices((prev) => (prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name]));
 
-  const addPhotos = (field: string, files: FileList | null) => {
-    if (!files) return;
-    setPhotos((prev) => ({ ...prev, [field]: [...(prev[field] || []), ...Array.from(files)] }));
+  const [uploading, setUploading] = useState(false);
+  const addPhotos = async (field: string, files: FileList | null) => {
+    if (!files || !files.length || !selected) return;
+    const data = new FormData();
+    Array.from(files).forEach((file) => data.append(field, file));
+    setUploading(true);
+    try {
+      const res = await api.post(`/jobs/${selected._id}/photos`, data, { headers: { "Content-Type": "multipart/form-data" } });
+      setSelected((prev: any) => ({ ...prev, ...res.data.data, lead: prev?.lead }));
+      toast.success(`${files.length} photo${files.length > 1 ? "s" : ""} uploaded`);
+      fetchJobs();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Photo upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const removePhoto = (field: string, index: number) =>
@@ -333,15 +346,25 @@ export default function StaffLeads() {
 
               {PHOTO_FIELDS.map(([field, label]) => {
                 const list = photos[field] || [];
+                const uploaded: string[] = selected?.[field] || [];
                 return (
                   <div key={field} className="border rounded p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">{label} ({list.length})</span>
-                      <label className="cursor-pointer bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                        + Add Photo
+                      <span className="text-sm font-medium">{label} ({uploaded.length})</span>
+                      <label className={`cursor-pointer text-white px-3 py-1 rounded text-sm ${uploading ? "bg-gray-400" : "bg-blue-600"}`}>
+                        {uploading ? "Uploading..." : "+ Add Photo"}
                         <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { addPhotos(field, e.target.files); e.target.value = ""; }} />
                       </label>
                     </div>
+                    {uploaded.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {uploaded.map((url, i) => (
+                          <a key={`${url}-${i}`} href={url} target="_blank" rel="noreferrer">
+                            <img src={url} alt="" className="w-16 h-16 object-cover rounded border" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
                     {list.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {list.map((file, i) => (
