@@ -54,6 +54,9 @@ router.get(
     statuses.forEach((s, i) => {
       statusData[s.name] = statusCounts[i] || 0;
     });
+    if (Object.keys(staffFilter).length) {
+      statusData.new = await Lead.countDocuments({ ...leadFilter, ...staffFilter, status: "assigned" });
+    }
 
     const totalLeads = await Lead.countDocuments({ ...leadFilter, ...staffFilter });
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
