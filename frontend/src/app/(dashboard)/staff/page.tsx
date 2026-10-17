@@ -10,7 +10,7 @@ export default function StaffDashboard() {
     api.get("/reports/dashboard").then((res) => setStats(res.data.data));
   }, []);
 
-  const statusCards = (stats?.statuses || []).map((s: any) => ({
+  const statusCards = (stats?.statuses || []).filter((s: any) => s.showOnStaffDashboard !== false).map((s: any) => ({
     label: s.label,
     value: stats?.statusData?.[s.name] ?? 0,
     bg: s.color || "#6B7280",

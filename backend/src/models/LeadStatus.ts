@@ -7,6 +7,7 @@ export interface ILeadStatus extends Document {
   order: number;
   isDefault: boolean;
   isActive: boolean;
+  showOnStaffDashboard: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +20,7 @@ const LeadStatusSchema = new Schema<ILeadStatus>(
     order: { type: Number, default: 0 },
     isDefault: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+    showOnStaffDashboard: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
