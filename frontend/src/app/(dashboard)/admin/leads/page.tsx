@@ -221,10 +221,9 @@ export default function LeadsPage() {
           <input className="border p-2 rounded flex-1 min-w-[140px]" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
           <select className="border p-2 rounded" value={filterView} onChange={(e) => setFilterView(e.target.value)}>
             <option value="">All Leads</option>
-            <option value="new">New (last 24 hrs, unassigned)</option>
-            <option value="pending">Pending (24 hrs+, unassigned)</option>
+            <option value="new">New Leads</option>
+            <option value="pending">Pending Leads</option>
             <option value="assigned">Assigned Leads</option>
-            <option value="call_pending">Call Pending Leads</option>
             <option value="accepted">Accepted Leads</option>
             <option value="completed">Completed Leads</option>
           </select>

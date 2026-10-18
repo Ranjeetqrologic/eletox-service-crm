@@ -81,11 +81,7 @@ router.get(
       filter.assignedStaff = null;
       filter.status = { $nin: ["closed", "cancelled", "completed"] };
       filter.createdAt = { $gte: cutoff };
-    } else if (view === "pending") {
-      filter.assignedStaff = null;
-      filter.status = { $nin: ["closed", "cancelled", "completed"] };
-      filter.createdAt = { $lt: cutoff };
-    } else if (view === "assigned" || view === "call_pending") {
+    } else if (view === "assigned" || view === "pending") {
       filter.assignedStaff = { $ne: null };
     } else if (view === "accepted") {
       filter.assignedStaff = { $ne: null };

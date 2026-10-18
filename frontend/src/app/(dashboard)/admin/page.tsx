@@ -27,7 +27,6 @@ export default function AdminDashboard() {
     { label: "New Leads", value: stats?.newLeads ?? 0, bg: "#3B82F6", href: "/admin/leads/?view=new" },
     { label: "Pending Leads", value: stats?.pendingLeads ?? 0, bg: "#F59E0B", href: "/admin/leads/?view=pending" },
     { label: "Assigned Leads", value: stats?.assignedLeads ?? 0, bg: "#EAB308", href: "/admin/leads/?view=assigned" },
-    { label: "Call Pending Leads", value: stats?.callPendingLeads ?? 0, bg: "#F97316", href: "/admin/leads/?view=call_pending" },
     { label: "Accepted Leads", value: stats?.acceptedLeads ?? 0, bg: "#0EA5E9", href: "/admin/leads/?view=accepted" },
     { label: "Completed Leads", value: stats?.completedLeads ?? 0, bg: "#22C55E", href: "/admin/leads/?view=completed" },
   ];
