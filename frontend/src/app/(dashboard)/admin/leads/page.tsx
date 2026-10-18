@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { subServicesFor } from "@/lib/subServices";
 import api from "@/lib/api";
 import { getImageUrl } from "@/lib/utils";
 import toast from "react-hot-toast";
@@ -9,6 +10,8 @@ import { EyeIcon, MapPinIcon, CheckCircleIcon } from "@heroicons/react/24/outlin
 
 const sources = ["website", "call", "whatsapp", "facebook", "instagram", "google_ads", "referral", "manual", "others"];
 const priorities = ["low", "medium", "high", "urgent"];
+
+const EMPTY_FORM = { customerName: "", mobile: "", service: "", subService: "", address: "", city: "Jaipur", problem: "", locationText: "", status: "new", priority: "medium", source: "manual" };
 
 export default function LeadsPage() {
   const router = useRouter();
@@ -20,7 +23,9 @@ export default function LeadsPage() {
   const [staff, setStaff] = useState<any[]>([]);
   const [statuses, setStatuses] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<any>({ status: "new", priority: "medium", source: "manual" });
+  const [form, setForm] = useState<any>(EMPTY_FORM);
+  const [services, setServices] = useState<any[]>([]);
+  const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState(urlStatus);
   const [filterView, setFilterView] = useState(urlView);
@@ -104,6 +109,7 @@ export default function LeadsPage() {
   const fetchLeads = () => api.get("/leads").then((res) => setLeads(res.data.data));
   const fetchStaff = () => api.get("/staff").then((res) => setStaff(res.data.data));
   const fetchStatuses = () => api.get("/lead-status/all").then((res) => setStatuses(res.data.data));
+  useEffect(() => { api.get("/services/public").then((r) => setServices(r.data.data || [])).catch(() => setServices([])); }, []);
 
   useEffect(() => {
     fetchLeads();
@@ -121,14 +127,24 @@ export default function LeadsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setCreating(true);
     try {
-      await api.post("/leads", form);
+      const { locationText, ...payload } = form;
+      if (locationText?.trim()) {
+        const { data } = await api.post("/leads/resolve-location", { text: locationText.trim() });
+        payload.lat = data.data.lat;
+        payload.lng = data.data.lng;
+        payload.locationLink = data.data.link;
+      }
+      await api.post("/leads", payload);
       toast.success("Lead created");
       setShowForm(false);
-      setForm({ status: "new", priority: "medium", source: "manual" });
+      setForm(EMPTY_FORM);
       fetchLeads();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -289,24 +305,28 @@ export default function LeadsPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white p-4 rounded-xl shadow grid md:grid-cols-4 gap-4">
-          <input required placeholder="Customer Name*" className="border p-2 rounded" onChange={(e) => setForm({ ...form, customerName: e.target.value })} />
-          <input required placeholder="Mobile*" className="border p-2 rounded" onChange={(e) => setForm({ ...form, mobile: e.target.value })} />
-          <input placeholder="Email" className="border p-2 rounded" onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          <input required placeholder="Address*" className="border p-2 rounded" onChange={(e) => setForm({ ...form, address: e.target.value })} />
-          <input required placeholder="City*" className="border p-2 rounded" onChange={(e) => setForm({ ...form, city: e.target.value })} />
-          <input placeholder="Pin" className="border p-2 rounded" onChange={(e) => setForm({ ...form, pin: e.target.value })} />
-          <select className="border p-2 rounded" onChange={(e) => setForm({ ...form, source: e.target.value })}>{sources.map((s) => <option key={s} value={s}>{s}</option>)}</select>
-          <select className="border p-2 rounded" onChange={(e) => setForm({ ...form, priority: e.target.value })}>{priorities.map((p) => <option key={p} value={p}>{p}</option>)}</select>
-          <select className="border p-2 rounded" onChange={(e) => setForm({ ...form, status: e.target.value })}>
-            {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
-          </select>
-          <input required placeholder="Service Required*" className="border p-2 rounded" onChange={(e) => setForm({ ...form, service: e.target.value })} />
-          <input type="date" placeholder="Preferred Date" className="border p-2 rounded" onChange={(e) => setForm({ ...form, preferredDate: e.target.value })} />
-          <input type="number" step="any" placeholder="Latitude" className="border p-2 rounded" onChange={(e) => setForm({ ...form, lat: e.target.value })} />
-          <input type="number" step="any" placeholder="Longitude" className="border p-2 rounded" onChange={(e) => setForm({ ...form, lng: e.target.value })} />
-          <textarea placeholder="Problem" className="border p-2 rounded md:col-span-2" onChange={(e) => setForm({ ...form, problem: e.target.value })} />
-          <button type="submit" className="bg-green-600 text-white p-2 rounded md:col-span-4">Create Lead</button>
+        <form onSubmit={handleSubmit} className="bg-white p-5 rounded-xl shadow">
+          <h2 className="font-semibold text-lg mb-3">New Lead</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <input required placeholder="Full Name" className="border p-2.5 rounded" value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} />
+            <input required placeholder="Phone Number" className="border p-2.5 rounded" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} />
+            <select required className="border p-2.5 rounded md:col-span-2" value={form.service} onChange={(e) => setForm({ ...form, service: e.target.value, subService: "" })}>
+              <option value="">Choose Service</option>
+              {services.map((sv: any) => <option key={sv._id || sv.title} value={sv.title}>{sv.title}</option>)}
+              <option value="Other">Other</option>
+            </select>
+            {subServicesFor(form.service).length > 0 && (
+              <select required className="border p-2.5 rounded md:col-span-2" value={form.subService} onChange={(e) => setForm({ ...form, subService: e.target.value })}>
+                <option value="">Choose Category</option>
+                {subServicesFor(form.service).map((sub) => <option key={sub} value={sub}>{sub}</option>)}
+                <option value="Other">Other</option>
+              </select>
+            )}
+            <textarea required placeholder="Address" rows={2} className="border p-2.5 rounded md:col-span-2" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+            <input placeholder="Paste Location (Google Maps link / coordinates)" className="border p-2.5 rounded md:col-span-2" value={form.locationText} onChange={(e) => setForm({ ...form, locationText: e.target.value })} />
+            <textarea placeholder="Note" rows={3} className="border p-2.5 rounded md:col-span-2" value={form.problem} onChange={(e) => setForm({ ...form, problem: e.target.value })} />
+          </div>
+          <button type="submit" disabled={creating} className="mt-4 bg-primary-600 text-white px-6 py-2.5 rounded disabled:opacity-60">{creating ? "Submitting..." : "Submit Lead"}</button>
         </form>
       )}
 
