@@ -217,7 +217,14 @@ export default function LeadsPage() {
   const filteredLeads = leads.filter((l) => {
     const matchesSearch = [l.customerName, l.mobile, l.leadId].some((x) => x?.toLowerCase().includes(search.toLowerCase()));
     const matchesStatus = !filterStatus || l.status === filterStatus;
-    const matchesView = !filterView || (filterView === "new" ? isOpenUnassigned(l) && ageHours(l) < 24 : filterView === "pending" ? isOpenUnassigned(l) && ageHours(l) >= 24 : true);
+    const isAssigned = !!l.assignedStaff;
+    const matchesView =
+      !filterView ||
+      (filterView === "new" ? isOpenUnassigned(l) && ageHours(l) < 24
+        : filterView === "pending" || filterView === "assigned" ? isAssigned
+        : filterView === "accepted" ? isAssigned && !["new", "assigned"].includes(l.status)
+        : filterView === "completed" ? ["completed", "closed"].includes(l.status) || l.finalCompleted
+        : true);
     const matchesStaff = !filterStaff || (filterStaff === "unassigned" ? !l.assignedStaff : l.assignedStaff?._id === filterStaff);
     const created = l.createdAt ? l.createdAt.split("T")[0] : "";
     const matchesDate = (!fromDate || created >= fromDate) && (!toDate || created <= toDate);
