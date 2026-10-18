@@ -13,7 +13,11 @@ const router = express.Router();
 const dateRange = (from?: string, to?: string) => {
   const range: any = {};
   if (from) range.$gte = new Date(from);
-  if (to) range.$lte = new Date(to);
+  if (to) {
+    const end = new Date(to);
+    if (!/T|:/.test(to)) end.setDate(end.getDate() + 1);
+    range.$lt = end;
+  }
   return range;
 };
 
@@ -45,8 +49,8 @@ router.get(
     );
 
     const [todayLeads, todayVisits, revenue, statusCounts] = await Promise.all([
-      Lead.countDocuments({ ...staffFilter, createdAt: { $gte: today, $lt: tomorrow } }),
-      Lead.countDocuments({ ...staffFilter, assignedAt: { $gte: today, $lt: tomorrow } }),
+      Lead.countDocuments({ ...leadFilter, ...staffFilter, createdAt: Object.keys(dateFilter).length ? dateFilter : { $gte: today, $lt: tomorrow } }),
+      Lead.countDocuments({ ...leadFilter, ...staffFilter, assignedAt: { $gte: today, $lt: tomorrow } }),
       Payment.aggregate([{ $match: { status: { $ne: "pending" }, ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}) } }, { $group: { _id: null, total: { $sum: "$amount" } } }]),
       Promise.all(statusCountPromises),
     ]);
@@ -67,7 +71,7 @@ router.get(
 
     const totalLeads = await Lead.countDocuments({ ...leadFilter, ...staffFilter });
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const openUnassigned = { ...staffFilter, assignedStaff: null, status: { $nin: ["closed", "cancelled", "completed"] } };
+    const openUnassigned = { ...leadFilter, ...staffFilter, assignedStaff: null, status: { $nin: ["closed", "cancelled", "completed"] } };
     const assignedAny = { ...leadFilter, ...staffFilter, assignedStaff: { $ne: null } };
     const [newLeads, assignedLeads, acceptedLeads, completedLeads] = await Promise.all([
       Lead.countDocuments({ ...openUnassigned, createdAt: { $gte: cutoff } }),
@@ -115,7 +119,7 @@ router.get(
           Lead.countDocuments({ ...mine, status: "closed" }),
           Lead.countDocuments({ ...mine, status: "cancelled" }),
         ]);
-        const jobs = await Job.find({ staff: s._id }).select("billAmount receivedAmount");
+        const jobs = await Job.find({ staff: s._id, ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}) }).select("billAmount receivedAmount");
         const bill = jobs.reduce((t, j) => t + (j.billAmount || 0), 0);
         const received = jobs.reduce((t, j) => t + (j.receivedAmount || 0), 0);
         return { staffId: s.employeeId, name: s.name, assigned, accepted, completed, closed, cancelled, bill, received, pending: Math.max(0, bill - received) };
@@ -182,7 +186,9 @@ router.get(
   protect,
   restrictTo("superadmin", "admin", "manager", "account"),
   asyncHandler(async (req: Request, res: Response) => {
-    const all = await Job.find({ billAmount: { $gt: 0 } })
+    const { from, to } = req.query;
+    const dateFilter = dateRange(from as string | undefined, to as string | undefined);
+    const all = await Job.find({ billAmount: { $gt: 0 }, ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}) })
       .populate("lead", "customerName mobile leadId")
       .populate("staff", "name employeeId")
       .sort({ updatedAt: -1 });

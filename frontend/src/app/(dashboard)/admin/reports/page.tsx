@@ -16,14 +16,17 @@ export default function ReportsPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
 
-  const fetchData = () => {
-    const query = from && to ? `?from=${from}&to=${to}` : "";
+  const fetchData = (f: string = from, t: string = to) => {
+    const params = new URLSearchParams();
+    if (f) params.set("from", f);
+    if (t) params.set("to", t);
+    const query = params.toString() ? `?${params.toString()}` : "";
     api.get(`/reports/dashboard${query}`).then((res) => setDashboard(res.data.data));
     api.get(`/reports/staff-performance${query}`).then((res) => setStaffPerf(res.data.data));
     api.get(`/reports/lead-source${query}`).then((res) => setLeadSource(res.data.data));
     api.get(`/reports/service-report${query}`).then((res) => setServiceReport(res.data.data));
     api.get(`/reports/payment-summary${query}`).then((res) => setPaymentSummary(res.data.data));
-    api.get("/reports/pending-payments").then((res) => setPendingPayments(res.data.data));
+    api.get(`/reports/pending-payments${query}`).then((res) => setPendingPayments(res.data.data));
   };
 
   useEffect(() => {
@@ -45,7 +48,7 @@ export default function ReportsPage() {
       bg: s.color || "#6B7280",
     }));
 
-  const periodLabel = from && to ? `${from} to ${to}` : "All Time";
+  const periodLabel = from || to ? `${from || "start"} to ${to || "today"}` : "All Time";
 
   const summaryRows = (): (string | number)[][] => [
     ["Total Leads", dashboard?.totalLeads ?? 0],
@@ -61,7 +64,7 @@ export default function ReportsPage() {
   const serviceRows = () => serviceReport.map((s) => [s._id || "-", s.count]);
   const pendingHead = ["Lead", "Customer", "Mobile", "Staff", "Bill", "Received", "Pending"];
   const pendingRows = () => pendingPayments.map((j) => [j.lead?.leadId || "", j.lead?.customerName || "", j.lead?.mobile || "", j.staff?.name || "", j.billAmount, j.receivedAmount, j.pendingAmount]);
-  const fileBase = `eletox-report-${from && to ? `${from}_${to}` : new Date().toLocaleDateString("en-CA")}`;
+  const fileBase = `eletox-report-${from || to ? `${from || "start"}_${to || "today"}` : new Date().toLocaleDateString("en-CA")}`;
 
   const exportExcel = () => {
     const wb = XLSX.utils.book_new();
@@ -96,11 +99,12 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">Reports</h1>
+        <h1 className="text-2xl font-bold">Reports <span className="text-sm font-normal text-gray-500">({periodLabel})</span></h1>
         <div className="flex flex-wrap gap-2">
           <input type="date" className="border p-2 rounded" value={from} onChange={(e) => setFrom(e.target.value)} />
           <input type="date" className="border p-2 rounded" value={to} onChange={(e) => setTo(e.target.value)} />
-          <button onClick={fetchData} className="bg-primary-600 text-white px-4 py-2 rounded">Filter</button>
+          <button onClick={() => fetchData()} className="bg-primary-600 text-white px-4 py-2 rounded">Filter</button>
+          {(from || to) && <button onClick={() => { setFrom(""); setTo(""); fetchData("", ""); }} className="bg-gray-300 px-4 py-2 rounded">Clear</button>}
           <button onClick={exportExcel} className="bg-green-600 text-white px-4 py-2 rounded">Export Excel</button>
           <button onClick={exportPDF} className="bg-red-600 text-white px-4 py-2 rounded">Export PDF</button>
         </div>
@@ -111,7 +115,7 @@ export default function ReportsPage() {
           {[
             { label: "Total Leads", value: dashboard.totalLeads, bg: "#3B82F6" },
             ...statusCards,
-            { label: "Today Leads", value: dashboard.todayLeads, bg: "#A855F7" },
+            { label: from || to ? "Leads in Period" : "Today Leads", value: dashboard.todayLeads, bg: "#A855F7" },
             { label: "Total Bill", value: `₹${paymentSummary?.bill ?? 0}`, bg: "#8B5CF6" },
             { label: "Received", value: `₹${paymentSummary?.received ?? 0}`, bg: "#22C55E" },
             { label: "Pending Amount", value: `₹${paymentSummary?.pending ?? 0}`, bg: "#F97316" },
