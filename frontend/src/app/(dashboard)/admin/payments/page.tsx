@@ -16,8 +16,20 @@ export default function PaymentsPage() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [history, setHistory] = useState<any[]>([]);
-  const [histFrom, setHistFrom] = useState("");
-  const [histTo, setHistTo] = useState("");
+  const todayStr = new Date().toLocaleDateString("en-CA");
+  const [histFrom, setHistFrom] = useState(todayStr);
+  const [histTo, setHistTo] = useState(todayStr);
+  const [range, setRange] = useState("today");
+
+  const applyRange = (r: string) => {
+    setRange(r);
+    const now = new Date();
+    const fmt = (d: Date) => d.toLocaleDateString("en-CA");
+    if (r === "today") { setHistFrom(fmt(now)); setHistTo(fmt(now)); }
+    else if (r === "week") { const d = new Date(now); d.setDate(now.getDate() - 6); setHistFrom(fmt(d)); setHistTo(fmt(now)); }
+    else if (r === "month") { setHistFrom(fmt(new Date(now.getFullYear(), now.getMonth(), 1))); setHistTo(fmt(now)); }
+    else if (r === "all") { setHistFrom(""); setHistTo(""); }
+  };
 
   useEffect(() => {
     fetchPayments();
@@ -30,7 +42,7 @@ export default function PaymentsPage() {
   };
 
   const filteredHistory = history.filter((h) => {
-    const d = h.date ? h.date.split("T")[0] : "";
+    const d = h.date ? new Date(h.date).toLocaleDateString("en-CA") : "";
     return (!histFrom || d >= histFrom) && (!histTo || d <= histTo);
   });
   const hist = filteredHistory.reduce(
@@ -103,16 +115,23 @@ export default function PaymentsPage() {
       <h1 className="text-2xl font-bold">Payments</h1>
 
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-purple-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Total Bill</div><div className="text-2xl font-bold">₹{hist.bill}</div></div>
-        <div className="bg-green-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Received (Aaya)</div><div className="text-2xl font-bold">₹{hist.received}</div></div>
-        <div className="bg-orange-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Pending</div><div className="text-2xl font-bold">₹{hist.pending}</div></div>
+        <div className="bg-purple-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Total Bill{range === "today" ? " (Today)" : ""}</div><div className="text-2xl font-bold">₹{hist.bill}</div></div>
+        <div className="bg-green-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Received (Aaya){range === "today" ? " (Today)" : ""}</div><div className="text-2xl font-bold">₹{hist.received}</div></div>
+        <div className="bg-orange-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Pending{range === "today" ? " (Today)" : ""}</div><div className="text-2xl font-bold">₹{hist.pending}</div></div>
       </div>
 
       <div className="bg-white rounded-xl shadow">
         <div className="p-4 flex flex-wrap items-center gap-2 border-b">
-          <h2 className="font-semibold text-lg flex-1">Payment History (Job wise)</h2>
-          <input type="date" className="border p-2 rounded" value={histFrom} onChange={(e) => setHistFrom(e.target.value)} title="From date" />
-          <input type="date" className="border p-2 rounded" value={histTo} onChange={(e) => setHistTo(e.target.value)} title="To date" />
+          <h2 className="font-semibold text-lg flex-1">Payment History (Job wise){range === "today" ? " — Today" : ""}</h2>
+          <select className="border p-2 rounded" value={range} onChange={(e) => applyRange(e.target.value)}>
+            <option value="today">Today</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">This Month</option>
+            <option value="all">All Time</option>
+            <option value="custom">Custom</option>
+          </select>
+          <input type="date" className="border p-2 rounded" value={histFrom} onChange={(e) => { setRange("custom"); setHistFrom(e.target.value); }} title="From date" />
+          <input type="date" className="border p-2 rounded" value={histTo} onChange={(e) => { setRange("custom"); setHistTo(e.target.value); }} title="To date" />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
