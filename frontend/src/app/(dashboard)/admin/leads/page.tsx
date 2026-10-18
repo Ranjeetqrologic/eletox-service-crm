@@ -106,6 +106,17 @@ export default function LeadsPage() {
     }
   };
 
+  const finalComplete = async (leadId: string) => {
+    if (!confirm("Final complete this lead? It cannot be assigned to staff again.")) return;
+    try {
+      await api.put(`/leads/${leadId}/final-complete`);
+      toast.success("Lead final completed");
+      fetchLeads();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    }
+  };
+
   const assignLead = async (leadId: string, staffId: string) => {
     if (!staffId) return toast.error("Please select a staff name");
     try {
@@ -293,9 +304,16 @@ export default function LeadsPage() {
                 </td>
                 <td className="p-3">
                   {l.assignedStaff ? (
-                    <span className="inline-block px-2 py-1 rounded bg-gray-100 text-gray-700 text-xs font-medium" title="Status is locked after assignment">
-                      {statuses.find((s) => s.name === l.status)?.label || l.status}
-                    </span>
+                    <div className="flex flex-col gap-1 items-start">
+                      <span className="inline-block px-2 py-1 rounded bg-gray-100 text-gray-700 text-xs font-medium" title="Status is locked after assignment">
+                        {statuses.find((s) => s.name === l.status)?.label || l.status}
+                      </span>
+                      {l.finalCompleted ? (
+                        <span className="inline-block px-2 py-0.5 rounded bg-green-600 text-white text-[11px] font-semibold">Final Completed</span>
+                      ) : l.status === "completed" ? (
+                        <button onClick={() => finalComplete(l._id)} className="px-2 py-0.5 rounded bg-green-600 text-white text-[11px] font-semibold hover:bg-green-700">Final Complete</button>
+                      ) : null}
+                    </div>
                   ) : (
                     <select value={l.status} onChange={(e) => changeStatus(l._id, e.target.value)} className="border p-1 rounded">
                       {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
@@ -303,7 +321,7 @@ export default function LeadsPage() {
                   )}
                 </td>
                 <td className="p-3">
-                  {["completed", "closed"].includes(l.status) ? (
+                  {l.finalCompleted ? (
                     <span className="text-xs text-gray-500">{l.assignedStaff?.name || "-"} · Final (no re-assign)</span>
                   ) : (
                   <div className="flex gap-1">

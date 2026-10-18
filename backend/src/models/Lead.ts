@@ -31,6 +31,7 @@ export interface ILead extends Document {
   startedAt?: Date;
   completedAt?: Date;
   closedAt?: Date;
+  finalCompleted: boolean;
   createdBy?: mongoose.Types.ObjectId;
   cancelledReason?: string;
   followUpDate?: Date;
@@ -79,6 +80,7 @@ const LeadSchema = new Schema<ILead>(
     startedAt: { type: Date },
     completedAt: { type: Date },
     closedAt: { type: Date },
+    finalCompleted: { type: Boolean, default: false },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     cancelledReason: { type: String },
     followUpDate: { type: Date },

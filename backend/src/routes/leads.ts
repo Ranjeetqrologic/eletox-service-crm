@@ -222,8 +222,8 @@ router.put(
     const lead = await Lead.findById(req.params.id);
     if (!lead) throw new AppError("Lead not found", 404);
     if (!(await Staff.findById(req.body.staffId))) throw new AppError("Select a valid staff", 400);
-    if (["completed", "closed"].includes(lead.status)) {
-      throw new AppError("Completed lead cannot be re-assigned. Create a new lead for this customer.", 400);
+    if (lead.finalCompleted || lead.status === "closed") {
+      throw new AppError("Final completed lead cannot be re-assigned. Create a new lead for this customer.", 400);
     }
 
     lead.assignedStaff = req.body.staffId;
@@ -241,6 +241,21 @@ router.put(
     }
 
     res.json({ success: true, message: "Lead assigned", data: lead });
+  })
+);
+
+router.put(
+  "/:id/final-complete",
+  protect,
+  restrictTo("superadmin", "admin", "manager"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) throw new AppError("Lead not found", 404);
+    if (lead.status !== "completed") throw new AppError("Only a staff-completed lead can be final completed", 400);
+    lead.finalCompleted = true;
+    lead.closedAt = new Date();
+    await lead.save();
+    res.json({ success: true, data: lead });
   })
 );
 
