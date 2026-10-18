@@ -85,6 +85,13 @@ router.get(
       filter.assignedStaff = null;
       filter.status = { $nin: ["closed", "cancelled", "completed"] };
       filter.createdAt = { $lt: cutoff };
+    } else if (view === "assigned" || view === "call_pending") {
+      filter.assignedStaff = { $ne: null };
+    } else if (view === "accepted") {
+      filter.assignedStaff = { $ne: null };
+      filter.status = { $nin: ["new", "assigned"] };
+    } else if (view === "completed") {
+      filter.status = { $in: ["completed", "closed"] };
     }
     if (source) filter.source = source;
     if (staff) filter.assignedStaff = staff;
@@ -219,6 +226,9 @@ router.put(
     const lead = await Lead.findById(req.params.id);
     if (!lead) throw new AppError("Lead not found", 404);
     if (!(await Staff.findById(req.body.staffId))) throw new AppError("Select a valid staff", 400);
+    if (["completed", "closed"].includes(lead.status)) {
+      throw new AppError("Completed lead cannot be re-assigned. Create a new lead for this customer.", 400);
+    }
 
     lead.assignedStaff = req.body.staffId;
     lead.status = "assigned";

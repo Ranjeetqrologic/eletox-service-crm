@@ -223,6 +223,10 @@ export default function LeadsPage() {
             <option value="">All Leads</option>
             <option value="new">New (last 24 hrs, unassigned)</option>
             <option value="pending">Pending (24 hrs+, unassigned)</option>
+            <option value="assigned">Assigned Leads</option>
+            <option value="call_pending">Call Pending Leads</option>
+            <option value="accepted">Accepted Leads</option>
+            <option value="completed">Completed Leads</option>
           </select>
           <select className="border p-2 rounded" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             <option value="">All Status</option>
@@ -300,6 +304,9 @@ export default function LeadsPage() {
                   )}
                 </td>
                 <td className="p-3">
+                  {["completed", "closed"].includes(l.status) ? (
+                    <span className="text-xs text-gray-500">{l.assignedStaff?.name || "-"} · Final (no re-assign)</span>
+                  ) : (
                   <div className="flex gap-1">
                     <select value={assignDraft[l._id] ?? l.assignedStaff?._id ?? ""} onChange={(e) => setAssignDraft({ ...assignDraft, [l._id]: e.target.value })} className="border p-1 rounded">
                       <option value="">Select Staff</option>
@@ -307,6 +314,7 @@ export default function LeadsPage() {
                     </select>
                     <button onClick={() => { assignLead(l._id, assignDraft[l._id] ?? l.assignedStaff?._id ?? ""); setAssignDraft(({ [l._id]: _, ...rest }) => rest); }} className="bg-blue-600 text-white text-xs px-2 rounded">Submit</button>
                   </div>
+                  )}
                 </td>
                 <td className="p-3 text-xs text-gray-500">
                   {l.acceptedAt ? new Date(l.acceptedAt).toLocaleString() : "-"}
