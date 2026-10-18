@@ -87,7 +87,7 @@ router.get(
       filter.assignedStaff = { $ne: null };
       filter.status = { $nin: ["new", "assigned"] };
     } else if (view === "completed") {
-      filter.finalCompleted = true;
+      filter.$or = [{ status: { $in: ["completed", "closed"] } }, { finalCompleted: true }];
     }
     if (source) filter.source = source;
     if (staff) filter.assignedStaff = staff;
