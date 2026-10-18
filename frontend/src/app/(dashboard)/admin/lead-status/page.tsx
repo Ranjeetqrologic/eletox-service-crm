@@ -23,13 +23,15 @@ export default function LeadStatusPage() {
     ["todayLeads", "Today Leads"],
   ];
   const fetchCardCfg = () => api.get("/settings/company").then((res) => setCardCfg(res.data.data?.adminDashboardCards || {})).catch(() => {});
-  const toggleCard = async (key: string) => {
-    const next = { ...cardCfg, [key]: cardCfg[key] === false };
+  const saveCardCfg = async (next: Record<string, boolean>) => {
     const data = new FormData();
     data.append("adminDashboardCards", JSON.stringify(next));
+    await api.put("/settings/company", data, { headers: { "Content-Type": "multipart/form-data" } });
+    setCardCfg(next);
+  };
+  const toggleCard = async (key: string) => {
     try {
-      await api.put("/settings/company", data, { headers: { "Content-Type": "multipart/form-data" } });
-      setCardCfg(next);
+      await saveCardCfg({ ...cardCfg, [key]: cardCfg[key] === false });
     } catch {
       toast.error("Update failed");
     }
@@ -43,7 +45,10 @@ export default function LeadStatusPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (editing) {
+      if (editing?.cardKey) {
+        await saveCardCfg({ ...cardCfg, [editing.cardKey]: form.showOnAdminDashboard !== false });
+        toast.success("Dashboard card updated");
+      } else if (editing) {
         await api.put(`/lead-status/${editing._id}`, form);
         toast.success("Status updated");
       } else {
@@ -137,7 +142,9 @@ export default function LeadStatusPage() {
                     {cardCfg[key] !== false ? "Shown" : "Hidden"}
                   </button>
                 </td>
-                <td className="p-3 text-gray-400">-</td>
+                <td className="p-3 space-x-2">
+                  <button onClick={() => { setEditing({ cardKey: key }); setForm({ name: key, label, color: "#6B7280", order: 0, isActive: true, showOnStaffDashboard: true, showOnAdminDashboard: cardCfg[key] !== false }); }} className="text-blue-600 hover:underline">Edit</button>
+                </td>
               </tr>
             ))}
             {filteredStatuses.map((s) => (
