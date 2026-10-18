@@ -60,7 +60,7 @@ router.put(
     if (typeof update.socialLinks === "string") {
       try { update.socialLinks = JSON.parse(update.socialLinks); } catch { delete update.socialLinks; }
     }
-    for (const k of ["adminDashboardCards", "staffDashboardCards"]) {
+    for (const k of ["adminDashboardCards", "staffDashboardCards", "siteContent"]) {
       if (typeof update[k] === "string") {
         try { update[k] = JSON.parse(update[k]); } catch { delete update[k]; }
       }
@@ -68,6 +68,19 @@ router.put(
 
     const company = await Company.findOneAndUpdate({}, update, { upsert: true, new: true });
     res.json({ success: true, data: company });
+  })
+);
+
+router.post(
+  "/upload-image",
+  protect,
+  restrictTo("superadmin", "admin"),
+  uploadLogo,
+  asyncHandler(async (req: Request, res: Response) => {
+    const files = (req.files || {}) as Record<string, Express.Multer.File[]>;
+    const file = files.image?.[0] || files.logo?.[0];
+    if (!file) throw new AppError("No image uploaded", 400);
+    res.json({ success: true, url: getFileUrl(file) });
   })
 );
 

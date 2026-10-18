@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
+import { mergeSite } from "@/lib/siteDefaults";
 import { getImageUrl } from "@/lib/utils";
 import { subServicesFor } from "@/lib/subServices";
 import Logo from "@/components/Logo";
@@ -44,32 +45,10 @@ const heroSlides = [
   { image: `${A}/hero-2.jpg`, title: "Trusted Repair Experts, Right At Your Doorstep", subtitle: "AC, washing machine, geyser, RO and electrical repairs with transparent pricing." },
 ];
 
-const facts = [
-  { value: "15", l1: "Member", l2: "Professional", icon: `${A}/icon-fact-1.png` },
-  { value: "1000+", l1: "Project", l2: "Completed", icon: `${A}/icon-fact-2.png` },
-  { value: "02", l1: "Total", l2: "Branches", icon: `${A}/icon-fact-3.png` },
-  { value: "5000+", l1: "Client", l2: "Satisfaction", icon: `${A}/icon-fact-4.png` },
-];
 
-const team = [
-  { name: "AC Service Experts", role: "Split • Window • Cassette", image: `${A}/team-1.jpg` },
-  { name: "Senior Technicians", role: "10+ Years Experience", image: `${A}/team-2.jpg` },
-  { name: "Appliance Specialists", role: "Washing Machine • Geyser • RO", image: `${A}/team-3.jpg` },
-  { name: "Support Team", role: "24x7 Customer Care", image: `${A}/team-4.jpg` },
-];
 
-const whyChoose = [
-  { icon: WrenchScrewdriverIcon, title: "Expert Technicians", desc: "Certified and experienced technicians who diagnose the problem right the first time and repair it with genuine parts." },
-  { icon: BoltIcon, title: "Same-Day Service", desc: "Book in the morning, get it fixed by evening. Fast doorstep visits across Jaipur, 24x7 support." },
-  { icon: CurrencyRupeeIcon, title: "Transparent Pricing", desc: "Upfront estimates with no hidden charges. Pay only for what is repaired." },
-  { icon: ShieldCheckIcon, title: "Service Warranty", desc: "Every repair is backed by a service warranty — that is why 5000+ clients in Jaipur trust Eletox." },
-];
+const whyIcons = [WrenchScrewdriverIcon, BoltIcon, CurrencyRupeeIcon, ShieldCheckIcon];
 
-const blogs = [
-  { image: `${A}/blog-1.jpg`, cat: "AC Care", title: "How often should you service your AC in Jaipur summers?" },
-  { image: `${A}/blog-2.jpg`, cat: "Appliances", title: "5 signs your washing machine needs a technician" },
-  { image: `${A}/blog-3.jpg`, cat: "Water Purifier", title: "When to change RO filters for safe drinking water" },
-];
 
 const navLinks = [
   { label: "Home", href: "#home" },
@@ -154,6 +133,8 @@ export default function Home() {
     }
   };
 
+  const site = mergeSite(company.siteContent);
+  const img = (u: string) => getImageUrl(u) || u;
   const phone = company.phone || DEFAULT_PHONE;
   const phoneHref = `tel:${phone.replace(/[^+\d]/g, "")}`;
   const whatsapp = (company.whatsapp || phone).replace(/\D/g, "");
@@ -271,7 +252,7 @@ export default function Home() {
       <section id="services" className="py-8 md:py-14 bg-brand-light scroll-mt-16 md:scroll-mt-24">
         <div className="max-w-[1320px] mx-auto px-4">
           <div className="flex flex-row items-end justify-between gap-3 mb-5 md:mb-8">
-            <SectionTitle sub="Featured Services" title="Popular repair services" />
+            <SectionTitle sub={site.servicesSub} title={site.servicesTitle} />
             <a href="#estimate" className="shrink-0 inline-flex items-center gap-1.5 md:gap-2 bg-brand-orange text-white font-heading font-semibold text-sm md:text-base px-4 md:px-7 py-2.5 md:py-3.5 rounded-lg hover:bg-brand-navy transition">Book<span className="hidden sm:inline"> a Service</span> <ArrowRightIcon className="w-4 h-4" /></a>
           </div>
           <div className="grid lg:grid-cols-[1fr_0.9fr] gap-8 items-stretch">
@@ -290,14 +271,14 @@ export default function Home() {
               })}
             </div>
             <div className="relative hidden lg:block self-stretch min-h-[440px] rounded-2xl overflow-hidden shadow-lg group">
-              <img src={`${A}/icon-service.jpg`} alt="AC repair service" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+              <img src={img(site.servicesBoxImage)} alt="AC repair service" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/95 via-brand-navy/40 to-transparent" />
-              <div className="absolute top-5 left-5 bg-brand-orange text-white font-heading font-bold px-4 py-2 rounded-lg shadow-lg text-sm">10+ Years Experience</div>
+              <div className="absolute top-5 left-5 bg-brand-orange text-white font-heading font-bold px-4 py-2 rounded-lg shadow-lg text-sm">{site.servicesBoxBadge}</div>
               <div className="absolute inset-x-0 bottom-0 p-7 text-white">
-                <p className="font-heading font-semibold uppercase tracking-wider text-xs text-brand-orange mb-2">Why Eletox</p>
-                <h3 className="font-heading font-bold text-2xl xl:text-3xl leading-tight mb-4">Expert repair for every appliance, right at your doorstep</h3>
+                <p className="font-heading font-semibold uppercase tracking-wider text-xs text-brand-orange mb-2">{site.servicesBoxSub}</p>
+                <h3 className="font-heading font-bold text-2xl xl:text-3xl leading-tight mb-4">{site.servicesBoxTitle}</h3>
                 <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-white/90 mb-5">
-                  {["Certified technicians", "Same-day service", "Genuine spare parts", "Transparent pricing"].map((t) => (
+                  {site.servicesBoxPoints.map((t) => (
                     <li key={t} className="flex items-center gap-2"><CheckIcon className="w-4 h-4 text-brand-orange shrink-0" />{t}</li>
                   ))}
                 </ul>
@@ -317,35 +298,28 @@ export default function Home() {
           <div className="relative">
             <div className="grid grid-cols-5 gap-4 items-end">
               <div className="col-span-3 rounded-2xl overflow-hidden shadow-lg">
-                <img src={`${A}/about-1.jpg`} alt="Eletox technician servicing an AC" className="w-full h-[280px] md:h-[400px] object-cover" />
+                <img src={img(site.aboutImage1)} alt="Eletox technician servicing an AC" className="w-full h-[280px] md:h-[400px] object-cover" />
               </div>
               <div className="col-span-2 space-y-4">
                 <div className="bg-brand-orange text-white rounded-2xl p-5 shadow-lg">
-                  <div className="font-heading font-bold text-4xl leading-none">10<span className="text-2xl">+</span></div>
-                  <div className="text-sm font-semibold mt-1 leading-tight">Years of Trusted Service in Jaipur</div>
+                  <div className="font-heading font-bold text-4xl leading-none">{site.aboutYears}</div>
+                  <div className="text-sm font-semibold mt-1 leading-tight">{site.aboutYearsText}</div>
                 </div>
                 <div className="rounded-2xl overflow-hidden shadow-lg">
-                  <img src={`${A}/about-2.jpg`} alt="Eletox technician" className="w-full h-[170px] md:h-[240px] object-cover" />
+                  <img src={img(site.aboutImage2)} alt="Eletox technician" className="w-full h-[170px] md:h-[240px] object-cover" />
                 </div>
               </div>
             </div>
             <div className="hidden md:flex absolute -bottom-6 left-6 bg-white rounded-xl shadow-xl border border-gray-100 px-5 py-3 items-center gap-3">
               <span className="w-10 h-10 rounded-full bg-brand-navy text-white flex items-center justify-center"><CheckIcon className="w-5 h-5" /></span>
-              <div><div className="font-heading font-bold text-brand-dark leading-none">1000+ Repairs Done</div><div className="text-xs text-gray-500 mt-1">Rated 4.8/5 by happy customers</div></div>
+              <div><div className="font-heading font-bold text-brand-dark leading-none">{site.aboutBadgeTitle}</div><div className="text-xs text-gray-500 mt-1">{site.aboutBadgeSub}</div></div>
             </div>
           </div>
           <div>
-            <SectionTitle sub="About Eletox" title="Jaipur's trusted AC & appliance repair experts" />
-            <p className="mt-4 text-gray-600 leading-relaxed">
-              {company.name || "Elehome Solutions PVT. LTD."} (Eletox) has been keeping Jaipur homes and businesses comfortable for over a decade. Our certified technicians repair, install and service air conditioners, washing machines, geysers, microwaves, water purifiers and complete electrical systems — with genuine spare parts, upfront pricing and a service warranty on every job.
-            </p>
+            <SectionTitle sub={site.aboutSub} title={site.aboutTitle} />
+            <p className="mt-4 text-gray-600 leading-relaxed">{site.aboutText}</p>
             <div className="mt-6 grid sm:grid-cols-2 gap-4">
-              {[
-                { t: "Certified Technicians", d: "Trained, background-verified professionals in Eletox uniform." },
-                { t: "Same-Day Doorstep Service", d: "Book before noon and we reach you the same day, 24x7 support." },
-                { t: "Transparent Pricing", d: "Fixed rate card, 18% GST — no hidden charges, quote before work." },
-                { t: "Genuine Parts & Warranty", d: "Original spares with service warranty for complete peace of mind." },
-              ].map((f) => (
+              {site.aboutFeatures.map((f) => (
                 <div key={f.t} className="flex gap-3">
                   <span className="w-9 h-9 shrink-0 rounded-lg bg-brand-orange/15 text-brand-orange flex items-center justify-center"><CheckIcon className="w-5 h-5" /></span>
                   <div><div className="font-heading font-semibold text-brand-dark">{f.t}</div><div className="text-sm text-gray-500 leading-snug mt-0.5">{f.d}</div></div>
@@ -366,9 +340,9 @@ export default function Home() {
       {/* Facts */}
       <section className="bg-brand-navy py-8 md:py-12 text-white">
         <div className="max-w-[1320px] mx-auto px-4 grid grid-cols-2 lg:grid-cols-4 gap-5 md:gap-8">
-          {facts.map((f) => (
+          {site.facts.map((f) => (
             <div key={f.l2} className="flex items-center gap-3 md:gap-5 min-w-0">
-              <img src={f.icon} alt="" className="w-11 h-11 md:w-16 md:h-16 object-contain shrink-0" />
+              <img src={img(f.icon)} alt="" className="w-11 h-11 md:w-16 md:h-16 object-contain shrink-0" />
               <div className="min-w-0">
                 <div className="font-heading font-bold text-2xl md:text-4xl leading-none">{f.value}</div>
                 <div className="font-heading text-white/85 text-sm mt-1 leading-tight">{f.l1}<br />{f.l2}</div>
@@ -397,14 +371,14 @@ export default function Home() {
       <section id="estimate" className="scroll-mt-16 md:scroll-mt-24 py-10 md:py-16 bg-white">
         <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           <div className="hidden lg:flex flex-col gap-5">
-            <SectionTitle sub="Contact Us" title="Book a free visit — we'll call you back" />
-            <p className="text-gray-600 leading-relaxed">Tell us what needs fixing and our team will confirm your appointment within minutes. Same-day doorstep service across Jaipur.</p>
+            <SectionTitle sub={site.estimateSub} title={site.estimateTitle} />
+            <p className="text-gray-600 leading-relaxed">{site.estimateText}</p>
             <div className="relative rounded-2xl overflow-hidden shadow-lg">
-              <img src={`${A}/service-washing-machine-repair.jpg`} alt="Eletox technician" className="w-full h-[300px] object-cover object-top" />
+              <img src={img(site.estimateImage)} alt="Eletox technician" className="w-full h-[300px] object-cover object-top" />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/20 to-transparent" />
               <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between text-white">
-                <div><div className="font-heading font-bold text-xl leading-none">Eletox Expert Team</div><div className="text-sm text-white/85 mt-1">Certified &amp; background-verified technicians</div></div>
-                <div className="bg-brand-orange font-heading font-bold px-4 py-2 rounded-lg text-sm shrink-0">24x7 Support</div>
+                <div><div className="font-heading font-bold text-xl leading-none">{site.estimateImageTitle}</div><div className="text-sm text-white/85 mt-1">{site.estimateImageSub}</div></div>
+                <div className="bg-brand-orange font-heading font-bold px-4 py-2 rounded-lg text-sm shrink-0">{site.estimateBadge}</div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -412,7 +386,7 @@ export default function Home() {
                 { icon: PhoneIcon, l: "Call Us", v: phone, href: phoneHref },
                 { icon: EnvelopeIcon, l: "Email", v: email, href: `mailto:${email}` },
                 { icon: MapPinIcon, l: "Visit Us", v: address, href: `https://www.google.com/maps/search/${encodeURIComponent(address)}` },
-                { icon: ClockIcon, l: "Working Hours", v: "Mon - Sun, 24x7 Service" },
+                { icon: ClockIcon, l: "Working Hours", v: site.workingHours },
               ].map((c) => {
                 const inner = (
                   <>
@@ -426,8 +400,8 @@ export default function Home() {
             </div>
           </div>
           <form onSubmit={handleSubmit} className="bg-brand-orange p-6 md:p-10 rounded-2xl shadow-xl text-white">
-            <h2 className="font-heading font-bold text-3xl md:text-4xl mb-1">Free Estimate</h2>
-            <p className="text-white/85 text-sm mb-6">Fill the form — our team will call you back shortly.</p>
+            <h2 className="font-heading font-bold text-3xl md:text-4xl mb-1">{site.formTitle}</h2>
+            <p className="text-white/85 text-sm mb-6">{site.formText}</p>
             <div className="grid md:grid-cols-2 gap-4">
               <input name="customerName" value={form.customerName} onChange={handleChange} placeholder="Full Name" className="bg-white text-gray-800 text-sm p-3.5 rounded-lg w-full outline-none focus:ring-2 focus:ring-brand-navy/40" required />
               <input name="mobile" value={form.mobile} onChange={handleChange} placeholder="Phone Number" className="bg-white text-gray-800 text-sm p-3.5 rounded-lg w-full outline-none focus:ring-2 focus:ring-brand-navy/40" required />
@@ -457,12 +431,12 @@ export default function Home() {
       {/* Team */}
       <section id="team" className="scroll-mt-16 md:scroll-mt-24 bg-brand-navy py-12 md:py-16">
         <div className="max-w-[1320px] mx-auto px-4">
-          <SectionTitle sub="Technician Team" title="Our dedicated & expert team member" light center />
+          <SectionTitle sub={site.teamSub} title={site.teamTitle} light center />
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
-            {team.map((m) => (
+            {site.team.map((m) => (
               <div key={m.name} className="bg-white group overflow-hidden">
                 <div className="overflow-hidden">
-                  <img src={m.image} alt={m.name} className="w-full h-72 object-cover group-hover:scale-105 transition duration-500" />
+                  <img src={img(m.image)} alt={m.name} className="w-full h-72 object-cover group-hover:scale-105 transition duration-500" />
                 </div>
                 <div className="p-5 text-center">
                   <span className="text-brand-orange font-heading font-semibold text-sm uppercase">{m.role}</span>
@@ -478,26 +452,26 @@ export default function Home() {
       <section className="py-12 md:py-16 bg-white">
         <div className="max-w-[1320px] mx-auto px-4 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <div className="relative">
-            <img src={`${A}/choose-bg.jpg`} alt="Eletox technician at work" className="w-full h-[420px] lg:h-[560px] object-cover rounded-2xl shadow-2xl" />
+            <img src={img(site.whyImage)} alt="Eletox technician at work" className="w-full h-[420px] lg:h-[560px] object-cover rounded-2xl shadow-2xl" />
             <div className="absolute -bottom-6 left-6 md:left-10 bg-brand-navy text-white rounded-xl px-7 py-5 shadow-xl flex items-center gap-4">
               <ShieldCheckIcon className="w-12 h-12 text-brand-orange" />
               <div>
-                <div className="font-heading font-bold text-2xl leading-none">100% Genuine</div>
-                <div className="text-sm text-white/80 mt-1">Spare parts &amp; service warranty</div>
+                <div className="font-heading font-bold text-2xl leading-none">{site.whyBadgeTitle}</div>
+                <div className="text-sm text-white/80 mt-1">{site.whyBadgeSub}</div>
               </div>
             </div>
           </div>
           <div>
-            <SectionTitle sub="Why Choose Us" title="Reliable repairs for better living" />
-            <p className="mt-3 md:mt-6 text-gray-600 text-sm md:text-lg">Eletox combines skilled technicians, genuine parts and honest pricing so every repair lasts longer and every customer stays cool.</p>
+            <SectionTitle sub={site.whySub} title={site.whyTitle} />
+            <p className="mt-3 md:mt-6 text-gray-600 text-sm md:text-lg">{site.whyText}</p>
             <div className="mt-6 md:mt-10 grid grid-cols-2 gap-3 md:gap-5">
-              {whyChoose.map((w) => (
+              {site.whyChoose.map((w, wi) => { const WIcon = whyIcons[wi % whyIcons.length]; return (
                 <div key={w.title} className="group bg-brand-light border border-gray-100 rounded-xl p-3.5 md:p-6 hover:bg-brand-navy hover:border-brand-navy transition-colors duration-300">
-                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-brand-orange text-white flex items-center justify-center mb-3 md:mb-5 shadow-md"><w.icon className="w-5 h-5 md:w-7 md:h-7" /></div>
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-brand-orange text-white flex items-center justify-center mb-3 md:mb-5 shadow-md"><WIcon className="w-5 h-5 md:w-7 md:h-7" /></div>
                   <h4 className="font-heading font-bold text-sm md:text-xl text-brand-dark group-hover:text-white mb-1 md:mb-2 transition-colors">{w.title}</h4>
                   <p className="text-gray-600 group-hover:text-white/80 text-xs md:text-sm leading-snug md:leading-relaxed transition-colors">{w.desc}</p>
                 </div>
-              ))}
+              ); })}
             </div>
             <div className="mt-10 flex flex-wrap items-center gap-6">
               <a href="#estimate" className="bg-brand-orange text-white font-heading font-semibold px-8 py-4 rounded-sm hover:bg-brand-navy transition">Book a Technician</a>
@@ -508,19 +482,20 @@ export default function Home() {
       </section>
 
       {/* Blog */}
+      {site.showBlog !== false && (
       <section id="blog" className="scroll-mt-16 md:scroll-mt-24 py-12 md:py-16 bg-brand-light">
         <div className="max-w-[1320px] mx-auto px-4">
-          <SectionTitle sub="Recent Blogs" title="Every single update story from our journal" center />
+          <SectionTitle sub={site.blogSub} title={site.blogTitle} center />
           <div className="grid md:grid-cols-3 gap-8 mt-10">
-            {blogs.map((b) => (
+            {site.blogs.map((b) => (
               <article key={b.title} className="bg-white group overflow-hidden shadow-sm hover:shadow-xl transition">
                 <div className="overflow-hidden">
-                  <img src={b.image} alt={b.title} className="w-full h-60 object-cover group-hover:scale-105 transition duration-500" />
+                  <img src={img(b.image)} alt={b.title} className="w-full h-60 object-cover group-hover:scale-105 transition duration-500" />
                 </div>
                 <div className="p-7">
                   <div className="flex gap-4 text-sm text-gray-500 mb-3"><span className="text-brand-orange font-semibold">Eletox</span><span>{b.cat}</span></div>
                   <h4 className="font-heading font-bold text-xl text-brand-dark mb-4 group-hover:text-brand-orange transition">{b.title}</h4>
-                  <a href="#estimate" className="inline-flex items-center gap-1 font-heading font-semibold text-brand-navy text-sm hover:text-brand-orange transition">Read More <ArrowRightIcon className="w-4 h-4" /></a>
+                  <a href={b.link || "#estimate"} className="inline-flex items-center gap-1 font-heading font-semibold text-brand-navy text-sm hover:text-brand-orange transition">Read More <ArrowRightIcon className="w-4 h-4" /></a>
                 </div>
               </article>
             ))}
@@ -528,10 +503,12 @@ export default function Home() {
         </div>
       </section>
 
+      )}
+
       {/* CTA */}
       <section className="bg-brand-orange">
         <div className="max-w-[1320px] mx-auto px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-6 text-white">
-          <h3 className="font-heading font-bold text-3xl md:text-4xl">Need a repair today? Let&apos;s get started.</h3>
+          <h3 className="font-heading font-bold text-3xl md:text-4xl">{site.ctaTitle}</h3>
           <a href={phoneHref} className="inline-flex items-center gap-2 bg-white text-brand-navy font-heading font-bold px-8 py-4 rounded-sm hover:bg-brand-navy hover:text-white transition"><PhoneIcon className="w-5 h-5" /> {phone}</a>
         </div>
       </section>
@@ -541,7 +518,7 @@ export default function Home() {
         <div className="max-w-[1320px] mx-auto px-4 grid md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.3fr] gap-10 lg:gap-14 mb-14">
           <div>
             <div className="inline-block bg-white rounded-lg px-3 py-2 mb-5"><Logo logoUrl={company.logo} height={44} /></div>
-            <p className="text-sm text-gray-400 leading-relaxed">{company.name || "Elehome Solutions PVT. LTD."} — Jaipur&apos;s trusted AC, appliance and electrical repair company. 24x7 support, same-day doorstep visit and transparent pricing.</p>
+            <p className="text-sm text-gray-400 leading-relaxed">{company.name || "Elehome Solutions PVT. LTD."} — {site.footerText}</p>
             <div className="mt-6 flex gap-3">
               <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="w-10 h-10 rounded-full bg-[#25d366] text-white flex items-center justify-center hover:opacity-90"><WhatsAppIcon className="w-5 h-5" /></a>
               <a href={phoneHref} aria-label="Call" className="w-10 h-10 rounded-full bg-brand-orange text-white flex items-center justify-center hover:opacity-90"><PhoneIcon className="w-5 h-5" /></a>
@@ -576,7 +553,7 @@ export default function Home() {
               <li className="flex gap-3"><span className="w-9 h-9 shrink-0 rounded-md bg-white/5 flex items-center justify-center"><MapPinIcon className="w-5 h-5 text-brand-orange" /></span><span className="leading-relaxed">{address}</span></li>
               <li className="flex gap-3 items-center"><span className="w-9 h-9 shrink-0 rounded-md bg-white/5 flex items-center justify-center"><PhoneIcon className="w-5 h-5 text-brand-orange" /></span><a href={phoneHref} className="text-white font-semibold hover:text-brand-orange">{phone}</a></li>
               <li className="flex gap-3 items-center"><span className="w-9 h-9 shrink-0 rounded-md bg-white/5 flex items-center justify-center"><EnvelopeIcon className="w-5 h-5 text-brand-orange" /></span><a href={`mailto:${email}`} className="text-white hover:text-brand-orange break-all">{email}</a></li>
-              <li className="flex gap-3 items-center"><span className="w-9 h-9 shrink-0 rounded-md bg-white/5 flex items-center justify-center"><ClockIcon className="w-5 h-5 text-brand-orange" /></span><span>Open 24x7 — All days</span></li>
+              <li className="flex gap-3 items-center"><span className="w-9 h-9 shrink-0 rounded-md bg-white/5 flex items-center justify-center"><ClockIcon className="w-5 h-5 text-brand-orange" /></span><span>{site.workingHours}</span></li>
             </ul>
             <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 bg-[#25d366] text-white font-heading font-semibold px-5 py-3 rounded-sm hover:opacity-90 transition"><WhatsAppIcon className="w-5 h-5" /> Chat on WhatsApp</a>
           </div>
