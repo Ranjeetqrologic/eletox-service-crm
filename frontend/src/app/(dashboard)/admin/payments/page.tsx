@@ -15,6 +15,9 @@ export default function PaymentsPage() {
   const [filterStatus, setFilterStatus] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [history, setHistory] = useState<any[]>([]);
+  const [histFrom, setHistFrom] = useState("");
+  const [histTo, setHistTo] = useState("");
 
   useEffect(() => {
     fetchPayments();
@@ -23,7 +26,17 @@ export default function PaymentsPage() {
 
   const fetchPayments = () => {
     api.get("/payments").then((res) => setPayments(res.data.data));
+    api.get("/payments/history").then((res) => setHistory(res.data.data));
   };
+
+  const filteredHistory = history.filter((h) => {
+    const d = h.date ? h.date.split("T")[0] : "";
+    return (!histFrom || d >= histFrom) && (!histTo || d <= histTo);
+  });
+  const hist = filteredHistory.reduce(
+    (t, r) => ({ bill: t.bill + r.bill, received: t.received + r.received, expenses: t.expenses + r.expenses, pending: t.pending + r.pending }),
+    { bill: 0, received: 0, expenses: 0, pending: 0 }
+  );
 
   const fetchLeads = () => {
     api.get("/leads").then((res) => setLeads(res.data.data));
@@ -84,17 +97,51 @@ export default function PaymentsPage() {
     return matchesSearch && matchesMode && matchesStatus && matchesDate;
   });
 
-  const totalReceived = filteredPayments.filter((p) => p.status === "received").reduce((sum, p) => sum + p.amount, 0);
-  const totalAdvance = filteredPayments.filter((p) => p.status === "advance").reduce((sum, p) => sum + p.amount, 0);
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Payments</h1>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-green-500 text-white p-4 rounded-xl">Total Received: ₹{totalReceived}</div>
-        <div className="bg-blue-500 text-white p-4 rounded-xl">Advance: ₹{totalAdvance}</div>
-        <div className="bg-purple-500 text-white p-4 rounded-xl">Total: ₹{totalReceived + totalAdvance}</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-purple-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Total Bill</div><div className="text-2xl font-bold">₹{hist.bill}</div></div>
+        <div className="bg-green-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Received (Aaya)</div><div className="text-2xl font-bold">₹{hist.received}</div></div>
+        <div className="bg-red-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Expenses (Gaya)</div><div className="text-2xl font-bold">₹{hist.expenses}</div></div>
+        <div className="bg-orange-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Pending</div><div className="text-2xl font-bold">₹{hist.pending}</div></div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow">
+        <div className="p-4 flex flex-wrap items-center gap-2 border-b">
+          <h2 className="font-semibold text-lg flex-1">Payment History (Job wise)</h2>
+          <input type="date" className="border p-2 rounded" value={histFrom} onChange={(e) => setHistFrom(e.target.value)} title="From date" />
+          <input type="date" className="border p-2 rounded" value={histTo} onChange={(e) => setHistTo(e.target.value)} title="To date" />
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100">
+              <tr><th className="p-3 text-left">Date</th><th className="p-3 text-left">Lead</th><th className="p-3 text-left">Staff</th><th className="p-3 text-left">Status</th><th className="p-3 text-right">Bill</th><th className="p-3 text-right">Received</th><th className="p-3 text-right">Expenses</th><th className="p-3 text-right">Pending</th></tr>
+            </thead>
+            <tbody>
+              {filteredHistory.length === 0 && <tr><td colSpan={8} className="p-4 text-center text-gray-500">No history</td></tr>}
+              {filteredHistory.map((h) => (
+                <tr key={h._id} className="border-t">
+                  <td className="p-3">{h.date ? new Date(h.date).toLocaleDateString() : "-"}</td>
+                  <td className="p-3">{h.lead?.customerName} ({h.lead?.leadId})<div className="text-xs text-gray-500">{h.lead?.mobile}{h.lead?.service ? ` · ${h.lead.service}` : ""}</div></td>
+                  <td className="p-3">{h.staff?.name || "-"}</td>
+                  <td className="p-3 capitalize">{h.status}</td>
+                  <td className="p-3 text-right">₹{h.bill}</td>
+                  <td className="p-3 text-right text-green-700">₹{h.received}</td>
+                  <td className="p-3 text-right text-red-700">₹{h.expenses}</td>
+                  <td className="p-3 text-right font-semibold text-orange-700">₹{h.pending}</td>
+                </tr>
+              ))}
+            </tbody>
+            {filteredHistory.length > 0 && (
+              <tfoot className="bg-gray-50 font-semibold">
+                <tr><td className="p-3" colSpan={4}>Total</td><td className="p-3 text-right">₹{hist.bill}</td><td className="p-3 text-right text-green-700">₹{hist.received}</td><td className="p-3 text-right text-red-700">₹{hist.expenses}</td><td className="p-3 text-right text-orange-700">₹{hist.pending}</td></tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
@@ -128,6 +175,7 @@ export default function PaymentsPage() {
         </div>
       </form>
 
+      <h2 className="font-semibold text-lg">Recorded Payments</h2>
       <div className="bg-white p-4 rounded-xl shadow flex flex-wrap gap-2">
         <input className="border p-2 rounded flex-1 min-w-[160px]" placeholder="Search customer, mobile, lead ID, txn..." value={listSearch} onChange={(e) => setListSearch(e.target.value)} />
         <select className="border p-2 rounded" value={filterMode} onChange={(e) => setFilterMode(e.target.value)}>

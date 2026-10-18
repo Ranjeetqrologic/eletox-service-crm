@@ -26,6 +26,48 @@ router.get(
   })
 );
 
+router.get(
+  "/history",
+  protect,
+  restrictTo("superadmin", "admin", "manager", "account"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const jobs = await Job.find({})
+      .populate("lead", "customerName leadId mobile service")
+      .populate("staff", "name")
+      .sort({ updatedAt: -1 });
+    const payments = await Payment.find({}).select("lead amount status");
+    const receivedByLead: Record<string, number> = {};
+    for (const p of payments) {
+      if (p.status === "pending") continue;
+      const k = String(p.lead);
+      receivedByLead[k] = (receivedByLead[k] || 0) + p.amount;
+    }
+    const rows = jobs.map((j: any) => {
+      const bill = j.billAmount || 0;
+      const fromPayments = receivedByLead[String(j.lead?._id || j.lead)] || 0;
+      const received = Math.max(j.receivedAmount || 0, fromPayments);
+      const expenses = (j.expenses || []).reduce((s: number, e: any) => s + (e.amount || 0), 0);
+      return {
+        _id: j._id,
+        jobId: j.jobId,
+        lead: j.lead,
+        staff: j.staff,
+        status: j.status,
+        date: j.completedAt || j.updatedAt,
+        bill,
+        received,
+        expenses,
+        pending: Math.max(0, bill - received),
+      };
+    });
+    const totals = rows.reduce(
+      (t, r) => ({ bill: t.bill + r.bill, received: t.received + r.received, expenses: t.expenses + r.expenses, pending: t.pending + r.pending }),
+      { bill: 0, received: 0, expenses: 0, pending: 0 }
+    );
+    res.json({ success: true, data: rows, totals });
+  })
+);
+
 router.post(
   "/",
   protect,
