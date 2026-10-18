@@ -176,7 +176,9 @@ export default function LeadsPage() {
       const res = await api.get(`/jobs/lead/${leadId}`);
       setJobModal(res.data.data);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "No job found");
+      const lead = leads.find((x) => x._id === leadId);
+      if (err.response?.status === 404 && lead) setJobModal({ lead, leadOnly: true });
+      else toast.error(err.response?.data?.message || "No job found");
     } finally {
       setLoadingJob(false);
     }
@@ -478,7 +480,7 @@ export default function LeadsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Job Details - {jobModal.lead?.leadId}</h2>
+              <h2 className="text-xl font-bold">{jobModal.leadOnly ? "Lead Details" : "Job Details"} - {jobModal.lead?.leadId}</h2>
               <button onClick={() => { setJobModal(null); setJobEdit(null); }} className="text-gray-500 hover:text-gray-700">Close</button>
             </div>
             {jobEdit && (
@@ -511,10 +513,19 @@ export default function LeadsPage() {
               </div>
             )}
             <div className="space-y-4 text-sm">
-              <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl">
+              <div className="grid grid-cols-2 gap-4 bg-blue-50 p-4 rounded-xl">
                 <div><span className="font-medium text-gray-500">Customer:</span> {jobModal.lead?.customerName}</div>
-                <div><span className="font-medium text-gray-500">Mobile:</span> {jobModal.lead?.mobile}</div>
-                <div><span className="font-medium text-gray-500">Address:</span> {jobModal.lead?.address}, {jobModal.lead?.city}</div>
+                <div><span className="font-medium text-gray-500">Mobile:</span> <a href={`tel:${jobModal.lead?.mobile}`} className="text-blue-700">{jobModal.lead?.mobile}</a></div>
+                <div className="col-span-2"><span className="font-medium text-gray-500">Address:</span> {jobModal.lead?.address}{jobModal.lead?.city ? `, ${jobModal.lead.city}` : ""}</div>
+                <div><span className="font-medium text-gray-500">Service:</span> {jobModal.lead?.service || "-"}{jobModal.lead?.subService ? ` · ${jobModal.lead.subService}` : ""}</div>
+                <div><span className="font-medium text-gray-500">Lead Status:</span> {jobModal.lead?.status || "-"}</div>
+                <div><span className="font-medium text-gray-500">Received:</span> {jobModal.lead?.createdAt ? new Date(jobModal.lead.createdAt).toLocaleString() : "-"}</div>
+                <div><span className="font-medium text-gray-500">Source:</span> {jobModal.lead?.source || "-"}</div>
+                <div className="col-span-2"><span className="font-medium text-gray-500">Note:</span> {jobModal.lead?.problem || "-"}</div>
+                <div className="col-span-2"><span className="font-medium text-gray-500">Location:</span> {jobModal.lead?.locationLink ? <a href={jobModal.lead.locationLink} target="_blank" rel="noreferrer" className="text-blue-700 underline break-all">{jobModal.lead.locationLink}</a> : (jobModal.lead?.lat && jobModal.lead?.lng ? <a href={`https://www.google.com/maps?q=${jobModal.lead.lat},${jobModal.lead.lng}`} target="_blank" rel="noreferrer" className="text-blue-700 underline">Open in Maps</a> : "-")}</div>
+              </div>
+              {!jobModal.leadOnly && (<>
+              <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl">
                 <div><span className="font-medium text-gray-500">Technician:</span> {jobModal.staff?.name} ({jobModal.staff?.employeeId})</div>
                 <div><span className="font-medium text-gray-500">Job Status:</span> {jobModal.status}</div>
                 <div><span className="font-medium text-gray-500">Accepted At:</span> {jobModal.acceptedAt ? new Date(jobModal.acceptedAt).toLocaleString() : "-"}</div>
@@ -562,13 +573,14 @@ export default function LeadsPage() {
                   </div>
                 )
               ))}
+              </>)}
             </div>
             <div className="mt-6 flex gap-3">
-              {!jobEdit ? (
+              {!jobModal.leadOnly && (!jobEdit ? (
                 <button onClick={startJobEdit} className="bg-amber-500 text-white px-4 py-2 rounded">Edit / Add Remark</button>
               ) : (
                 <button onClick={saveJobEdit} className="bg-blue-600 text-white px-4 py-2 rounded">Save Changes</button>
-              )}
+              ))}
               <button onClick={() => { setJobModal(null); setJobEdit(null); }} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
             </div>
           </div>
