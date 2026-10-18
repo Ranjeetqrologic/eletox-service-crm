@@ -14,7 +14,14 @@ export default function AdminDashboard() {
       .catch((err) => console.error("Dashboard fetch failed:", err));
   }, []);
 
-  const statusCards: any[] = [];
+  const statusCards = (stats?.statuses || [])
+    .filter((s: any) => !["new", "pending"].includes(s.name) && s.showOnAdminDashboard !== false)
+    .map((s: any) => ({
+      label: s.label,
+      value: stats?.statusData?.[s.name] ?? 0,
+      bg: s.color || "#6B7280",
+      href: `/admin/leads/?status=${s.name}`,
+    }));
 
   const leadCards = [
     { label: "New Leads", value: stats?.newLeads ?? 0, bg: "#3B82F6", href: "/admin/leads/?view=new" },

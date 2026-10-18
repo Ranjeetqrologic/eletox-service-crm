@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 
 export default function LeadStatusPage() {
   const [statuses, setStatuses] = useState<any[]>([]);
-  const [form, setForm] = useState<any>({ name: "", label: "", color: "#6B7280", order: 0, isActive: true, showOnStaffDashboard: true });
+  const [form, setForm] = useState<any>({ name: "", label: "", color: "#6B7280", order: 0, isActive: true, showOnStaffDashboard: true, showOnAdminDashboard: true });
   const [editing, setEditing] = useState<any>(null);
   const [search, setSearch] = useState("");
   const filteredStatuses = statuses.filter((s) => !search || [s.name, s.label].some((x: string) => x?.toLowerCase().includes(search.toLowerCase())));
@@ -27,7 +27,7 @@ export default function LeadStatusPage() {
         await api.post("/lead-status", { ...form, name: form.name.toLowerCase().replace(/\s+/g, "_") });
         toast.success("Status created");
       }
-      setForm({ name: "", label: "", color: "#6B7280", order: 0, isActive: true, showOnStaffDashboard: true });
+      setForm({ name: "", label: "", color: "#6B7280", order: 0, isActive: true, showOnStaffDashboard: true, showOnAdminDashboard: true });
       setEditing(null);
       fetchStatuses();
     } catch (err: any) {
@@ -37,7 +37,7 @@ export default function LeadStatusPage() {
 
   const editStatus = (s: any) => {
     setEditing(s);
-    setForm({ name: s.name, label: s.label, color: s.color, order: s.order, isActive: s.isActive, showOnStaffDashboard: s.showOnStaffDashboard !== false });
+    setForm({ name: s.name, label: s.label, color: s.color, order: s.order, isActive: s.isActive, showOnStaffDashboard: s.showOnStaffDashboard !== false, showOnAdminDashboard: s.showOnAdminDashboard !== false });
   };
 
   const deleteStatus = async (id: string) => {
@@ -76,9 +76,13 @@ export default function LeadStatusPage() {
           <input type="checkbox" checked={form.showOnStaffDashboard} onChange={(e) => setForm({ ...form, showOnStaffDashboard: e.target.checked })} />
           Show on Staff Dashboard
         </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={form.showOnAdminDashboard} onChange={(e) => setForm({ ...form, showOnAdminDashboard: e.target.checked })} />
+          Show on Admin Dashboard
+        </label>
         <div className="flex gap-2">
           <button type="submit" className="bg-primary-600 text-white px-4 py-2 rounded">{editing ? "Update" : "Create"}</button>
-          {editing && <button type="button" onClick={() => { setEditing(null); setForm({ name: "", label: "", color: "#6B7280", order: 0, isActive: true, showOnStaffDashboard: true }); }} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>}
+          {editing && <button type="button" onClick={() => { setEditing(null); setForm({ name: "", label: "", color: "#6B7280", order: 0, isActive: true, showOnStaffDashboard: true, showOnAdminDashboard: true }); }} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>}
         </div>
       </form>
 
@@ -92,6 +96,7 @@ export default function LeadStatusPage() {
               <th className="p-3 text-left">Order</th>
               <th className="p-3 text-left">Active</th>
               <th className="p-3 text-left">Staff Dashboard</th>
+              <th className="p-3 text-left">Admin Dashboard</th>
               <th className="p-3 text-left">Actions</th>
             </tr>
           </thead>
@@ -106,6 +111,11 @@ export default function LeadStatusPage() {
                 <td className="p-3">
                   <button onClick={() => api.put(`/lead-status/${s._id}`, { showOnStaffDashboard: s.showOnStaffDashboard === false }).then(fetchStatuses)} className={`px-2.5 py-1 rounded-md text-xs font-medium ${s.showOnStaffDashboard !== false ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"}`}>
                     {s.showOnStaffDashboard !== false ? "Shown" : "Hidden"}
+                  </button>
+                </td>
+                <td className="p-3">
+                  <button onClick={() => api.put(`/lead-status/${s._id}`, { showOnAdminDashboard: s.showOnAdminDashboard === false }).then(fetchStatuses)} className={`px-2.5 py-1 rounded-md text-xs font-medium ${s.showOnAdminDashboard !== false ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"}`}>
+                    {s.showOnAdminDashboard !== false ? "Shown" : "Hidden"}
                   </button>
                 </td>
                 <td className="p-3 space-x-2">

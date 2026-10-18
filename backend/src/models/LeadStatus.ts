@@ -8,6 +8,7 @@ export interface ILeadStatus extends Document {
   isDefault: boolean;
   isActive: boolean;
   showOnStaffDashboard: boolean;
+  showOnAdminDashboard: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +22,7 @@ const LeadStatusSchema = new Schema<ILeadStatus>(
     isDefault: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
     showOnStaffDashboard: { type: Boolean, default: true },
+    showOnAdminDashboard: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
