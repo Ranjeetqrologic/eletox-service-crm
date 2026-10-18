@@ -14,11 +14,6 @@ export default function LeadStatusPage() {
   const fetchStatuses = () => api.get("/lead-status/all").then((res) => setStatuses(res.data.data));
   const [cardCfg, setCardCfg] = useState<Record<string, boolean>>({});
   const DASHBOARD_CARDS: [string, string][] = [
-    ["newLeads", "New Leads"],
-    ["pendingLeads", "Pending Leads"],
-    ["assignedLeads", "Assigned Leads"],
-    ["acceptedLeads", "Accepted Leads"],
-    ["completedLeads", "Completed Leads"],
     ["totalLeads", "Total Leads"],
     ["todayLeads", "Today Leads"],
   ];

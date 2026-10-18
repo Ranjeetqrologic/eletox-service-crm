@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 
+const CUMULATIVE = ["new", "pending", "assigned", "accepted", "completed"];
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [cardCfg, setCardCfg] = useState<Record<string, boolean>>({});
@@ -17,7 +19,7 @@ export default function AdminDashboard() {
   }, []);
 
   const statusCards = (stats?.statuses || [])
-    .filter((s: any) => !["new", "pending"].includes(s.name) && s.showOnAdminDashboard !== false)
+    .filter((s: any) => !CUMULATIVE.includes(s.name) && s.showOnAdminDashboard !== false)
     .map((s: any) => ({
       label: s.label,
       value: stats?.statusData?.[s.name] ?? 0,
@@ -25,12 +27,13 @@ export default function AdminDashboard() {
       href: `/admin/leads/?status=${s.name}`,
     }));
 
+  const statusShown = (name: string) => (stats?.statuses || []).find((s: any) => s.name === name)?.showOnAdminDashboard !== false;
   const leadCards = [
-    { key: "newLeads", label: "New Leads", value: stats?.newLeads ?? 0, bg: "#3B82F6", href: "/admin/leads/?view=new" },
-    { key: "pendingLeads", label: "Pending Leads", value: stats?.pendingLeads ?? 0, bg: "#F59E0B", href: "/admin/leads/?view=pending" },
-    { key: "assignedLeads", label: "Assigned Leads", value: stats?.assignedLeads ?? 0, bg: "#EAB308", href: "/admin/leads/?view=assigned" },
-    { key: "acceptedLeads", label: "Accepted Leads", value: stats?.acceptedLeads ?? 0, bg: "#0EA5E9", href: "/admin/leads/?view=accepted" },
-    { key: "completedLeads", label: "Completed Leads", value: stats?.completedLeads ?? 0, bg: "#22C55E", href: "/admin/leads/?view=completed" },
+    { key: "new", label: "New Leads", value: stats?.newLeads ?? 0, bg: "#3B82F6", href: "/admin/leads/?view=new" },
+    { key: "pending", label: "Pending Leads", value: stats?.pendingLeads ?? 0, bg: "#F59E0B", href: "/admin/leads/?view=pending" },
+    { key: "assigned", label: "Assigned Leads", value: stats?.assignedLeads ?? 0, bg: "#EAB308", href: "/admin/leads/?view=assigned" },
+    { key: "accepted", label: "Accepted Leads", value: stats?.acceptedLeads ?? 0, bg: "#0EA5E9", href: "/admin/leads/?view=accepted" },
+    { key: "completed", label: "Completed Leads", value: stats?.completedLeads ?? 0, bg: "#22C55E", href: "/admin/leads/?view=completed" },
   ];
 
   const fixedCards = [
@@ -38,7 +41,7 @@ export default function AdminDashboard() {
     { key: "todayLeads", label: "Today Leads", value: stats?.todayLeads ?? 0, bg: "#A855F7", href: "/admin/leads/?fromDate=today" },
   ];
 
-  const cards = [...leadCards.filter((c) => cardCfg[c.key] !== false), ...statusCards, ...fixedCards.filter((c) => cardCfg[c.key] !== false)];
+  const cards = [...leadCards.filter((c) => statusShown(c.key)), ...statusCards, ...fixedCards.filter((c) => cardCfg[c.key] !== false)];
 
   return (
     <div>
