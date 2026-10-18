@@ -57,6 +57,9 @@ router.put(
     if (typeof update.socialLinks === "string") {
       try { update.socialLinks = JSON.parse(update.socialLinks); } catch { delete update.socialLinks; }
     }
+    if (typeof update.adminDashboardCards === "string") {
+      try { update.adminDashboardCards = JSON.parse(update.adminDashboardCards); } catch { delete update.adminDashboardCards; }
+    }
 
     const company = await Company.findOneAndUpdate({}, update, { upsert: true, new: true });
     res.json({ success: true, data: company });

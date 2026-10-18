@@ -12,9 +12,32 @@ export default function LeadStatusPage() {
   const filteredStatuses = statuses.filter((s) => !search || [s.name, s.label].some((x: string) => x?.toLowerCase().includes(search.toLowerCase())));
 
   const fetchStatuses = () => api.get("/lead-status/all").then((res) => setStatuses(res.data.data));
+  const [cardCfg, setCardCfg] = useState<Record<string, boolean>>({});
+  const DASHBOARD_CARDS: [string, string][] = [
+    ["newLeads", "New Leads"],
+    ["pendingLeads", "Pending Leads"],
+    ["assignedLeads", "Assigned Leads"],
+    ["acceptedLeads", "Accepted Leads"],
+    ["completedLeads", "Completed Leads"],
+    ["totalLeads", "Total Leads"],
+    ["todayLeads", "Today Leads"],
+  ];
+  const fetchCardCfg = () => api.get("/settings/company").then((res) => setCardCfg(res.data.data?.adminDashboardCards || {})).catch(() => {});
+  const toggleCard = async (key: string) => {
+    const next = { ...cardCfg, [key]: cardCfg[key] === false };
+    const data = new FormData();
+    data.append("adminDashboardCards", JSON.stringify(next));
+    try {
+      await api.put("/settings/company", data, { headers: { "Content-Type": "multipart/form-data" } });
+      setCardCfg(next);
+    } catch {
+      toast.error("Update failed");
+    }
+  };
 
   useEffect(() => {
     fetchStatuses();
+    fetchCardCfg();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,6 +83,16 @@ export default function LeadStatusPage() {
         </div>
       </div>
 
+      <div className="bg-white p-4 rounded shadow mb-6">
+        <h2 className="font-semibold mb-3">Admin Dashboard Cards</h2>
+        <div className="flex flex-wrap gap-2">
+          {DASHBOARD_CARDS.map(([key, label]) => (
+            <button key={key} type="button" onClick={() => toggleCard(key)} className={`px-3 py-1.5 rounded-md text-sm font-medium border ${cardCfg[key] !== false ? "bg-green-100 text-green-700 border-green-200" : "bg-gray-200 text-gray-600 border-gray-300"}`}>
+              {label}: {cardCfg[key] !== false ? "Shown" : "Hidden"}
+            </button>
+          ))}
+        </div>
+      </div>
       <form onSubmit={handleSubmit} className="bg-white p-4 rounded-xl shadow grid md:grid-cols-6 gap-4 items-end">
         <input required disabled={!!editing} placeholder="Status key (e.g. half_done)" className="border p-2 rounded" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <input required placeholder="Display label" className="border p-2 rounded" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} />

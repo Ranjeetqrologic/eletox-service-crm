@@ -6,12 +6,14 @@ import api from "@/lib/api";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
+  const [cardCfg, setCardCfg] = useState<Record<string, boolean>>({});
   const router = useRouter();
 
   useEffect(() => {
     api.get("/reports/dashboard")
       .then((res) => setStats(res.data.data))
       .catch((err) => console.error("Dashboard fetch failed:", err));
+    api.get("/settings/company").then((res) => setCardCfg(res.data.data?.adminDashboardCards || {})).catch(() => {});
   }, []);
 
   const statusCards = (stats?.statuses || [])
@@ -24,19 +26,19 @@ export default function AdminDashboard() {
     }));
 
   const leadCards = [
-    { label: "New Leads", value: stats?.newLeads ?? 0, bg: "#3B82F6", href: "/admin/leads/?view=new" },
-    { label: "Pending Leads", value: stats?.pendingLeads ?? 0, bg: "#F59E0B", href: "/admin/leads/?view=pending" },
-    { label: "Assigned Leads", value: stats?.assignedLeads ?? 0, bg: "#EAB308", href: "/admin/leads/?view=assigned" },
-    { label: "Accepted Leads", value: stats?.acceptedLeads ?? 0, bg: "#0EA5E9", href: "/admin/leads/?view=accepted" },
-    { label: "Completed Leads", value: stats?.completedLeads ?? 0, bg: "#22C55E", href: "/admin/leads/?view=completed" },
+    { key: "newLeads", label: "New Leads", value: stats?.newLeads ?? 0, bg: "#3B82F6", href: "/admin/leads/?view=new" },
+    { key: "pendingLeads", label: "Pending Leads", value: stats?.pendingLeads ?? 0, bg: "#F59E0B", href: "/admin/leads/?view=pending" },
+    { key: "assignedLeads", label: "Assigned Leads", value: stats?.assignedLeads ?? 0, bg: "#EAB308", href: "/admin/leads/?view=assigned" },
+    { key: "acceptedLeads", label: "Accepted Leads", value: stats?.acceptedLeads ?? 0, bg: "#0EA5E9", href: "/admin/leads/?view=accepted" },
+    { key: "completedLeads", label: "Completed Leads", value: stats?.completedLeads ?? 0, bg: "#22C55E", href: "/admin/leads/?view=completed" },
   ];
 
   const fixedCards = [
-    { label: "Total Leads", value: stats?.totalLeads ?? 0, bg: "#6366F1", href: "/admin/leads/" },
-    { label: "Today Leads", value: stats?.todayLeads ?? 0, bg: "#A855F7", href: "/admin/leads/?fromDate=today" },
+    { key: "totalLeads", label: "Total Leads", value: stats?.totalLeads ?? 0, bg: "#6366F1", href: "/admin/leads/" },
+    { key: "todayLeads", label: "Today Leads", value: stats?.todayLeads ?? 0, bg: "#A855F7", href: "/admin/leads/?fromDate=today" },
   ];
 
-  const cards = [...leadCards, ...statusCards, ...fixedCards];
+  const cards = [...leadCards.filter((c) => cardCfg[c.key] !== false), ...statusCards, ...fixedCards.filter((c) => cardCfg[c.key] !== false)];
 
   return (
     <div>
