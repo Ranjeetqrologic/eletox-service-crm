@@ -72,7 +72,7 @@ router.get(
       Lead.countDocuments({ ...openUnassigned, createdAt: { $gte: cutoff } }),
       Lead.countDocuments(assignedAny),
       Lead.countDocuments({ ...assignedAny, status: { $nin: ["new", "assigned"] } }),
-      Lead.countDocuments({ ...leadFilter, ...staffFilter, status: { $in: ["completed", "closed"] } }),
+      Lead.countDocuments({ ...leadFilter, ...staffFilter, finalCompleted: true }),
     ]);
 
     res.json({
