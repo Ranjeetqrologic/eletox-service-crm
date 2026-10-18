@@ -17,16 +17,18 @@ export default function LeadStatusPage() {
     ["totalLeads", "Total Leads"],
     ["todayLeads", "Today Leads"],
   ];
-  const fetchCardCfg = () => api.get("/settings/company").then((res) => setCardCfg(res.data.data?.adminDashboardCards || {})).catch(() => {});
-  const saveCardCfg = async (next: Record<string, boolean>) => {
+  const [staffCardCfg, setStaffCardCfg] = useState<Record<string, boolean>>({});
+  const fetchCardCfg = () => api.get("/settings/company").then((res) => { setCardCfg(res.data.data?.adminDashboardCards || {}); setStaffCardCfg(res.data.data?.staffDashboardCards || {}); }).catch(() => {});
+  const saveCardCfg = async (next: Record<string, boolean>, scope: "admin" | "staff" = "admin") => {
     const data = new FormData();
-    data.append("adminDashboardCards", JSON.stringify(next));
+    data.append(scope === "admin" ? "adminDashboardCards" : "staffDashboardCards", JSON.stringify(next));
     await api.put("/settings/company", data, { headers: { "Content-Type": "multipart/form-data" } });
-    setCardCfg(next);
+    if (scope === "admin") setCardCfg(next); else setStaffCardCfg(next);
   };
-  const toggleCard = async (key: string) => {
+  const toggleCard = async (key: string, scope: "admin" | "staff" = "admin") => {
+    const cur = scope === "admin" ? cardCfg : staffCardCfg;
     try {
-      await saveCardCfg({ ...cardCfg, [key]: cardCfg[key] === false });
+      await saveCardCfg({ ...cur, [key]: cur[key] === false }, scope);
     } catch {
       toast.error("Update failed");
     }
@@ -123,7 +125,11 @@ export default function LeadStatusPage() {
             {!search && DASHBOARD_CARDS.map(([key, label]) => (
               <tr key={key} className="border-t bg-gray-50">
                 <td className="p-3">{label}</td>
-                <td className="p-3 text-gray-400">-</td>
+                <td className="p-3">
+                  <button onClick={() => toggleCard(key, "staff")} className={`px-2.5 py-1 rounded-md text-xs font-medium ${staffCardCfg[key] !== false ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"}`}>
+                    {staffCardCfg[key] !== false ? "Shown" : "Hidden"}
+                  </button>
+                </td>
                 <td className="p-3">
                   <button onClick={() => toggleCard(key)} className={`px-2.5 py-1 rounded-md text-xs font-medium ${cardCfg[key] !== false ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"}`}>
                     {cardCfg[key] !== false ? "Shown" : "Hidden"}

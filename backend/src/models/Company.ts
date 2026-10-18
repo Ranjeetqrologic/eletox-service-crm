@@ -18,6 +18,7 @@ export interface ICompany extends Document {
   emailSmtp?: { host?: string; port?: number; user?: string; pass?: string; secure?: boolean };
   socialLinks?: { facebook?: string; instagram?: string; twitter?: string; youtube?: string; linkedin?: string };
   adminDashboardCards?: Record<string, boolean>;
+  staffDashboardCards?: Record<string, boolean>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +42,7 @@ const CompanySchema = new Schema<ICompany>(
     emailSmtp: { host: String, port: Number, user: String, pass: String, secure: Boolean },
     socialLinks: { facebook: String, instagram: String, twitter: String, youtube: String, linkedin: String },
     adminDashboardCards: { type: Schema.Types.Mixed, default: {} },
+    staffDashboardCards: { type: Schema.Types.Mixed, default: {} },
   },
   { timestamps: true }
 );
