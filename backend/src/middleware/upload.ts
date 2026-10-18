@@ -49,6 +49,18 @@ export const uploadSingle = multer({
   limits: { fileSize: 10 * 1024 * 1024 },
 }).single("image");
 
+export const uploadLogo = multer({
+  storage: createStorage(PHOTO_DIR),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only image files allowed for logo") as any);
+  },
+}).fields([
+  { name: "logo", maxCount: 1 },
+  { name: "image", maxCount: 1 },
+]);
+
 export const uploadServiceImage = multer({
   storage: createStorage(PHOTO_DIR),
   limits: { fileSize: 20 * 1024 * 1024 },

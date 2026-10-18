@@ -59,14 +59,16 @@ export default function SettingsPage() {
     setLoading(true);
     const data = new FormData();
     Object.keys(company).forEach((key) => {
-      if (key === "logo") return;
+      if (["logo", "_id", "__v", "createdAt", "updatedAt", "emailSmtp", "adminDashboardCards", "staffDashboardCards"].includes(key)) return;
       if (key === "socialLinks") data.append(key, JSON.stringify(company.socialLinks || {}));
       else data.append(key, company[key] || "");
     });
     if (logo) data.append("logo", logo);
 
     try {
-      await api.put("/settings/company", data, { headers: { "Content-Type": "multipart/form-data" } });
+      const res = await api.put("/settings/company", data, { headers: { "Content-Type": "multipart/form-data" } });
+      setCompany(res.data.data || company);
+      setLogo(null);
       toast.success("Settings saved");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
@@ -111,8 +113,12 @@ export default function SettingsPage() {
           ))}
           <div>
             <label className="block text-sm font-medium mb-1">Logo</label>
-            <input type="file" className="border p-2 rounded w-full" onChange={(e) => setLogo(e.target.files?.[0] || null)} />
-            {company.logo && <img src={getImageUrl(company.logo)} alt="Current logo" className="mt-2 h-16 object-contain" />}
+            <input type="file" accept="image/*" className="border p-2 rounded w-full" onChange={(e) => setLogo(e.target.files?.[0] || null)} />
+            {logo ? (
+              <div className="mt-2 flex items-center gap-3"><img src={URL.createObjectURL(logo)} alt="New logo" className="h-16 object-contain border rounded bg-gray-50 p-1" /><span className="text-xs text-gray-500">New logo selected — click Save Settings</span></div>
+            ) : company.logo ? (
+              <div className="mt-2 flex items-center gap-3"><img src={getImageUrl(company.logo)} alt="Current logo" className="h-16 object-contain border rounded bg-gray-50 p-1" /><button type="button" onClick={() => setCompany({ ...company, logo: "" })} className="text-xs text-red-600 hover:underline">Remove</button></div>
+            ) : null}
           </div>
         </div>
         <div>

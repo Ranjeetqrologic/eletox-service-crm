@@ -3,7 +3,7 @@ import Company from "../models/Company";
 import User from "../models/User";
 import { protect, restrictTo } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
-import { uploadSingle, getFileUrl } from "../middleware/upload";
+import { uploadLogo, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
 
@@ -49,11 +49,14 @@ router.put(
   "/company",
   protect,
   restrictTo("superadmin", "admin"),
-  uploadSingle,
+  uploadLogo,
   asyncHandler(async (req: Request, res: Response) => {
-    const file = req.file as Express.Multer.File;
+    const files = (req.files || {}) as Record<string, Express.Multer.File[]>;
+    const file = files.logo?.[0] || files.image?.[0];
     const update = { ...req.body };
+    for (const k of ["_id", "__v", "createdAt", "updatedAt", "emailSmtp"]) delete update[k];
     if (file) update.logo = getFileUrl(file);
+    else if (update.logo === "") delete update.logo;
     if (typeof update.socialLinks === "string") {
       try { update.socialLinks = JSON.parse(update.socialLinks); } catch { delete update.socialLinks; }
     }
