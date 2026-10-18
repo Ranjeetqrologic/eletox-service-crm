@@ -47,7 +47,7 @@ router.get(
     const [todayLeads, todayVisits, revenue, statusCounts] = await Promise.all([
       Lead.countDocuments({ ...staffFilter, createdAt: { $gte: today, $lt: tomorrow } }),
       Lead.countDocuments({ ...staffFilter, assignedAt: { $gte: today, $lt: tomorrow } }),
-      Payment.aggregate([{ $match: Object.keys(dateFilter).length ? { createdAt: dateFilter } : {} }, { $group: { _id: null, total: { $sum: "$amount" } } }]),
+      Payment.aggregate([{ $match: { status: { $ne: "pending" }, ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}) } }, { $group: { _id: null, total: { $sum: "$amount" } } }]),
       Promise.all(statusCountPromises),
     ]);
 
@@ -104,17 +104,21 @@ router.get(
     const dateFilter = dateRange(from as string | undefined, to as string | undefined);
     const leadFilter = Object.keys(dateFilter).length ? { createdAt: dateFilter } : {};
 
-    const staffList = await Staff.find({ role: "technician" }).select("_id name employeeId");
+    const staffList = await Staff.find({ isActive: { $ne: false } }).select("_id name employeeId");
     const performance = await Promise.all(
       staffList.map(async (s) => {
-        const assigned = await Lead.countDocuments({ ...leadFilter, assignedStaff: s._id });
-        const completed = await Lead.countDocuments({ ...leadFilter, assignedStaff: s._id, status: "completed" });
-        const cancelled = await Lead.countDocuments({ ...leadFilter, assignedStaff: s._id, status: "cancelled" });
-        const jobs = await Job.find({ staff: s._id, completedAt: { $exists: true } });
-        const avgTime = jobs.length
-          ? jobs.reduce((sum, j) => sum + (new Date(j.completedAt!).getTime() - new Date(j.startedAt!).getTime()), 0) / jobs.length
-          : 0;
-        return { staffId: s.employeeId, name: s.name, assigned, completed, cancelled, averageTimeMs: avgTime };
+        const mine = { ...leadFilter, assignedStaff: s._id };
+        const [assigned, accepted, completed, closed, cancelled] = await Promise.all([
+          Lead.countDocuments(mine),
+          Lead.countDocuments({ ...mine, status: { $nin: ["new", "assigned", "cancelled"] } }),
+          Lead.countDocuments({ ...mine, status: "completed" }),
+          Lead.countDocuments({ ...mine, status: "closed" }),
+          Lead.countDocuments({ ...mine, status: "cancelled" }),
+        ]);
+        const jobs = await Job.find({ staff: s._id }).select("billAmount receivedAmount");
+        const bill = jobs.reduce((t, j) => t + (j.billAmount || 0), 0);
+        const received = jobs.reduce((t, j) => t + (j.receivedAmount || 0), 0);
+        return { staffId: s.employeeId, name: s.name, assigned, accepted, completed, closed, cancelled, bill, received, pending: Math.max(0, bill - received) };
       })
     );
 
@@ -165,7 +169,11 @@ router.get(
       Payment.aggregate([{ $match: match }, { $group: { _id: null, total: { $sum: "$amount" } } }]),
     ]);
 
-    res.json({ success: true, data: { byMode, byStatus, total: total[0]?.total || 0 } });
+    const jobMatch = Object.keys(dateFilter).length ? { createdAt: dateFilter } : {};
+    const jobTotals = await Job.aggregate([{ $match: jobMatch }, { $group: { _id: null, bill: { $sum: "$billAmount" }, received: { $sum: "$receivedAmount" } } }]);
+    const bill = jobTotals[0]?.bill || 0;
+    const received = jobTotals[0]?.received || 0;
+    res.json({ success: true, data: { byMode, byStatus, total: total[0]?.total || 0, bill, received, pending: Math.max(0, bill - received) } });
   })
 );
 
@@ -174,10 +182,13 @@ router.get(
   protect,
   restrictTo("superadmin", "admin", "manager", "account"),
   asyncHandler(async (req: Request, res: Response) => {
-    const jobs = await Job.find({ pendingAmount: { $gt: 0 } })
+    const all = await Job.find({ billAmount: { $gt: 0 } })
       .populate("lead", "customerName mobile leadId")
       .populate("staff", "name employeeId")
       .sort({ updatedAt: -1 });
+    const jobs = all
+      .filter((j) => (j.billAmount || 0) - (j.receivedAmount || 0) > 0)
+      .map((j) => ({ ...j.toObject(), pendingAmount: (j.billAmount || 0) - (j.receivedAmount || 0) }));
     res.json({ success: true, count: jobs.length, data: jobs });
   })
 );

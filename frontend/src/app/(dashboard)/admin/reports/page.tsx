@@ -27,11 +27,20 @@ export default function ReportsPage() {
     fetchData();
   }, []);
 
-  const statusCards = (dashboard?.statuses || []).map((s: any) => ({
-    label: s.label,
-    value: dashboard?.statusData?.[s.name] ?? 0,
-    bg: s.color || "#6B7280",
-  }));
+  const cum: Record<string, number> = {
+    new: dashboard?.newLeads ?? 0,
+    pending: dashboard?.pendingLeads ?? 0,
+    assigned: dashboard?.assignedLeads ?? 0,
+    accepted: dashboard?.acceptedLeads ?? 0,
+    completed: dashboard?.completedLeads ?? 0,
+  };
+  const statusCards = (dashboard?.statuses || [])
+    .filter((s: any) => s.showOnAdminDashboard !== false)
+    .map((s: any) => ({
+      label: s.label,
+      value: cum[s.name] ?? dashboard?.statusData?.[s.name] ?? 0,
+      bg: s.color || "#6B7280",
+    }));
 
   const exportCSV = () => {
     const rows = [
@@ -39,7 +48,12 @@ export default function ReportsPage() {
       ["Total Leads", dashboard?.totalLeads],
       ...statusCards.map((c: any) => [c.label, c.value]),
       ["Today Leads", dashboard?.todayLeads],
-      ["Revenue", dashboard?.revenue],
+      ["Total Bill", paymentSummary?.bill],
+      ["Received", paymentSummary?.received],
+      ["Pending Amount", paymentSummary?.pending],
+      [],
+      ["Staff", "Assigned", "Accepted", "Completed", "Closed", "Cancelled", "Bill", "Received", "Pending"],
+      ...staffPerf.map((s) => [s.name, s.assigned, s.accepted, s.completed, s.closed, s.cancelled, s.bill, s.received, s.pending]),
     ];
     const csv = rows.map((r) => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -68,7 +82,9 @@ export default function ReportsPage() {
             { label: "Total Leads", value: dashboard.totalLeads, bg: "#3B82F6" },
             ...statusCards,
             { label: "Today Leads", value: dashboard.todayLeads, bg: "#A855F7" },
-            { label: "Revenue", value: `₹${dashboard.revenue}`, bg: "#14B8A6" },
+            { label: "Total Bill", value: `₹${paymentSummary?.bill ?? 0}`, bg: "#8B5CF6" },
+            { label: "Received", value: `₹${paymentSummary?.received ?? 0}`, bg: "#22C55E" },
+            { label: "Pending Amount", value: `₹${paymentSummary?.pending ?? 0}`, bg: "#F97316" },
           ].map((c: any) => (
             <div key={c.label} className="text-white p-4 rounded-xl shadow" style={{ backgroundColor: c.bg }}>
               <div className="text-2xl font-bold">{c.value}</div>
@@ -78,14 +94,15 @@ export default function ReportsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-4 rounded-xl shadow">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white p-4 rounded-xl shadow overflow-x-auto lg:col-span-2">
           <h2 className="font-semibold mb-3">Staff Performance</h2>
-          <table className="w-full text-sm">
-            <thead className="bg-gray-100"><tr><th className="p-2 text-left">Staff</th><th className="p-2 text-left">Assigned</th><th className="p-2 text-left">Completed</th><th className="p-2 text-left">Cancelled</th></tr></thead>
+          <table className="w-full text-sm min-w-[640px]">
+            <thead className="bg-gray-100"><tr><th className="p-2 text-left">Staff</th><th className="p-2 text-left">Assigned</th><th className="p-2 text-left">Accepted</th><th className="p-2 text-left">Completed</th><th className="p-2 text-left">Closed</th><th className="p-2 text-left">Cancelled</th><th className="p-2 text-right">Bill</th><th className="p-2 text-right">Received</th><th className="p-2 text-right">Pending</th></tr></thead>
             <tbody>
+              {staffPerf.length === 0 && <tr><td colSpan={9} className="p-3 text-center text-gray-500">No staff</td></tr>}
               {staffPerf.map((s) => (
-                <tr key={s.staffId} className="border-t"><td className="p-2">{s.name}</td><td className="p-2">{s.assigned}</td><td className="p-2">{s.completed}</td><td className="p-2">{s.cancelled}</td></tr>
+                <tr key={s.name} className="border-t"><td className="p-2">{s.name}</td><td className="p-2">{s.assigned}</td><td className="p-2">{s.accepted}</td><td className="p-2">{s.completed}</td><td className="p-2">{s.closed}</td><td className="p-2">{s.cancelled}</td><td className="p-2 text-right">₹{s.bill}</td><td className="p-2 text-right text-green-700">₹{s.received}</td><td className="p-2 text-right text-orange-700">₹{s.pending}</td></tr>
               ))}
             </tbody>
           </table>
@@ -95,9 +112,10 @@ export default function ReportsPage() {
           <h2 className="font-semibold mb-3">Payment Summary</h2>
           {paymentSummary && (
             <div className="space-y-2">
-              <p><strong>Total:</strong> ₹{paymentSummary.total}</p>
-              <p><strong>By Mode:</strong> {paymentSummary.byMode?.map((m: any) => `${m._id}: ₹${m.amount}`).join(", ")}</p>
-              <p><strong>By Status:</strong> {paymentSummary.byStatus?.map((m: any) => `${m._id}: ₹${m.amount}`).join(", ")}</p>
+              <p><strong>Total Bill:</strong> ₹{paymentSummary.bill}</p>
+              <p><strong>Received (Aaya):</strong> <span className="text-green-700">₹{paymentSummary.received}</span></p>
+              <p><strong>Pending:</strong> <span className="text-orange-700">₹{paymentSummary.pending}</span></p>
+              <p><strong>By Mode:</strong> {paymentSummary.byMode?.length ? paymentSummary.byMode.map((m: any) => `${m._id}: ₹${m.amount}`).join(", ") : "-"}</p>
             </div>
           )}
         </div>
@@ -130,6 +148,7 @@ export default function ReportsPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-100"><tr><th className="p-2 text-left">Lead</th><th className="p-2 text-left">Staff</th><th className="p-2 text-left">Bill</th><th className="p-2 text-left">Received</th><th className="p-2 text-left">Pending</th></tr></thead>
           <tbody>
+            {pendingPayments.length === 0 && <tr><td colSpan={5} className="p-3 text-center text-gray-500">No pending payments</td></tr>}
             {pendingPayments.map((j) => (
               <tr key={j._id} className="border-t">
                 <td className="p-2">{j.lead?.customerName} ({j.lead?.leadId})</td>
