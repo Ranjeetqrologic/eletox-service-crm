@@ -83,16 +83,6 @@ export default function LeadStatusPage() {
         </div>
       </div>
 
-      <div className="bg-white p-4 rounded shadow mb-6">
-        <h2 className="font-semibold mb-3">Admin Dashboard Cards</h2>
-        <div className="flex flex-wrap gap-2">
-          {DASHBOARD_CARDS.map(([key, label]) => (
-            <button key={key} type="button" onClick={() => toggleCard(key)} className={`px-3 py-1.5 rounded-md text-sm font-medium border ${cardCfg[key] !== false ? "bg-green-100 text-green-700 border-green-200" : "bg-gray-200 text-gray-600 border-gray-300"}`}>
-              {label}: {cardCfg[key] !== false ? "Shown" : "Hidden"}
-            </button>
-          ))}
-        </div>
-      </div>
       <form onSubmit={handleSubmit} className="bg-white p-4 rounded-xl shadow grid md:grid-cols-6 gap-4 items-end">
         <input required disabled={!!editing} placeholder="Status key (e.g. half_done)" className="border p-2 rounded" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <input required placeholder="Display label" className="border p-2 rounded" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} />
@@ -134,6 +124,22 @@ export default function LeadStatusPage() {
             </tr>
           </thead>
           <tbody>
+            {!search && DASHBOARD_CARDS.map(([key, label]) => (
+              <tr key={key} className="border-t bg-gray-50">
+                <td className="p-3 text-gray-500">{key}</td>
+                <td className="p-3">{label}</td>
+                <td className="p-3 text-gray-400">-</td>
+                <td className="p-3 text-gray-400">-</td>
+                <td className="p-3 text-gray-400">-</td>
+                <td className="p-3 text-gray-400">-</td>
+                <td className="p-3">
+                  <button onClick={() => toggleCard(key)} className={`px-2.5 py-1 rounded-md text-xs font-medium ${cardCfg[key] !== false ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"}`}>
+                    {cardCfg[key] !== false ? "Shown" : "Hidden"}
+                  </button>
+                </td>
+                <td className="p-3 text-gray-400">-</td>
+              </tr>
+            ))}
             {filteredStatuses.map((s) => (
               <tr key={s._id} className="border-t">
                 <td className="p-3">{s.name}</td>
