@@ -74,7 +74,7 @@ router.get(
     const openUnassigned = { ...leadFilter, ...staffFilter, assignedStaff: null, status: { $nin: ["closed", "cancelled", "completed"] } };
     const assignedAny = { ...leadFilter, ...staffFilter, assignedStaff: { $ne: null } };
     const [newLeads, assignedLeads, acceptedLeads, completedLeads] = await Promise.all([
-      Lead.countDocuments({ ...openUnassigned, createdAt: { $gte: cutoff } }),
+      Lead.countDocuments(Object.keys(dateFilter).length ? openUnassigned : { ...openUnassigned, createdAt: { $gte: cutoff } }),
       Lead.countDocuments({ ...assignedAny, status: { $nin: ["closed", "cancelled"] } }),
       Lead.countDocuments({ ...assignedAny, status: { $nin: ["new", "assigned", "closed", "cancelled"] } }),
       Lead.countDocuments({ ...leadFilter, ...staffFilter, status: "completed" }),
