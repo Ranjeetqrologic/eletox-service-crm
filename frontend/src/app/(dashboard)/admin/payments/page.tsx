@@ -102,10 +102,9 @@ export default function PaymentsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Payments</h1>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div className="bg-purple-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Total Bill</div><div className="text-2xl font-bold">₹{hist.bill}</div></div>
         <div className="bg-green-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Received (Aaya)</div><div className="text-2xl font-bold">₹{hist.received}</div></div>
-        <div className="bg-red-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Expenses (Gaya)</div><div className="text-2xl font-bold">₹{hist.expenses}</div></div>
         <div className="bg-orange-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Pending</div><div className="text-2xl font-bold">₹{hist.pending}</div></div>
       </div>
 
@@ -118,10 +117,10 @@ export default function PaymentsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-100">
-              <tr><th className="p-3 text-left">Date</th><th className="p-3 text-left">Lead</th><th className="p-3 text-left">Staff</th><th className="p-3 text-left">Status</th><th className="p-3 text-right">Bill</th><th className="p-3 text-right">Received</th><th className="p-3 text-right">Expenses</th><th className="p-3 text-right">Pending</th></tr>
+              <tr><th className="p-3 text-left">Date</th><th className="p-3 text-left">Lead</th><th className="p-3 text-left">Staff</th><th className="p-3 text-left">Status</th><th className="p-3 text-right">Bill</th><th className="p-3 text-right">Received</th><th className="p-3 text-right">Pending</th></tr>
             </thead>
             <tbody>
-              {filteredHistory.length === 0 && <tr><td colSpan={8} className="p-4 text-center text-gray-500">No history</td></tr>}
+              {filteredHistory.length === 0 && <tr><td colSpan={7} className="p-4 text-center text-gray-500">No history</td></tr>}
               {filteredHistory.map((h) => (
                 <tr key={h._id} className="border-t">
                   <td className="p-3">{h.date ? new Date(h.date).toLocaleDateString() : "-"}</td>
@@ -130,14 +129,13 @@ export default function PaymentsPage() {
                   <td className="p-3 capitalize">{h.status}</td>
                   <td className="p-3 text-right">₹{h.bill}</td>
                   <td className="p-3 text-right text-green-700">₹{h.received}</td>
-                  <td className="p-3 text-right text-red-700">₹{h.expenses}</td>
                   <td className="p-3 text-right font-semibold text-orange-700">₹{h.pending}</td>
                 </tr>
               ))}
             </tbody>
             {filteredHistory.length > 0 && (
               <tfoot className="bg-gray-50 font-semibold">
-                <tr><td className="p-3" colSpan={4}>Total</td><td className="p-3 text-right">₹{hist.bill}</td><td className="p-3 text-right text-green-700">₹{hist.received}</td><td className="p-3 text-right text-red-700">₹{hist.expenses}</td><td className="p-3 text-right text-orange-700">₹{hist.pending}</td></tr>
+                <tr><td className="p-3" colSpan={4}>Total</td><td className="p-3 text-right">₹{hist.bill}</td><td className="p-3 text-right text-green-700">₹{hist.received}</td><td className="p-3 text-right text-orange-700">₹{hist.pending}</td></tr>
               </tfoot>
             )}
           </table>
