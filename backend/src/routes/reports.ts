@@ -55,7 +55,13 @@ router.get(
       statusData[s.name] = statusCounts[i] || 0;
     });
     if (Object.keys(staffFilter).length) {
-      statusData.new = await Lead.countDocuments({ ...leadFilter, ...staffFilter, status: "assigned" });
+      const mine = { ...leadFilter, ...staffFilter };
+      [statusData.new, statusData.pending, statusData.accepted, statusData.completed] = await Promise.all([
+        Lead.countDocuments({ ...mine, status: "assigned" }),
+        Lead.countDocuments({ ...mine, status: { $nin: ["cancelled"] } }),
+        Lead.countDocuments({ ...mine, status: { $nin: ["new", "assigned", "cancelled"] } }),
+        Lead.countDocuments({ ...mine, status: { $in: ["completed", "closed"] } }),
+      ]);
     }
 
     const totalLeads = await Lead.countDocuments({ ...leadFilter, ...staffFilter });

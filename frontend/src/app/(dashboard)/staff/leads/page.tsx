@@ -51,7 +51,12 @@ export default function StaffLeads() {
   const filteredJobs = jobs.filter((j) => {
     const q = search.toLowerCase();
     const matchesSearch = !q || [j.lead?.customerName, j.lead?.mobile, j.lead?.leadId, j.lead?.address, j.lead?.city, j.machineSerialNo, j.lead?.machineSerialNo].some((x: string) => x?.toLowerCase().includes(q));
-    const matchesStatus = !filterStatus || j.status === filterStatus;
+    const matchesStatus =
+      !filterStatus ||
+      (filterStatus === "pending" ? j.status !== "cancelled"
+        : filterStatus === "accepted" ? !["new", "assigned", "cancelled"].includes(j.status)
+        : filterStatus === "completed" ? ["completed", "closed"].includes(j.status)
+        : j.status === filterStatus);
     const created = j.createdAt ? j.createdAt.split("T")[0] : "";
     const matchesDate = (!fromDate || created >= fromDate) && (!toDate || created <= toDate);
     return matchesSearch && matchesStatus && matchesDate;
