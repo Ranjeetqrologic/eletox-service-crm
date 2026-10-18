@@ -5,6 +5,7 @@ import Lead from "../models/Lead";
 import Staff from "../models/Staff";
 import { protect, restrictTo, isStaffRole } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
+import { staffHideOldCompleted } from "../utils/staffVisibility";
 import { uploadReportPhotos, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
@@ -34,6 +35,7 @@ router.get(
     if (req.user && isStaffRole(req.user.role)) {
       const technicianStaff = await Staff.findOne({ user: req.user._id });
       if (technicianStaff) filter.staff = technicianStaff._id;
+      Object.assign(filter, staffHideOldCompleted());
     }
 
     const jobs = await Job.find(filter)

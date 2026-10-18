@@ -7,6 +7,7 @@ import Staff from "../models/Staff";
 import { protect, restrictTo, isStaffRole } from "../middleware/auth";
 import { asyncHandler } from "../middleware/errorHandler";
 
+import { staffHideOldCompleted } from "../utils/staffVisibility";
 const router = express.Router();
 
 const dateRange = (from?: string, to?: string) => {
@@ -34,7 +35,7 @@ router.get(
     if (req.user && isStaffRole(req.user.role)) {
       const technicianStaff = await Staff.findOne({ user: req.user._id });
       if (technicianStaff) {
-        staffFilter = { assignedStaff: technicianStaff._id };
+        staffFilter = { assignedStaff: technicianStaff._id, ...staffHideOldCompleted() };
       }
     }
 
