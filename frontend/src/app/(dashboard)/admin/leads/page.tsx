@@ -61,6 +61,32 @@ export default function LeadsPage() {
       toast.error(err.response?.data?.message || "Failed");
     }
   };
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const addJobPhotos = async (field: string, files: FileList | null) => {
+    if (!files || !files.length || !jobModal) return;
+    const data = new FormData();
+    Array.from(files).forEach((f) => data.append(field, f));
+    setPhotoBusy(true);
+    try {
+      const res = await api.post(`/jobs/${jobModal._id}/photos`, data, { headers: { "Content-Type": "multipart/form-data" } });
+      setJobModal({ ...jobModal, ...res.data.data, lead: jobModal.lead, staff: jobModal.staff });
+      toast.success(`${files.length} photo${files.length > 1 ? "s" : ""} added`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Photo upload failed");
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
+  const removeJobPhoto = async (field: string, url: string) => {
+    if (!jobModal || !confirm("Remove this photo?")) return;
+    try {
+      const res = await api.delete(`/jobs/${jobModal._id}/photos`, { data: { field, url } });
+      setJobModal({ ...jobModal, ...res.data.data, lead: jobModal.lead, staff: jobModal.staff });
+      toast.success("Photo removed");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    }
+  };
   const startJobEdit = () => setJobEdit({
     workDescription: jobModal.workDescription || "",
     machineSerialNo: jobModal.machineSerialNo || jobModal.lead?.machineSerialNo || "",
@@ -489,15 +515,29 @@ export default function LeadsPage() {
                 <div><span className="font-medium text-gray-500">Client Experience:</span> {jobModal.clientExperience || "-"}</div>
               </div>
               {[["workingPhotos", "Photos"], ["beforePhotos", "Before Photos"], ["afterPhotos", "After Photos"]].map(([key, label]) => (
-                jobModal[key]?.length > 0 && (
+                (jobModal[key]?.length > 0 || jobEdit) && (
                   <div key={key}>
-                    <h3 className="font-semibold mb-2">{label}</h3>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold">{label}</h3>
+                      {jobEdit && (
+                        <label className={`text-xs px-2 py-1 rounded cursor-pointer ${photoBusy ? "bg-gray-200 text-gray-500" : "bg-blue-50 text-blue-700 hover:bg-blue-100"}`}>
+                          {photoBusy ? "Uploading..." : "+ Add Photo"}
+                          <input type="file" accept="image/*" multiple className="hidden" disabled={photoBusy} onChange={(e) => { addJobPhotos(key, e.target.files); e.target.value = ""; }} />
+                        </label>
+                      )}
+                    </div>
                     <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
-                      {jobModal[key].map((url: string, idx: number) => (
-                        <a key={idx} href={getImageUrl(url)} target="_blank" rel="noreferrer" className="block aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                          <img src={getImageUrl(url)} alt={label} className="w-full h-full object-cover" />
-                        </a>
+                      {(jobModal[key] || []).map((url: string, idx: number) => (
+                        <div key={idx} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                          <a href={getImageUrl(url)} target="_blank" rel="noreferrer" className="block w-full h-full">
+                            <img src={getImageUrl(url)} alt={label} className="w-full h-full object-cover" />
+                          </a>
+                          {jobEdit && (
+                            <button type="button" onClick={() => removeJobPhoto(key, url)} title="Remove" className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600 text-white text-xs font-bold leading-none">×</button>
+                          )}
+                        </div>
                       ))}
+                      {jobEdit && !(jobModal[key]?.length) && <div className="col-span-full text-xs text-gray-400">No photos</div>}
                     </div>
                   </div>
                 )

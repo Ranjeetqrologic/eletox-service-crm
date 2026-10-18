@@ -150,6 +150,19 @@ router.post(
   })
 );
 
+router.delete(
+  "/:id/photos",
+  protect,
+  restrictTo("superadmin", "admin", "manager"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { field, url } = req.body as { field: string; url: string };
+    if (!["beforePhotos", "workingPhotos", "afterPhotos", "videos"].includes(field)) throw new AppError("Invalid field", 400);
+    const job = await Job.findByIdAndUpdate(req.params.id, { $pull: { [field]: url } }, { new: true });
+    if (!job) throw new AppError("Job not found", 404);
+    res.json({ success: true, data: job });
+  })
+);
+
 router.put(
   "/:id/report",
   protect,

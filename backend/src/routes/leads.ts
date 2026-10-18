@@ -284,7 +284,10 @@ router.put(
     if (req.body.status === "accepted") lead.acceptedAt = new Date();
     if (req.body.status === "working") lead.startedAt = new Date();
     if (req.body.status === "completed") lead.completedAt = new Date();
-    if (req.body.status === "closed") lead.closedAt = new Date();
+    if (req.body.status === "closed") {
+      lead.closedAt = new Date();
+      lead.finalCompleted = true;
+    }
     if (req.body.status === "cancelled") lead.cancelledReason = req.body.reason || "";
 
     await lead.save();
