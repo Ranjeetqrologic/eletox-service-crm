@@ -84,11 +84,12 @@ router.get(
       filter.createdAt = { $gte: cutoff };
     } else if (view === "assigned" || view === "pending") {
       filter.assignedStaff = { $ne: null };
+      filter.status = { $nin: ["closed", "cancelled"] };
     } else if (view === "accepted") {
       filter.assignedStaff = { $ne: null };
-      filter.status = { $nin: ["new", "assigned"] };
+      filter.status = { $nin: ["new", "assigned", "closed", "cancelled"] };
     } else if (view === "completed") {
-      filter.$or = [{ status: { $in: ["completed", "closed"] } }, { finalCompleted: true }];
+      filter.status = "completed";
     }
     if (source) filter.source = source;
     if (staff) filter.assignedStaff = staff;
@@ -255,6 +256,7 @@ router.put(
     if (!lead) throw new AppError("Lead not found", 404);
     if (lead.status !== "completed") throw new AppError("Only a staff-completed lead can be final completed", 400);
     lead.finalCompleted = true;
+    lead.status = "closed";
     lead.closedAt = new Date();
     await lead.save();
     res.json({ success: true, data: lead });
