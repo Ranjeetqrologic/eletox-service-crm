@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function ReportsPage() {
   const [dashboard, setDashboard] = useState<any>(null);
@@ -42,37 +45,64 @@ export default function ReportsPage() {
       bg: s.color || "#6B7280",
     }));
 
-  const exportCSV = () => {
-    const rows = [
-      ["Metric", "Value"],
-      ["Total Leads", dashboard?.totalLeads],
-      ...statusCards.map((c: any) => [c.label, c.value]),
-      ["Today Leads", dashboard?.todayLeads],
-      ["Total Bill", paymentSummary?.bill],
-      ["Received", paymentSummary?.received],
-      ["Pending Amount", paymentSummary?.pending],
-      [],
-      ["Staff", "Assigned", "Accepted", "Completed", "Closed", "Cancelled", "Bill", "Received", "Pending"],
-      ...staffPerf.map((s) => [s.name, s.assigned, s.accepted, s.completed, s.closed, s.cancelled, s.bill, s.received, s.pending]),
-    ];
-    const csv = rows.map((r) => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "report.csv";
-    a.click();
+  const periodLabel = from && to ? `${from} to ${to}` : "All Time";
+
+  const summaryRows = (): (string | number)[][] => [
+    ["Total Leads", dashboard?.totalLeads ?? 0],
+    ...statusCards.map((c: any) => [c.label, c.value]),
+    ["Today Leads", dashboard?.todayLeads ?? 0],
+    ["Total Bill", paymentSummary?.bill ?? 0],
+    ["Received", paymentSummary?.received ?? 0],
+    ["Pending Amount", paymentSummary?.pending ?? 0],
+  ];
+  const staffHead = ["Staff", "Assigned", "Accepted", "Completed", "Closed", "Cancelled", "Bill", "Received", "Pending"];
+  const staffRows = () => staffPerf.map((s) => [s.name, s.assigned, s.accepted, s.completed, s.closed, s.cancelled, s.bill, s.received, s.pending]);
+  const sourceRows = () => leadSource.map((s) => [s._id || "-", s.count]);
+  const serviceRows = () => serviceReport.map((s) => [s._id || "-", s.count]);
+  const pendingHead = ["Lead", "Customer", "Mobile", "Staff", "Bill", "Received", "Pending"];
+  const pendingRows = () => pendingPayments.map((j) => [j.lead?.leadId || "", j.lead?.customerName || "", j.lead?.mobile || "", j.staff?.name || "", j.billAmount, j.receivedAmount, j.pendingAmount]);
+  const fileBase = `eletox-report-${from && to ? `${from}_${to}` : new Date().toLocaleDateString("en-CA")}`;
+
+  const exportExcel = () => {
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Eletox Report", periodLabel], [], ["Metric", "Value"], ...summaryRows()]), "Summary");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([staffHead, ...staffRows()]), "Staff Performance");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Source", "Count"], ...sourceRows()]), "Lead Source");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Service", "Count"], ...serviceRows()]), "Services");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([pendingHead, ...pendingRows()]), "Pending Payments");
+    XLSX.writeFile(wb, `${fileBase}.xlsx`);
+  };
+
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Eletox Report", 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Period: ${periodLabel}    Generated: ${new Date().toLocaleString()}`, 14, 21);
+    const section = (title: string, head: string[], body: (string | number)[][]) => {
+      const y = ((doc as any).lastAutoTable?.finalY || 24) + 8;
+      doc.setFontSize(12);
+      doc.text(title, 14, y);
+      autoTable(doc, { startY: y + 2, head: [head], body: body.length ? body.map((r) => r.map(String)) : [["-"]], styles: { fontSize: 8 }, headStyles: { fillColor: [37, 99, 235] } });
+    };
+    section("Summary", ["Metric", "Value"], summaryRows());
+    section("Staff Performance", staffHead, staffRows());
+    section("Lead Source", ["Source", "Count"], sourceRows());
+    section("Service Report", ["Service", "Count"], serviceRows());
+    section("Pending Payments", pendingHead, pendingRows());
+    doc.save(`${fileBase}.pdf`);
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Reports</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <input type="date" className="border p-2 rounded" value={from} onChange={(e) => setFrom(e.target.value)} />
           <input type="date" className="border p-2 rounded" value={to} onChange={(e) => setTo(e.target.value)} />
           <button onClick={fetchData} className="bg-primary-600 text-white px-4 py-2 rounded">Filter</button>
-          <button onClick={exportCSV} className="bg-green-600 text-white px-4 py-2 rounded">Export CSV</button>
+          <button onClick={exportExcel} className="bg-green-600 text-white px-4 py-2 rounded">Export Excel</button>
+          <button onClick={exportPDF} className="bg-red-600 text-white px-4 py-2 rounded">Export PDF</button>
         </div>
       </div>
 
