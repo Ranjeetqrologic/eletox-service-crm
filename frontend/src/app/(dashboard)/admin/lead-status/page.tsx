@@ -120,9 +120,6 @@ export default function LeadStatusPage() {
             <tr>
               <th className="p-3 text-left">Name</th>
               <th className="p-3 text-left">Label</th>
-              <th className="p-3 text-left">Color</th>
-              <th className="p-3 text-left">Order</th>
-              <th className="p-3 text-left">Active</th>
               <th className="p-3 text-left">Staff Dashboard</th>
               <th className="p-3 text-left">Admin Dashboard</th>
               <th className="p-3 text-left">Actions</th>
@@ -133,9 +130,6 @@ export default function LeadStatusPage() {
               <tr key={key} className="border-t bg-gray-50">
                 <td className="p-3 text-gray-500">{key}</td>
                 <td className="p-3">{label}</td>
-                <td className="p-3 text-gray-400">-</td>
-                <td className="p-3 text-gray-400">-</td>
-                <td className="p-3 text-gray-400">-</td>
                 <td className="p-3 text-gray-400">-</td>
                 <td className="p-3">
                   <button onClick={() => toggleCard(key)} className={`px-2.5 py-1 rounded-md text-xs font-medium ${cardCfg[key] !== false ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"}`}>
@@ -151,9 +145,6 @@ export default function LeadStatusPage() {
               <tr key={s._id} className="border-t">
                 <td className="p-3">{s.name}</td>
                 <td className="p-3">{s.label}</td>
-                <td className="p-3"><span className="inline-block w-6 h-6 rounded" style={{ backgroundColor: s.color }} /></td>
-                <td className="p-3">{s.order}</td>
-                <td className="p-3">{s.isActive ? "Yes" : "No"}</td>
                 <td className="p-3">
                   <button onClick={() => api.put(`/lead-status/${s._id}`, { showOnStaffDashboard: s.showOnStaffDashboard === false }).then(fetchStatuses)} className={`px-2.5 py-1 rounded-md text-xs font-medium ${s.showOnStaffDashboard !== false ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"}`}>
                     {s.showOnStaffDashboard !== false ? "Shown" : "Hidden"}
