@@ -501,11 +501,16 @@ export default function LeadsPage() {
                       <span className="inline-block px-2 py-1 rounded bg-gray-100 text-gray-700 text-xs font-medium" title="Status is locked after assignment">
                         {statuses.find((s) => s.name === l.status)?.label || l.status}
                       </span>
-                      {l.finalCompleted ? (
+                      {l.finalCompleted || l.status === "closed" ? (
                         <span className="inline-block px-2 py-0.5 rounded bg-green-600 text-white text-[11px] font-semibold">Final Completed</span>
                       ) : l.status === "completed" ? (
                         <button onClick={() => finalComplete(l._id)} className="px-2 py-0.5 rounded bg-green-600 text-white text-[11px] font-semibold hover:bg-green-700">Final Complete</button>
                       ) : null}
+                    </div>
+                  ) : l.status === "closed" ? (
+                    <div className="flex flex-col gap-1 items-start">
+                      <span className="inline-block px-2 py-1 rounded bg-gray-100 text-gray-700 text-xs font-medium">{statuses.find((s) => s.name === l.status)?.label || "Closed"}</span>
+                      <span className="inline-block px-2 py-0.5 rounded bg-green-600 text-white text-[11px] font-semibold">Final Completed</span>
                     </div>
                   ) : (
                     <div>
