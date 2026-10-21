@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Logo from "@/components/Logo";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 import { isAdminRole } from "@/lib/utils";
 import {
   Bars3Icon, XMarkIcon, HomeIcon, UsersIcon, ClipboardDocumentListIcon, CurrencyRupeeIcon, ChartPieIcon,
@@ -19,6 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [company, setCompany] = useState<any>({});
+  const [me, setMe] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -33,6 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.replace("/staff/");
     }
     api.get("/settings/company").then((res) => setCompany(res.data.data || {})).catch(() => setCompany({}));
+    api.get("/auth/me").then((res) => setMe(res.data.user || null)).catch(() => setMe(null));
   }, [mounted, user, router, pathname]);
 
   useEffect(() => {
@@ -136,9 +139,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="text-sm font-semibold text-gray-800">{user.name}</div>
               <div className="text-xs text-gray-500 capitalize">{user.role}</div>
             </div>
-            <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center">
-              <UserCircleIcon className="w-7 h-7" />
-            </div>
+            {me?.photo ? (
+              <img src={getImageUrl(me.photo)} alt={user.name} className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center">
+                <UserCircleIcon className="w-7 h-7" />
+              </div>
+            )}
           </div>
         </header>
         <main className="p-4 md:p-6 flex-1 overflow-auto">{children}</main>

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { body, param, validationResult } from "express-validator";
 import crypto from "crypto";
 import User, { IUser } from "../models/User";
+import Staff from "../models/Staff";
 import { isMailConfigured, sendMail } from "../config/mailer";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
 import { protect, restrictTo } from "../middleware/auth";
@@ -172,7 +173,10 @@ router.get(
   "/me",
   protect,
   asyncHandler(async (req: Request, res: Response) => {
-    res.json({ success: true, user: req.user });
+    const staff = req.user ? await Staff.findOne({ user: req.user._id }).select("photo employeeId") : null;
+    const u: any = req.user && typeof (req.user as any).toObject === "function" ? (req.user as any).toObject() : { ...(req.user as any) };
+    if (u) { u.photo = staff?.photo || ""; u.employeeId = staff?.employeeId || ""; }
+    res.json({ success: true, user: u });
   })
 );
 
