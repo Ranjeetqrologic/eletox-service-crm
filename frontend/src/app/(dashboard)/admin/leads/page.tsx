@@ -167,7 +167,12 @@ export default function LeadsPage() {
     setCreating(true);
     try {
       const { locationText, leadDate, ...payload } = form as any;
-      if (leadDate) payload.createdAt = new Date(leadDate).toISOString();
+      if (leadDate) {
+        const d = new Date(leadDate + "T00:00:00");
+        const now = new Date();
+        d.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+        payload.createdAt = d.toISOString();
+      }
       if (locationText?.trim()) {
         const { data } = await api.post("/leads/resolve-location", { text: locationText.trim() });
         payload.lat = data.data.lat;
@@ -373,8 +378,8 @@ export default function LeadsPage() {
             )}
             <textarea required placeholder="Address" rows={2} className="border p-2.5 rounded md:col-span-2" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
             <input placeholder="Paste Location (Google Maps link / coordinates)" className="border p-2.5 rounded md:col-span-2" value={form.locationText} onChange={(e) => setForm({ ...form, locationText: e.target.value })} />
-            <label className="text-sm text-gray-600 md:col-span-2">Lead Date &amp; Time <span className="text-gray-400">(blank = abhi; purani ya aage ki date bhi chun sakte hain)</span>
-              <input type="datetime-local" className="border p-2.5 rounded w-full mt-1" value={form.leadDate} onChange={(e) => setForm({ ...form, leadDate: e.target.value })} />
+            <label className="text-sm text-gray-600 md:col-span-2">Lead Date <span className="text-gray-400">(blank = aaj; purani ya aage ki date bhi chun sakte hain)</span>
+              <input type="date" className="border p-2.5 rounded w-full mt-1" value={form.leadDate} onChange={(e) => setForm({ ...form, leadDate: e.target.value })} />
             </label>
             <textarea placeholder="Note" rows={3} className="border p-2.5 rounded md:col-span-2" value={form.problem} onChange={(e) => setForm({ ...form, problem: e.target.value })} />
           </div>
