@@ -8,6 +8,10 @@ import { getImageUrl } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { EyeIcon, MapPinIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 
+const CLOSE_SERVICE_OPTIONS = ["AC Service", "Installation", "Uninstallation", "Gas Topup", "Gas Full Charge", "Copper Pipe Fitting", "Other"];
+const CLOSE_EXPERIENCE_OPTIONS = ["😊 Very Happy", "🙂 Happy", "😐 Satisfied", "🙁 Not Satisfied"];
+const EMPTY_CLOSE = { technicianType: "office", staff: "", outsideTechnicianName: "", workDescription: "", repairNotes: "", machineSerialNo: "", billAmount: "", receivedAmount: "", paymentMode: "", customerFeedback: "Customer satisfied with the service", rating: 5, clientExperience: "" };
+
 const sources = ["website", "call", "whatsapp", "facebook", "instagram", "google_ads", "referral", "manual", "others"];
 const priorities = ["low", "medium", "high", "urgent"];
 
@@ -105,6 +109,39 @@ export default function LeadsPage() {
   });
   const [loadingJob, setLoadingJob] = useState(false);
   const [locationModal, setLocationModal] = useState<any>(null);
+  const [closeModal, setCloseModal] = useState<any>(null);
+  const [closeForm, setCloseForm] = useState<any>(EMPTY_CLOSE);
+  const [closeServices, setCloseServices] = useState<string[]>([]);
+  const [closePhotos, setClosePhotos] = useState<File[]>([]);
+  const [closing, setClosing] = useState(false);
+
+  const openClose = (l: any) => {
+    setCloseModal(l);
+    setCloseForm({ ...EMPTY_CLOSE, staff: l.assignedStaff?._id || l.assignedStaff || "", machineSerialNo: l.machineSerialNo || "" });
+    setCloseServices([]);
+    setClosePhotos([]);
+  };
+
+  const submitClose = async () => {
+    if (!closeModal) return;
+    if (closeForm.technicianType === "office" && !closeForm.staff) return toast.error("Select office technician");
+    if (closeForm.technicianType === "outside" && !closeForm.outsideTechnicianName.trim()) return toast.error("Enter outside technician name");
+    setClosing(true);
+    try {
+      const data = new FormData();
+      Object.keys(closeForm).forEach((k) => { if (closeForm[k] !== undefined && closeForm[k] !== "") data.append(k, String(closeForm[k])); });
+      data.append("servicesDone", JSON.stringify(closeServices));
+      closePhotos.forEach((f) => data.append("workingPhotos", f));
+      await api.post(`/jobs/admin-close/${closeModal._id}`, data, { headers: { "Content-Type": "multipart/form-data" } });
+      toast.success("Lead closed with report");
+      setCloseModal(null);
+      fetchLeads();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    } finally {
+      setClosing(false);
+    }
+  };
 
   const fetchLeads = () => api.get("/leads").then((res) => setLeads(res.data.data));
   const fetchStaff = () => api.get("/staff").then((res) => setStaff(res.data.data));
@@ -395,8 +432,8 @@ export default function LeadsPage() {
                   <div className="flex items-center gap-1.5 whitespace-nowrap">
                     <button onClick={() => viewJob(l._id)} title="View Job" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-100"><EyeIcon className="w-4 h-4" /> View</button>
                     <button onClick={() => setLocationModal(l)} title="Set Location" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-100"><MapPinIcon className="w-4 h-4" /> Location</button>
-                    {l.status !== "closed" && !l.assignedStaff && (
-                      <button onClick={() => changeStatus(l._id, "closed")} title="Close Lead" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 border border-green-100"><CheckCircleIcon className="w-4 h-4" /> Close</button>
+                    {l.status !== "closed" && (
+                      <button onClick={() => openClose(l)} title="Close Lead with Work Report" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 border border-green-100"><CheckCircleIcon className="w-4 h-4" /> Close</button>
                     )}
                   </div>
                 </td>
@@ -405,6 +442,85 @@ export default function LeadsPage() {
           </tbody>
         </table>
       </div>
+
+      {closeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-auto">
+            <h2 className="text-xl font-bold mb-1">Work Report - {closeModal.leadId}</h2>
+            <p className="text-sm text-gray-500 mb-4">{closeModal.customerName} · {closeModal.mobile} · {closeModal.service}{closeModal.subService ? ` / ${closeModal.subService}` : ""}</p>
+            <div className="space-y-3">
+              <div className="border rounded p-3 bg-blue-50">
+                <div className="text-sm font-medium mb-2">Technician (kisne kaam kiya?)</div>
+                <div className="flex gap-4 text-sm mb-2">
+                  <label className="flex items-center gap-1"><input type="radio" checked={closeForm.technicianType === "office"} onChange={() => setCloseForm({ ...closeForm, technicianType: "office" })} /> Office Technician</label>
+                  <label className="flex items-center gap-1"><input type="radio" checked={closeForm.technicianType === "outside"} onChange={() => setCloseForm({ ...closeForm, technicianType: "outside" })} /> Outside Technician</label>
+                </div>
+                {closeForm.technicianType === "office" ? (
+                  <select className="border p-2 rounded w-full bg-white" value={closeForm.staff} onChange={(e) => setCloseForm({ ...closeForm, staff: e.target.value })}>
+                    <option value="">Select office technician*</option>
+                    {staff.filter((st: any) => st.isActive !== false).map((st: any) => <option key={st._id} value={st._id}>{st.name}{st.employeeId ? ` (${st.employeeId})` : ""}</option>)}
+                  </select>
+                ) : (
+                  <input className="border p-2 rounded w-full" placeholder="Outside technician name*" value={closeForm.outsideTechnicianName} onChange={(e) => setCloseForm({ ...closeForm, outsideTechnicianName: e.target.value })} />
+                )}
+              </div>
+              <textarea placeholder="Work Description" className="border p-2 rounded w-full" value={closeForm.workDescription} onChange={(e) => setCloseForm({ ...closeForm, workDescription: e.target.value })} />
+              <div className="border rounded p-3">
+                <div className="text-sm font-medium mb-2">Services (select one or more)</div>
+                <div className="flex flex-wrap gap-2">
+                  {CLOSE_SERVICE_OPTIONS.map((name) => {
+                    const active = closeServices.includes(name);
+                    return <button key={name} type="button" onClick={() => setCloseServices((prev) => (prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name]))} className={`px-3 py-1 rounded-full text-sm border ${active ? "bg-green-600 text-white border-green-600" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}>{active ? "✓ " : "+ "}{name}</button>;
+                  })}
+                </div>
+                {closeServices.includes("Other") && <input placeholder="Other service details" className="border p-2 rounded w-full mt-3" value={closeForm.repairNotes} onChange={(e) => setCloseForm({ ...closeForm, repairNotes: e.target.value })} />}
+              </div>
+              <input placeholder="Machine Serial No." className="border p-2 rounded w-full" value={closeForm.machineSerialNo} onChange={(e) => setCloseForm({ ...closeForm, machineSerialNo: e.target.value })} />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input type="number" placeholder="Bill Amount" className="border p-2 rounded w-full" value={closeForm.billAmount} onChange={(e) => setCloseForm({ ...closeForm, billAmount: e.target.value })} />
+                <input type="number" placeholder="Received Amount" className="border p-2 rounded w-full" value={closeForm.receivedAmount} onChange={(e) => setCloseForm({ ...closeForm, receivedAmount: e.target.value })} />
+                <select className="border p-2 rounded w-full" value={closeForm.paymentMode} onChange={(e) => setCloseForm({ ...closeForm, paymentMode: e.target.value })}>
+                  <option value="">Payment Mode</option><option value="cash">Cash</option><option value="upi">UPI</option><option value="card">Card</option><option value="online">Online</option>
+                </select>
+              </div>
+              <textarea placeholder="Customer Feedback" className="border p-2 rounded w-full" value={closeForm.customerFeedback} onChange={(e) => setCloseForm({ ...closeForm, customerFeedback: e.target.value })} />
+              <div className="border rounded p-3">
+                <div className="text-sm font-medium mb-2">Rating</div>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((n) => <button key={n} type="button" onClick={() => setCloseForm({ ...closeForm, rating: n })} className={`text-3xl leading-none ${Number(closeForm.rating) >= n ? "text-yellow-400" : "text-gray-300"}`}>★</button>)}
+                  <span className="self-center text-sm text-gray-600 ml-2">{closeForm.rating} Star{Number(closeForm.rating) > 1 ? "s" : ""}</span>
+                </div>
+                <div className="mt-3">
+                  <div className="text-sm font-medium mb-2">Client Experience</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {CLOSE_EXPERIENCE_OPTIONS.map((o) => <button key={o} type="button" onClick={() => setCloseForm({ ...closeForm, clientExperience: o })} className={`border rounded px-3 py-2 text-sm text-left ${closeForm.clientExperience === o ? "border-primary-600 bg-primary-50 font-semibold" : "hover:bg-gray-50"}`}>{o}</button>)}
+                  </div>
+                </div>
+              </div>
+              <div className="border rounded p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">Photos ({closePhotos.length})</span>
+                  <label className="cursor-pointer text-white px-3 py-1 rounded text-sm bg-blue-600">+ Add Photo<input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { setClosePhotos((prev) => [...prev, ...Array.from(e.target.files || [])]); e.target.value = ""; }} /></label>
+                </div>
+                {closePhotos.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {closePhotos.map((file, i) => (
+                      <div key={`${file.name}-${i}`} className="relative">
+                        <img src={URL.createObjectURL(file)} alt="" className="w-16 h-16 object-cover rounded border" />
+                        <button type="button" onClick={() => setClosePhotos((prev) => prev.filter((_, j) => j !== i))} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs leading-5">×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button onClick={submitClose} disabled={closing} className="bg-green-600 text-white px-4 py-2 rounded">{closing ? "Closing..." : "Close Lead"}</button>
+              <button onClick={() => setCloseModal(null)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {locationModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
@@ -526,7 +642,7 @@ export default function LeadsPage() {
               </div>
               {!jobModal.leadOnly && (<>
               <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl">
-                <div><span className="font-medium text-gray-500">Technician:</span> {jobModal.staff?.name} ({jobModal.staff?.employeeId})</div>
+                <div><span className="font-medium text-gray-500">Technician:</span> {jobModal.outsideTechnician ? `${jobModal.outsideTechnician} (Outside)` : jobModal.staff ? `${jobModal.staff?.name} (${jobModal.staff?.employeeId})` : "-"}</div>
                 <div><span className="font-medium text-gray-500">Job Status:</span> {jobModal.status}</div>
                 <div><span className="font-medium text-gray-500">Accepted At:</span> {jobModal.acceptedAt ? new Date(jobModal.acceptedAt).toLocaleString() : "-"}</div>
                 <div><span className="font-medium text-gray-500">Checked In:</span> {jobModal.checkIn?.time ? new Date(jobModal.checkIn.time).toLocaleString() : "-"}</div>

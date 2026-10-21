@@ -227,6 +227,66 @@ router.put(
   })
 );
 
+router.post(
+  "/admin-close/:leadId",
+  protect,
+  restrictTo("superadmin", "admin", "manager"),
+  uploadReportPhotos,
+  asyncHandler(async (req: Request, res: Response) => {
+    const lead = await Lead.findById(req.params.leadId);
+    if (!lead) throw new AppError("Lead not found", 404);
+    if (lead.status === "closed") throw new AppError("Lead already closed", 400);
+
+    const technicianType = req.body.technicianType === "outside" ? "outside" : "office";
+    let staffId: any = undefined;
+    let outsideName = "";
+    if (technicianType === "office") {
+      if (!req.body.staff) throw new AppError("Select office technician", 400);
+      const st = await Staff.findById(req.body.staff);
+      if (!st) throw new AppError("Technician not found", 404);
+      staffId = st._id;
+    } else {
+      outsideName = String(req.body.outsideTechnicianName || "").trim();
+      if (!outsideName) throw new AppError("Enter outside technician name", 400);
+    }
+
+    let job = await Job.findOne({ lead: lead._id });
+    if (!job) job = new Job({ lead: lead._id, staff: staffId });
+    if (staffId) job.staff = staffId;
+    job.outsideTechnician = technicianType === "outside" ? outsideName : undefined;
+    job.closedByAdmin = true;
+
+    const photos = getPhotoArrays(req.files);
+    job.beforePhotos.push(...photos.beforePhotos);
+    job.workingPhotos.push(...photos.workingPhotos);
+    job.afterPhotos.push(...photos.afterPhotos);
+
+    const fields = ["workDescription", "repairNotes", "adminRemark", "machineSerialNo", "billAmount", "receivedAmount", "paymentMode", "customerFeedback", "rating", "clientExperience"];
+    fields.forEach((f) => { if (req.body[f] !== undefined && req.body[f] !== "") (job as any)[f] = req.body[f]; });
+    if (req.body.servicesDone !== undefined) {
+      const raw = req.body.servicesDone;
+      const list: string[] = Array.isArray(raw) ? raw : typeof raw === "string" && raw.startsWith("[") ? JSON.parse(raw) : raw ? [raw] : [];
+      job.servicesDone = list.map((x) => String(x).trim()).filter(Boolean);
+    }
+    job.pendingAmount = Math.max(0, (Number(job.billAmount) || 0) - (Number(job.receivedAmount) || 0));
+    const now = new Date();
+    job.status = "completed";
+    job.completedAt = now;
+    await job.save();
+
+    if (staffId) lead.assignedStaff = staffId;
+    lead.outsideTechnician = technicianType === "outside" ? outsideName : undefined;
+    if (req.body.machineSerialNo) lead.machineSerialNo = req.body.machineSerialNo;
+    lead.completedAt = now;
+    lead.status = "closed";
+    lead.closedAt = now;
+    lead.finalCompleted = true;
+    await lead.save();
+
+    res.json({ success: true, data: { job, lead } });
+  })
+);
+
 router.put(
   "/:id/checkout",
   protect,

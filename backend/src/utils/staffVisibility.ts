@@ -1,4 +1,4 @@
-const HIDE_COMPLETED_AFTER_DAYS = 2;
+const HIDE_COMPLETED_AFTER_DAYS = 1;
 
 export const staffHideOldCompleted = () => {
   const cut = new Date(Date.now() - HIDE_COMPLETED_AFTER_DAYS * 24 * 60 * 60 * 1000);

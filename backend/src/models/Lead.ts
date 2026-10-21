@@ -26,6 +26,7 @@ export interface ILead extends Document {
   remarks?: string;
   status: LeadStatus;
   assignedStaff?: mongoose.Types.ObjectId;
+  outsideTechnician?: string;
   assignedAt?: Date;
   acceptedAt?: Date;
   startedAt?: Date;
@@ -75,6 +76,7 @@ const LeadSchema = new Schema<ILead>(
       default: "new",
     },
     assignedStaff: { type: Schema.Types.ObjectId, ref: "Staff" },
+    outsideTechnician: { type: String },
     assignedAt: { type: Date },
     acceptedAt: { type: Date },
     startedAt: { type: Date },
