@@ -12,6 +12,8 @@ export default function BannersPage() {
   const [form, setForm] = useState<any>(empty);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const filteredItems = items.filter((b) => !search || [b.title, b.subtitle].some((x: string) => x?.toLowerCase().includes(search.toLowerCase())));
 
   const fetch = () => api.get("/banners").then((res) => setItems(res.data.data || [])).catch(() => setItems([]));
 
@@ -54,7 +56,12 @@ export default function BannersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Banners / Slider</h1>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 className="text-2xl font-bold">Banners / Slider</h1>
+        <div className="flex flex-wrap gap-2">
+          <input className="border p-2 rounded min-w-[200px]" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+      </div>
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input className="border p-2 rounded" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
@@ -78,7 +85,7 @@ export default function BannersPage() {
       </form>
 
       <div className="grid md:grid-cols-2 gap-4">
-        {items.map((b) => (
+        {filteredItems.map((b) => (
           <div key={b._id} className="bg-white p-4 rounded-xl shadow">
             {b.image && <img src={getImageUrl(b.image)} alt={b.title} className="w-full h-40 object-cover rounded mb-3" />}
             <h3 className="font-bold">{b.title}</h3>

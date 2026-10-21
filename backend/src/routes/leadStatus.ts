@@ -37,7 +37,7 @@ router.post(
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(errors.array()[0].msg, 400);
 
-    const { name, label, color, order, isDefault } = req.body;
+    const { name, label, color, order, isDefault, showOnStaffDashboard, showOnAdminDashboard } = req.body;
     const existing = await LeadStatus.findOne({ name: name.toLowerCase() });
     if (existing) throw new AppError("Status already exists", 400);
 
@@ -47,6 +47,8 @@ router.post(
       color: color || "#6B7280",
       order: order ?? 0,
       isDefault: isDefault || false,
+      showOnStaffDashboard: showOnStaffDashboard !== false,
+      showOnAdminDashboard: showOnAdminDashboard !== false,
     });
 
     res.status(201).json({ success: true, data: status });
@@ -61,7 +63,7 @@ router.put(
     const status = await LeadStatus.findById(req.params.id);
     if (!status) throw new AppError("Status not found", 404);
 
-    const updates = ["label", "color", "order", "isDefault", "isActive"];
+    const updates = ["label", "color", "order", "isDefault", "isActive", "showOnStaffDashboard", "showOnAdminDashboard"];
     updates.forEach((field) => {
       if (req.body[field] !== undefined) (status as any)[field] = req.body[field];
     });

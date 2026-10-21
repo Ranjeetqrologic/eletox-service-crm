@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 import Attendance from "../models/Attendance";
 import Staff from "../models/Staff";
-import { protect, restrictTo } from "../middleware/auth";
+import { protect, restrictTo, isStaffRole } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
 
 const router = express.Router();
@@ -14,7 +14,7 @@ router.get(
     const { staff, from, to } = req.query;
     const filter: any = {};
 
-    if (req.user?.role === "technician") {
+    if (req.user && isStaffRole(req.user.role)) {
       const technicianStaff = await Staff.findOne({ user: req.user._id });
       if (technicianStaff) filter.staff = technicianStaff._id;
     } else if (staff) {

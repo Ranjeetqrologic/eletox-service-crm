@@ -3,24 +3,87 @@ import { body, validationResult } from "express-validator";
 import Lead from "../models/Lead";
 import Job from "../models/Job";
 import Staff from "../models/Staff";
-import { protect, restrictTo } from "../middleware/auth";
+import { protect, restrictTo, isStaffRole } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
+import { staffHideOldCompleted } from "../utils/staffVisibility";
+import { generateLeadId } from "../utils/leadId";
 import { uploadSingle, uploadPhotos, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
 
-const generateLeadId = () => {
-  return "LEAD" + Date.now().toString(36).toUpperCase();
+
+const COORD_RE = /(-?\d{1,2}\.\d{3,}),\s*(-?\d{1,3}\.\d{3,})/;
+
+export const parseCoords = (text: string): { lat: number; lng: number } | null => {
+  const s = decodeURIComponent(text || "").replace(/\+/g, " ");
+  const patterns = [/@(-?\d+\.\d+),(-?\d+\.\d+)/, /[?&](?:q|ll|query|destination|daddr|center)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/, /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, COORD_RE];
+  for (const re of patterns) {
+    const m = s.match(re);
+    if (m) {
+      const lat = parseFloat(m[1]);
+      const lng = parseFloat(m[2]);
+      if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng };
+    }
+  }
+  return null;
 };
+
+const resolveShortUrl = async (url: string): Promise<string> => {
+  let current = url;
+  for (let i = 0; i < 5; i++) {
+    const r = await fetch(current, { method: "GET", redirect: "manual", headers: { "User-Agent": "Mozilla/5.0" } });
+    const loc = r.headers.get("location");
+    if (!loc || r.status < 300 || r.status >= 400) return current;
+    current = new URL(loc, current).toString();
+  }
+  return current;
+};
+
+router.post(
+  "/resolve-location",
+  protect,
+  [body("text").notEmpty()],
+  asyncHandler(async (req: Request, res: Response) => {
+    const text = String(req.body.text).trim();
+    let coords = parseCoords(text);
+    let link = text;
+    const urlMatch = text.match(/https?:\/\/\S+/);
+    if (urlMatch) link = urlMatch[0];
+    if (!coords && urlMatch) {
+      try {
+        const resolved = await resolveShortUrl(urlMatch[0]);
+        coords = parseCoords(resolved);
+      } catch {
+        coords = null;
+      }
+    }
+    if (!coords) throw new AppError("Could not read location from this text/link. Paste a Google Maps link or 'lat, lng'.", 400);
+    res.json({ success: true, data: { ...coords, link: urlMatch ? link : `https://www.google.com/maps?q=${coords.lat},${coords.lng}` } });
+  })
+);
 
 router.get(
   "/",
   protect,
   asyncHandler(async (req: Request, res: Response) => {
-    const { status, source, staff, search, from, to } = req.query;
+    const { status, source, staff, search, from, to, view } = req.query;
     const filter: any = {};
 
     if (status) filter.status = status;
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    if (view === "new") {
+      filter.assignedStaff = null;
+      filter.status = { $nin: ["closed", "cancelled", "completed"] };
+      filter.createdAt = { $gte: cutoff };
+    } else if (view === "assigned" || view === "pending") {
+      filter.assignedStaff = { $ne: null };
+      filter.status = { $nin: ["closed", "cancelled"] };
+    } else if (view === "accepted") {
+      filter.assignedStaff = { $ne: null };
+      filter.status = { $nin: ["new", "assigned", "closed", "cancelled"] };
+    } else if (view === "completed") {
+      filter.status = "completed";
+    }
     if (source) filter.source = source;
     if (staff) filter.assignedStaff = staff;
     if (from || to) {
@@ -29,9 +92,10 @@ router.get(
       if (to) filter.createdAt.$lte = new Date(to as string);
     }
 
-    if (req.user?.role === "technician") {
+    if (req.user && isStaffRole(req.user.role)) {
       const technicianStaff = await (await import("../models/Staff")).default.findOne({ user: req.user._id });
       if (technicianStaff) filter.assignedStaff = technicianStaff._id;
+      Object.assign(filter, staffHideOldCompleted());
     }
 
     if (search) {
@@ -85,7 +149,7 @@ router.post(
 
     const lead = await Lead.create({
       ...req.body,
-      leadId: generateLeadId(),
+      leadId: await generateLeadId(),
       images,
       createdBy: req.user?._id,
     });
@@ -111,7 +175,7 @@ router.post(
     const file = req.file as Express.Multer.File;
     const lead = await Lead.create({
       ...req.body,
-      leadId: generateLeadId(),
+      leadId: await generateLeadId(),
       source: "website",
       images: file ? [getFileUrl(file)] : [],
     });
@@ -134,8 +198,8 @@ router.put(
 
     const updateFields = [
       "customerName", "mobile", "alternateMobile", "email", "address", "pin", "state", "city", "lat", "lng",
-      "source", "service", "acType", "problem", "priority", "preferredDate", "preferredTime", "remarks",
-      "followUpDate", "followUpNote", "nextCallDate"
+      "source", "service", "subService", "locationLink", "acType", "problem", "priority", "preferredDate", "preferredTime", "remarks",
+      "followUpDate", "followUpNote", "nextCallDate", "machineSerialNo"
     ];
     updateFields.forEach((field) => {
       if (req.body[field] !== undefined) (lead as any)[field] = req.body[field];
@@ -153,6 +217,10 @@ router.put(
   asyncHandler(async (req: Request, res: Response) => {
     const lead = await Lead.findById(req.params.id);
     if (!lead) throw new AppError("Lead not found", 404);
+    if (!(await Staff.findById(req.body.staffId))) throw new AppError("Select a valid staff", 400);
+    if (lead.finalCompleted || lead.status === "closed") {
+      throw new AppError("Final completed lead cannot be re-assigned. Create a new lead for this customer.", 400);
+    }
 
     lead.assignedStaff = req.body.staffId;
     lead.status = "assigned";
@@ -173,6 +241,22 @@ router.put(
 );
 
 router.put(
+  "/:id/final-complete",
+  protect,
+  restrictTo("superadmin", "admin", "manager"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) throw new AppError("Lead not found", 404);
+    if (lead.status !== "completed") throw new AppError("Only a staff-completed lead can be final completed", 400);
+    lead.finalCompleted = true;
+    lead.status = "closed";
+    lead.closedAt = new Date();
+    await lead.save();
+    res.json({ success: true, data: lead });
+  })
+);
+
+router.put(
   "/:id/status",
   protect,
   [body("status").notEmpty()],
@@ -180,17 +264,31 @@ router.put(
     const lead = await Lead.findById(req.params.id);
     if (!lead) throw new AppError("Lead not found", 404);
 
+    if (lead.assignedStaff && ["superadmin", "admin", "manager"].includes(req.user?.role || "")) {
+      throw new AppError("Status cannot be changed after the lead is assigned to staff", 403);
+    }
+
     const LeadStatus = (await import("../models/LeadStatus")).default;
     const validStatuses = await LeadStatus.find({ isActive: true }).select("name");
     const allowed = validStatuses.map((s: any) => s.name);
     if (!allowed.includes(req.body.status)) throw new AppError("Invalid status", 400);
 
+    if (req.body.status === "cancelled" && !String(req.body.reason || "").trim()) {
+      throw new AppError("Cancel reason is required", 400);
+    }
     lead.status = req.body.status;
     if (req.body.status === "accepted") lead.acceptedAt = new Date();
     if (req.body.status === "working") lead.startedAt = new Date();
     if (req.body.status === "completed") lead.completedAt = new Date();
-    if (req.body.status === "closed") lead.closedAt = new Date();
-    if (req.body.status === "cancelled") lead.cancelledReason = req.body.reason || "";
+    if (req.body.status === "closed") {
+      lead.closedAt = new Date();
+      lead.finalCompleted = true;
+    }
+    if (req.body.status === "cancelled") {
+      lead.cancelledReason = String(req.body.reason).trim();
+      lead.cancelledAt = new Date();
+      lead.finalCompleted = false;
+    }
 
     await lead.save();
     res.json({ success: true, data: lead });
