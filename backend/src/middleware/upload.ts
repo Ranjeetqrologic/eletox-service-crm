@@ -42,6 +42,7 @@ export const uploadDocs = multer({
   { name: "aadharBack", maxCount: 1 },
   { name: "pan", maxCount: 1 },
   { name: "drivingLicense", maxCount: 1 },
+  { name: "drivingLicenseBack", maxCount: 1 },
 ]);
 
 export const uploadSingle = multer({

@@ -12,6 +12,9 @@ const availablePermissions = [
 
 const btn = "px-2.5 py-1 rounded-md border text-xs font-medium transition";
 
+const DOC_FIELDS = ["photo", "aadharFront", "aadharBack", "drivingLicense", "drivingLicenseBack"];
+const DOC_LABELS: Record<string, string> = { photo: "Photo", aadharFront: "Aadhar Front", aadharBack: "Aadhar Back", drivingLicense: "Driving License Front", drivingLicenseBack: "Driving License Back" };
+
 export default function StaffPage() {
   const [staff, setStaff] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
@@ -110,7 +113,7 @@ export default function StaffPage() {
     Object.keys(form).forEach((key) => {
       if (form[key] !== undefined && form[key] !== "") data.append(key, form[key]);
     });
-    ["photo", "aadharFront", "aadharBack", "pan", "drivingLicense"].forEach((field) => {
+    DOC_FIELDS.forEach((field) => {
       if (docs[field]) data.append(field, docs[field]);
     });
 
@@ -215,11 +218,11 @@ export default function StaffPage() {
     }
   };
 
-  const deactivate = async (id: string) => {
-    if (!confirm("Deactivate this staff?")) return;
+  const toggleActive = async (s: any) => {
     try {
-      await api.delete(`/staff/${id}`);
-      toast.success("Staff deactivated");
+      const { data } = await api.put(`/staff/${s._id}/status`, { isActive: !s.isActive });
+      toast.success(data.message || "Updated");
+      setStaff((list: any[]) => list.map((x) => (x._id === s._id ? { ...x, isActive: !s.isActive, user: x.user ? { ...x.user, isActive: !s.isActive } : x.user } : x)));
       fetchStaff();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed");
@@ -276,9 +279,9 @@ export default function StaffPage() {
           <input className="border p-2 rounded" placeholder="UPI ID" value={form.upi} onChange={(e) => setForm({ ...form, upi: e.target.value })} />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {["photo", "aadharFront", "aadharBack", "pan", "drivingLicense"].map((field) => (
+          {DOC_FIELDS.map((field) => (
             <label key={field} className="block text-sm">
-              {field.replace(/([A-Z])/g, " $1")}: <input type="file" className="w-full" onChange={(e) => setDocs({ ...docs, [field]: e.target.files?.[0] })} />
+              {DOC_LABELS[field]}: <input type="file" className="w-full" onChange={(e) => setDocs({ ...docs, [field]: e.target.files?.[0] })} />
             </label>
           ))}
         </div>
@@ -319,7 +322,11 @@ export default function StaffPage() {
                     <button onClick={() => startEdit(s)} className={`${btn} bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-600 hover:text-white`}>Edit</button>
                     <button onClick={() => setShowKyc(s)} className={`${btn} bg-green-50 text-green-700 border-green-200 hover:bg-green-600 hover:text-white`}>KYC & Bank</button>
                     <button onClick={() => openRoleEdit(s)} className={`${btn} bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-600 hover:text-white`}>Role & Permissions</button>
-                    <button onClick={() => deactivate(s._id)} className={`${btn} bg-red-50 text-red-700 border-red-200 hover:bg-red-600 hover:text-white`}>Deactivate</button>
+                    {s.isActive ? (
+                      <button onClick={() => toggleActive(s)} className={`${btn} bg-red-50 text-red-700 border-red-200 hover:bg-red-600 hover:text-white`}>Deactivate</button>
+                    ) : (
+                      <button onClick={() => toggleActive(s)} className={`${btn} bg-green-50 text-green-700 border-green-200 hover:bg-green-600 hover:text-white`}>Activate</button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -427,9 +434,9 @@ export default function StaffPage() {
               <div><span className="font-medium text-gray-500">UPI:</span> {showKyc.bankDetails?.upi || "-"}</div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-              {["photo", "aadharFront", "aadharBack", "pan", "drivingLicense"].map((field) => (
+              {DOC_FIELDS.map((field) => (
                 <div key={field}>
-                  <div className="text-xs text-gray-500 capitalize mb-1">{field.replace(/([A-Z])/g, " $1")}</div>
+                  <div className="text-xs text-gray-500 mb-1">{DOC_LABELS[field]}</div>
                   {showKyc[field] ? (
                     <a href={showKyc[field]} target="_blank" rel="noreferrer" className="text-blue-600 text-sm hover:underline">View</a>
                   ) : (

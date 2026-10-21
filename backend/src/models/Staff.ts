@@ -13,6 +13,7 @@ export interface IStaff extends Document {
   aadharFront?: string;
   aadharBack?: string;
   pan?: string;
+  drivingLicenseBack?: string;
   drivingLicense?: string;
   bankDetails?: {
     bankName?: string;
@@ -44,6 +45,7 @@ const StaffSchema = new Schema<IStaff>(
     aadharFront: { type: String },
     aadharBack: { type: String },
     pan: { type: String },
+    drivingLicenseBack: { type: String },
     drivingLicense: { type: String },
     bankDetails: {
       bankName: { type: String },

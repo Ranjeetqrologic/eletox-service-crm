@@ -70,7 +70,7 @@ router.post(
     const staffData = req.body;
     const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
 
-    const docFields = ["photo", "aadharFront", "aadharBack", "pan", "drivingLicense"];
+    const docFields = ["photo", "aadharFront", "aadharBack", "pan", "drivingLicense", "drivingLicenseBack"];
     docFields.forEach((field) => {
       if (files?.[field]?.[0]) staffData[field] = getFileUrl(files[field][0]);
     });
@@ -125,7 +125,7 @@ router.put(
     if (!staff) throw new AppError("Staff not found", 404);
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
-    const docFields = ["photo", "aadharFront", "aadharBack", "pan", "drivingLicense"];
+    const docFields = ["photo", "aadharFront", "aadharBack", "pan", "drivingLicense", "drivingLicenseBack"];
     docFields.forEach((field) => {
       if (files?.[field]?.[0]) req.body[field] = getFileUrl(files[field][0]);
     });
@@ -195,6 +195,19 @@ router.put(
     user.password = req.body.password;
     await user.save();
     res.json({ success: true, message: "Password reset", data: { loginId: user.email, password: req.body.password } });
+  })
+);
+
+router.put(
+  "/:id/status",
+  protect,
+  restrictTo("superadmin", "admin"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const isActive = req.body.isActive === true || req.body.isActive === "true";
+    const staff = await Staff.findByIdAndUpdate(req.params.id, { isActive }, { new: true });
+    if (!staff) throw new AppError("Staff not found", 404);
+    if (staff.user) await User.findByIdAndUpdate(staff.user, { isActive });
+    res.json({ success: true, message: isActive ? "Staff activated" : "Staff deactivated", data: staff });
   })
 );
 
