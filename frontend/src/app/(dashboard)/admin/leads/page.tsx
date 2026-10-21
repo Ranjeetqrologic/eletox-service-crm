@@ -221,9 +221,18 @@ export default function LeadsPage() {
     }
   };
 
-  const changeStatus = async (leadId: string, status: string) => {
+  const [cancelModal, setCancelModal] = useState<any>(null);
+  const [cancelReason, setCancelReason] = useState("");
+
+  const changeStatus = async (leadId: string, status: string, reason?: string) => {
+    if (status === "cancelled" && !reason) {
+      setCancelModal(leads.find((x) => x._id === leadId) || { _id: leadId });
+      setCancelReason("");
+      return;
+    }
     try {
-      await api.put(`/leads/${leadId}/status`, { status });
+      await api.put(`/leads/${leadId}/status`, { status, reason });
+      setCancelModal(null);
       toast.success("Status updated");
       fetchLeads();
     } catch (err: any) {
@@ -407,9 +416,12 @@ export default function LeadsPage() {
                       ) : null}
                     </div>
                   ) : (
-                    <select value={l.status} onChange={(e) => changeStatus(l._id, e.target.value)} className="border p-1 rounded">
-                      {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
-                    </select>
+                    <div>
+                      <select value={l.status} onChange={(e) => changeStatus(l._id, e.target.value)} className="border p-1 rounded">
+                        {statuses.filter((s) => s.isActive).map((s) => <option key={s._id} value={s.name}>{s.label}</option>)}
+                      </select>
+                      {l.status === "cancelled" && l.cancelledReason && <div className="text-[11px] text-red-600 mt-1 max-w-[180px]">Reason: {l.cancelledReason}</div>}
+                    </div>
                   )}
                 </td>
                 <td className="p-3">
@@ -432,7 +444,7 @@ export default function LeadsPage() {
                   <div className="flex items-center gap-1.5 whitespace-nowrap">
                     <button onClick={() => viewJob(l._id)} title="View Job" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-100"><EyeIcon className="w-4 h-4" /> View</button>
                     <button onClick={() => setLocationModal(l)} title="Set Location" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-100"><MapPinIcon className="w-4 h-4" /> Location</button>
-                    {l.status !== "closed" && (
+                    {!["closed", "cancelled"].includes(l.status) && (
                       <button onClick={() => openClose(l)} title="Close Lead with Work Report" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 border border-green-100"><CheckCircleIcon className="w-4 h-4" /> Close</button>
                     )}
                   </div>
@@ -442,6 +454,20 @@ export default function LeadsPage() {
           </tbody>
         </table>
       </div>
+
+      {cancelModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h2 className="text-lg font-bold mb-1">Cancel Lead {cancelModal.leadId ? `- ${cancelModal.leadId}` : ""}</h2>
+            <p className="text-sm text-gray-500 mb-3">Reason zaroori hai — kyun cancel ho rahi hai?</p>
+            <textarea autoFocus className="border p-2 rounded w-full" rows={3} placeholder="Cancel reason*" value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} />
+            <div className="mt-4 flex gap-2">
+              <button onClick={() => { if (!cancelReason.trim()) return toast.error("Reason likhna zaroori hai"); changeStatus(cancelModal._id, "cancelled", cancelReason.trim()); }} className="bg-red-600 text-white px-4 py-2 rounded">Cancel Lead</button>
+              <button onClick={() => { setCancelModal(null); fetchLeads(); }} className="bg-gray-300 px-4 py-2 rounded">Back</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {closeModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">

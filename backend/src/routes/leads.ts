@@ -280,6 +280,9 @@ router.put(
     const allowed = validStatuses.map((s: any) => s.name);
     if (!allowed.includes(req.body.status)) throw new AppError("Invalid status", 400);
 
+    if (req.body.status === "cancelled" && !String(req.body.reason || "").trim()) {
+      throw new AppError("Cancel reason is required", 400);
+    }
     lead.status = req.body.status;
     if (req.body.status === "accepted") lead.acceptedAt = new Date();
     if (req.body.status === "working") lead.startedAt = new Date();
@@ -288,7 +291,11 @@ router.put(
       lead.closedAt = new Date();
       lead.finalCompleted = true;
     }
-    if (req.body.status === "cancelled") lead.cancelledReason = req.body.reason || "";
+    if (req.body.status === "cancelled") {
+      lead.cancelledReason = String(req.body.reason).trim();
+      lead.cancelledAt = new Date();
+      lead.finalCompleted = false;
+    }
 
     await lead.save();
     res.json({ success: true, data: lead });
