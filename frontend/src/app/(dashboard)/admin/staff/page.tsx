@@ -85,6 +85,33 @@ export default function StaffPage() {
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("");
   const [filterActive, setFilterActive] = useState("");
+  const [showTrash, setShowTrash] = useState(false);
+  const [trash, setTrash] = useState<any[]>([]);
+  const fetchTrash = () => api.get("/staff?deleted=true").then((res) => setTrash(res.data.data || []));
+
+  const trashStaff = async (s: any) => {
+    if (!confirm(`Delete "${s.name}"? It will move to Recycle Bin (can be restored).`)) return;
+    try {
+      await api.put(`/staff/${s._id}/trash`);
+      toast.success("Moved to Recycle Bin");
+      fetchStaff(); fetchTrash();
+    } catch (err: any) { toast.error(err.response?.data?.message || "Failed"); }
+  };
+  const restoreStaff = async (s: any) => {
+    try {
+      await api.put(`/staff/${s._id}/restore`);
+      toast.success("Staff restored");
+      fetchStaff(); fetchTrash();
+    } catch (err: any) { toast.error(err.response?.data?.message || "Failed"); }
+  };
+  const purgeStaff = async (s: any) => {
+    if (!confirm(`Permanently delete "${s.name}"? This cannot be undone.`)) return;
+    try {
+      await api.delete(`/staff/${s._id}/permanent`);
+      toast.success("Permanently deleted");
+      fetchTrash();
+    } catch (err: any) { toast.error(err.response?.data?.message || "Failed"); }
+  };
 
   const filteredStaff = staff.filter((s) => {
     const q = search.toLowerCase();
@@ -96,6 +123,7 @@ export default function StaffPage() {
 
   const fetchStaff = () => {
     api.get("/staff").then((res) => setStaff(res.data.data));
+    fetchTrash();
   };
   const fetchRoles = () => {
     api.get("/roles/all").then((res) => setRoles(res.data.data));
@@ -245,8 +273,31 @@ export default function StaffPage() {
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
+          <button type="button" onClick={() => setShowTrash(!showTrash)} className={`px-4 py-2 rounded border text-sm ${showTrash ? "bg-gray-800 text-white" : "bg-white text-gray-700"}`}>🗑 Recycle Bin ({trash.length})</button>
         </div>
       </div>
+
+      {showTrash && (
+        <div className="bg-white rounded-xl shadow overflow-x-auto">
+          <div className="p-3 border-b flex justify-between items-center"><h2 className="font-semibold">Recycle Bin — deleted staff</h2><button onClick={() => setShowTrash(false)} className="text-sm text-gray-500">Close</button></div>
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100"><tr><th className="p-3 text-left">Emp ID</th><th className="p-3 text-left">Name</th><th className="p-3 text-left">Email</th><th className="p-3 text-left">Mobile</th><th className="p-3 text-left">Role</th><th className="p-3 text-left">Deleted On</th><th className="p-3 text-left">Action</th></tr></thead>
+            <tbody>
+              {trash.length === 0 && <tr><td colSpan={7} className="p-4 text-center text-gray-500">Recycle Bin is empty</td></tr>}
+              {trash.map((s) => (
+                <tr key={s._id} className="border-t">
+                  <td className="p-3">{s.employeeId}</td><td className="p-3">{s.name}</td><td className="p-3">{s.user?.email}</td><td className="p-3">{s.mobile}</td><td className="p-3">{s.role}</td>
+                  <td className="p-3 text-xs text-gray-500">{s.deletedAt ? new Date(s.deletedAt).toLocaleString() : "-"}</td>
+                  <td className="p-3"><div className="flex gap-1.5">
+                    <button onClick={() => restoreStaff(s)} className={`${btn} bg-green-50 text-green-700 border-green-200 hover:bg-green-600 hover:text-white`}>Restore</button>
+                    <button onClick={() => purgeStaff(s)} className={`${btn} bg-red-50 text-red-700 border-red-200 hover:bg-red-600 hover:text-white`}>Delete Permanently</button>
+                  </div></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {showForm && <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
         <div className="flex items-center justify-between">
@@ -327,6 +378,7 @@ export default function StaffPage() {
                     ) : (
                       <button onClick={() => toggleActive(s)} className={`${btn} bg-green-50 text-green-700 border-green-200 hover:bg-green-600 hover:text-white`}>Activate</button>
                     )}
+                    <button onClick={() => trashStaff(s)} className={`${btn} bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-800 hover:text-white`}>Delete</button>
                   </div>
                 </td>
               </tr>

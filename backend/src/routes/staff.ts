@@ -25,8 +25,8 @@ router.get(
   protect,
   restrictTo("superadmin", "admin", "manager"),
   asyncHandler(async (req: Request, res: Response) => {
-    const { role, isActive } = req.query;
-    const filter: any = {};
+    const { role, isActive, deleted } = req.query;
+    const filter: any = deleted === "true" ? { deletedAt: { $ne: null } } : { $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }] };
     if (role) filter.role = role;
     if (isActive !== undefined) filter.isActive = isActive === "true";
 
@@ -195,6 +195,44 @@ router.put(
     user.password = req.body.password;
     await user.save();
     res.json({ success: true, message: "Password reset", data: { loginId: user.email, password: req.body.password } });
+  })
+);
+
+router.put(
+  "/:id/trash",
+  protect,
+  restrictTo("superadmin", "admin"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const staff = await Staff.findByIdAndUpdate(req.params.id, { deletedAt: new Date(), isActive: false }, { new: true });
+    if (!staff) throw new AppError("Staff not found", 404);
+    if (staff.user) await User.findByIdAndUpdate(staff.user, { isActive: false });
+    res.json({ success: true, message: "Staff moved to Recycle Bin", data: staff });
+  })
+);
+
+router.put(
+  "/:id/restore",
+  protect,
+  restrictTo("superadmin", "admin"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const staff = await Staff.findByIdAndUpdate(req.params.id, { deletedAt: null, isActive: true }, { new: true });
+    if (!staff) throw new AppError("Staff not found", 404);
+    if (staff.user) await User.findByIdAndUpdate(staff.user, { isActive: true });
+    res.json({ success: true, message: "Staff restored", data: staff });
+  })
+);
+
+router.delete(
+  "/:id/permanent",
+  protect,
+  restrictTo("superadmin", "admin"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const staff = await Staff.findById(req.params.id);
+    if (!staff) throw new AppError("Staff not found", 404);
+    if (!staff.deletedAt) throw new AppError("Move staff to Recycle Bin first", 400);
+    if (staff.user) await User.findByIdAndDelete(staff.user);
+    await staff.deleteOne();
+    res.json({ success: true, message: "Staff permanently deleted" });
   })
 );
 
