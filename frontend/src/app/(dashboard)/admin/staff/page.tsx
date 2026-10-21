@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 import { IMPERSONATE_KEY } from "@/store/authStore";
 import toast from "react-hot-toast";
 
@@ -359,7 +360,12 @@ export default function StaffPage() {
             {filteredStaff.map((s) => (
               <tr key={s._id} className="border-t">
                 <td className="p-3">{s.employeeId}</td>
-                <td className="p-3">{s.name}</td>
+                <td className="p-3">
+                  <div className="flex items-center gap-2">
+                    {s.photo ? <img src={getImageUrl(s.photo)} alt={s.name} className="w-9 h-9 rounded-full object-cover border" /> : <div className="w-9 h-9 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-semibold">{(s.name || "?").slice(0, 1).toUpperCase()}</div>}
+                    <span>{s.name}</span>
+                  </div>
+                </td>
                 <td className="p-3">{s.user?.email}</td>
                 <td className="p-3">{s.mobile}</td>
                 <td className="p-3">{s.role}</td>
