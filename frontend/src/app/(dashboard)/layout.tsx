@@ -71,7 +71,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="fixed inset-0 bg-black/40 z-30 md:hidden" onClick={() => setSidebarOpen(false)} />
       )}
       <aside
-        className={`bg-brand-dark text-white w-64 flex-shrink-0 flex flex-col fixed inset-y-0 left-0 z-40 transform transition-transform md:static md:translate-x-0 ${
+        className={`bg-brand-dark text-white w-64 flex-shrink-0 flex flex-col fixed inset-y-0 left-0 z-40 h-screen overflow-hidden transform transition-transform md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -119,7 +119,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 md:ml-64">
         <header className="bg-white border-b border-gray-200 px-4 md:px-6 h-16 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <button className="md:hidden text-gray-600" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle menu">
