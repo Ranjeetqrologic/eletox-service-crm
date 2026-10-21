@@ -30,6 +30,33 @@ export default function LeadsPage() {
   const [form, setForm] = useState<any>(EMPTY_FORM);
   const [services, setServices] = useState<any[]>([]);
   const [creating, setCreating] = useState(false);
+  const [showOld, setShowOld] = useState(false);
+  const EMPTY_OLD = { customerName: "", mobile: "", service: "", subService: "", address: "", city: "Jaipur", note: "", leadDate: "", technicianType: "office", staff: "", outsideTechnicianName: "", workDescription: "", machineSerialNo: "", billAmount: "", receivedAmount: "", paymentMode: "cash" };
+  const [oldForm, setOldForm] = useState<any>(EMPTY_OLD);
+  const [oldBillPhotos, setOldBillPhotos] = useState<File[]>([]);
+  const [oldWorkPhotos, setOldWorkPhotos] = useState<File[]>([]);
+  const [oldSaving, setOldSaving] = useState(false);
+
+  const submitOld = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (oldForm.technicianType === "office" && !oldForm.staff) return toast.error("Select office technician");
+    if (oldForm.technicianType === "outside" && !oldForm.outsideTechnicianName.trim()) return toast.error("Enter outside technician name");
+    setOldSaving(true);
+    try {
+      const data = new FormData();
+      Object.keys(oldForm).forEach((k) => { if (oldForm[k] !== undefined && oldForm[k] !== "") data.append(k, String(oldForm[k])); });
+      oldBillPhotos.forEach((f) => data.append("billPhotos", f));
+      oldWorkPhotos.forEach((f) => data.append("workingPhotos", f));
+      await api.post("/jobs/old-entry", data, { headers: { "Content-Type": "multipart/form-data" } });
+      toast.success("Old lead saved (Closed) — payment added to history");
+      setOldForm(EMPTY_OLD); setOldBillPhotos([]); setOldWorkPhotos([]);
+      fetchLeads();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed");
+    } finally {
+      setOldSaving(false);
+    }
+  };
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState(urlStatus);
   const [filterView, setFilterView] = useState(urlView);
@@ -355,8 +382,64 @@ export default function LeadsPage() {
           <button onClick={sendReminders} className="bg-yellow-500 text-white px-4 py-2 rounded">Remind</button>
           <button onClick={exportCSV} className="bg-green-600 text-white px-4 py-2 rounded">Export</button>
           <button onClick={() => setShowForm(!showForm)} className="bg-primary-600 text-white px-4 py-2 rounded">{showForm ? "Close" : "+ New Lead"}</button>
+          <button onClick={() => { setShowOld(!showOld); if (!showOld) setShowForm(false); }} className="bg-gray-700 text-white px-4 py-2 rounded">{showOld ? "Close" : "Old Data Entry"}</button>
         </div>
       </div>
+
+      {showOld && (
+        <form onSubmit={submitOld} className="bg-white p-5 rounded-xl shadow border-2 border-gray-700">
+          <h2 className="font-semibold text-lg mb-1">Old Data Entry</h2>
+          <p className="text-xs text-gray-500 mb-3">Purana kaam yahan daalein — lead seedha Closed banegi, amount Payments history aur Reports me us date par jayega.</p>
+          <div className="grid md:grid-cols-3 gap-3">
+            <label className="text-sm">Lead Date*<input required type="date" className="border p-2 rounded w-full" value={oldForm.leadDate} onChange={(e) => setOldForm({ ...oldForm, leadDate: e.target.value })} /></label>
+            <input required placeholder="Customer Name*" className="border p-2 rounded self-end" value={oldForm.customerName} onChange={(e) => setOldForm({ ...oldForm, customerName: e.target.value })} />
+            <input required placeholder="Phone Number*" className="border p-2 rounded self-end" value={oldForm.mobile} onChange={(e) => setOldForm({ ...oldForm, mobile: e.target.value })} />
+            <select required className="border p-2 rounded" value={oldForm.service} onChange={(e) => setOldForm({ ...oldForm, service: e.target.value, subService: "" })}>
+              <option value="">Choose Service*</option>
+              {services.map((sv: any) => <option key={sv._id || sv.title} value={sv.title}>{sv.title}</option>)}
+              <option value="Other">Other</option>
+            </select>
+            {subServicesFor(oldForm.service).length > 0 ? (
+              <select className="border p-2 rounded" value={oldForm.subService} onChange={(e) => setOldForm({ ...oldForm, subService: e.target.value })}>
+                <option value="">Category / Sub-service</option>
+                {subServicesFor(oldForm.service).map((x) => <option key={x} value={x}>{x}</option>)}
+              </select>
+            ) : <input placeholder="Sub-service (optional)" className="border p-2 rounded" value={oldForm.subService} onChange={(e) => setOldForm({ ...oldForm, subService: e.target.value })} />}
+            <input placeholder="Address" className="border p-2 rounded" value={oldForm.address} onChange={(e) => setOldForm({ ...oldForm, address: e.target.value })} />
+            <div className="md:col-span-3 border rounded p-3 bg-blue-50 grid md:grid-cols-3 gap-3 items-center">
+              <div className="flex gap-4 text-sm">
+                <label className="flex items-center gap-1"><input type="radio" checked={oldForm.technicianType === "office"} onChange={() => setOldForm({ ...oldForm, technicianType: "office" })} /> Office Technician</label>
+                <label className="flex items-center gap-1"><input type="radio" checked={oldForm.technicianType === "outside"} onChange={() => setOldForm({ ...oldForm, technicianType: "outside" })} /> Outside Technician</label>
+              </div>
+              {oldForm.technicianType === "office" ? (
+                <select className="border p-2 rounded md:col-span-2 bg-white" value={oldForm.staff} onChange={(e) => setOldForm({ ...oldForm, staff: e.target.value })}>
+                  <option value="">Select office technician*</option>
+                  {staff.map((st: any) => <option key={st._id} value={st._id}>{st.name}{st.employeeId ? ` (${st.employeeId})` : ""}</option>)}
+                </select>
+              ) : <input className="border p-2 rounded md:col-span-2" placeholder="Outside technician name*" value={oldForm.outsideTechnicianName} onChange={(e) => setOldForm({ ...oldForm, outsideTechnicianName: e.target.value })} />}
+            </div>
+            <input type="number" placeholder="Bill Amount" className="border p-2 rounded" value={oldForm.billAmount} onChange={(e) => setOldForm({ ...oldForm, billAmount: e.target.value })} />
+            <input type="number" placeholder="Received Amount" className="border p-2 rounded" value={oldForm.receivedAmount} onChange={(e) => setOldForm({ ...oldForm, receivedAmount: e.target.value })} />
+            <select className="border p-2 rounded" value={oldForm.paymentMode} onChange={(e) => setOldForm({ ...oldForm, paymentMode: e.target.value })}>
+              <option value="cash">Cash</option><option value="upi">UPI</option><option value="card">Card</option><option value="online">Online</option>
+            </select>
+            <input placeholder="Machine Serial No." className="border p-2 rounded" value={oldForm.machineSerialNo} onChange={(e) => setOldForm({ ...oldForm, machineSerialNo: e.target.value })} />
+            <textarea placeholder="Work Description / Note" className="border p-2 rounded md:col-span-2" rows={2} value={oldForm.workDescription} onChange={(e) => setOldForm({ ...oldForm, workDescription: e.target.value, note: e.target.value })} />
+            {[["Bill Book Photos", oldBillPhotos, setOldBillPhotos], ["Working Photos", oldWorkPhotos, setOldWorkPhotos]].map(([label, list, setList]: any) => (
+              <div key={label} className="border rounded p-3 md:col-span-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">{label} ({list.length})</span>
+                  <label className="cursor-pointer text-white px-3 py-1 rounded text-sm bg-blue-600">+ Add Photo<input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { setList((prev: File[]) => [...prev, ...Array.from(e.target.files || [])]); e.target.value = ""; }} /></label>
+                </div>
+                {list.length > 0 && <div className="flex flex-wrap gap-2">{list.map((file: File, i: number) => (
+                  <div key={`${file.name}-${i}`} className="relative"><img src={URL.createObjectURL(file)} alt="" className="w-16 h-16 object-cover rounded border" /><button type="button" onClick={() => setList((prev: File[]) => prev.filter((_, j) => j !== i))} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs leading-5">×</button></div>
+                ))}</div>}
+              </div>
+            ))}
+          </div>
+          <button type="submit" disabled={oldSaving} className="mt-4 bg-gray-800 text-white px-5 py-2.5 rounded font-semibold">{oldSaving ? "Saving..." : "Save Old Lead (Closed)"}</button>
+        </form>
+      )}
 
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-white p-5 rounded-xl shadow">
@@ -696,7 +779,7 @@ export default function LeadsPage() {
                 <div><span className="font-medium text-gray-500">Rating:</span> {jobModal.rating ? `${"★".repeat(Number(jobModal.rating))} (${jobModal.rating})` : "-"}</div>
                 <div><span className="font-medium text-gray-500">Client Experience:</span> {jobModal.clientExperience || "-"}</div>
               </div>
-              {[["workingPhotos", "Photos"], ["beforePhotos", "Before Photos"], ["afterPhotos", "After Photos"]].map(([key, label]) => (
+              {[["workingPhotos", "Photos"], ["billPhotos", "Bill Book Photos"], ["beforePhotos", "Before Photos"], ["afterPhotos", "After Photos"]].map(([key, label]) => (
                 (jobModal[key]?.length > 0 || jobEdit) && (
                   <div key={key}>
                     <div className="flex items-center justify-between mb-2">

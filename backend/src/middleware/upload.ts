@@ -31,6 +31,7 @@ export const uploadReportPhotos = multer({
   { name: "beforePhotos", maxCount: 30 },
   { name: "workingPhotos", maxCount: 30 },
   { name: "afterPhotos", maxCount: 30 },
+  { name: "billPhotos", maxCount: 30 },
 ]);
 
 export const uploadDocs = multer({

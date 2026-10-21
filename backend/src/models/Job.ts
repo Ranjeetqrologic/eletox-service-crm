@@ -20,6 +20,7 @@ export interface IJob extends Document {
     time: Date;
   };
   beforePhotos: string[];
+  billPhotos: string[];
   workingPhotos: string[];
   afterPhotos: string[];
   videos: string[];
@@ -72,6 +73,7 @@ const JobSchema = new Schema<IJob>(
       time: { type: Date },
     },
     beforePhotos: [{ type: String }],
+    billPhotos: [{ type: String }],
     workingPhotos: [{ type: String }],
     afterPhotos: [{ type: String }],
     videos: [{ type: String }],
