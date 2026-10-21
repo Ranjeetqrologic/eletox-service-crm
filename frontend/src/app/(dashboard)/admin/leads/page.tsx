@@ -429,7 +429,7 @@ export default function LeadsPage() {
               <div key={label} className="border rounded p-3 md:col-span-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">{label} ({list.length})</span>
-                  <label className="cursor-pointer text-white px-3 py-1 rounded text-sm bg-blue-600">+ Add Photo<input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { setList((prev: File[]) => [...prev, ...Array.from(e.target.files || [])]); e.target.value = ""; }} /></label>
+                  <label className="cursor-pointer text-white px-3 py-1 rounded text-sm bg-blue-600">+ Add Photo<input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { const files = Array.from(e.target.files || []); setList((prev: File[]) => [...prev, ...files]); e.target.value = ""; }} /></label>
                 </div>
                 {list.length > 0 && <div className="flex flex-wrap gap-2">{list.map((file: File, i: number) => (
                   <div key={`${file.name}-${i}`} className="relative"><img src={URL.createObjectURL(file)} alt="" className="w-16 h-16 object-cover rounded border" /><button type="button" onClick={() => setList((prev: File[]) => prev.filter((_, j) => j !== i))} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs leading-5">×</button></div>
@@ -618,7 +618,7 @@ export default function LeadsPage() {
               <div className="border rounded p-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Photos ({closePhotos.length})</span>
-                  <label className="cursor-pointer text-white px-3 py-1 rounded text-sm bg-blue-600">+ Add Photo<input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { setClosePhotos((prev) => [...prev, ...Array.from(e.target.files || [])]); e.target.value = ""; }} /></label>
+                  <label className="cursor-pointer text-white px-3 py-1 rounded text-sm bg-blue-600">+ Add Photo<input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { const files = Array.from(e.target.files || []); setClosePhotos((prev) => [...prev, ...files]); e.target.value = ""; }} /></label>
                 </div>
                 {closePhotos.length > 0 && (
                   <div className="flex flex-wrap gap-2">
