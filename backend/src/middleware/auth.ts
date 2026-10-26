@@ -22,7 +22,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as { id: string };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
     const user = await User.findById(decoded.id).select("-password");
     if (!user) throw new AppError("User not found", 401);
     req.user = user;
@@ -32,9 +32,15 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
+const BUILTIN_ROLES = ["superadmin", "admin", "manager", "technician", "account"];
+
+// Custom roles created from the Roles page are staff-level (see only their own assigned work).
+export const effectiveRole = (role: string) => (BUILTIN_ROLES.includes(role) ? role : "technician");
+export const isStaffRole = (role?: string) => effectiveRole(role || "") === "technician";
+
 export const restrictTo = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    if (!req.user || !roles.includes(effectiveRole(req.user.role))) {
       return res.status(403).json({ success: false, message: "Not allowed" });
     }
     next();

@@ -3,15 +3,45 @@ import Company from "../models/Company";
 import User from "../models/User";
 import { protect, restrictTo } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
-import { uploadSingle, getFileUrl } from "../middleware/upload";
+import { uploadLogo, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
 
 router.get(
   "/company",
   asyncHandler(async (_req: Request, res: Response) => {
-    const company = await Company.findOne();
+    const company = await Company.findOne().select("-emailSmtp");
     res.json({ success: true, data: company || {} });
+  })
+);
+
+router.get(
+  "/smtp",
+  protect,
+  restrictTo("superadmin", "admin"),
+  asyncHandler(async (_req: Request, res: Response) => {
+    const company = await Company.findOne().select("emailSmtp");
+    const s = company?.emailSmtp || {};
+    res.json({ success: true, data: { host: s.host || "", port: s.port || 587, user: s.user || "", secure: !!s.secure, hasPass: !!s.pass } });
+  })
+);
+
+router.put(
+  "/smtp",
+  protect,
+  restrictTo("superadmin", "admin"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const company = (await Company.findOne().select("emailSmtp")) || new Company();
+    const cur = company.emailSmtp || {};
+    company.emailSmtp = {
+      host: req.body.host ?? cur.host,
+      port: req.body.port ? Number(req.body.port) : cur.port || 587,
+      user: req.body.user ?? cur.user,
+      pass: req.body.pass ? req.body.pass : cur.pass,
+      secure: req.body.secure === true || req.body.secure === "true",
+    };
+    await company.save();
+    res.json({ success: true, message: "SMTP settings saved" });
   })
 );
 
@@ -19,14 +49,38 @@ router.put(
   "/company",
   protect,
   restrictTo("superadmin", "admin"),
-  uploadSingle,
+  uploadLogo,
   asyncHandler(async (req: Request, res: Response) => {
-    const file = req.file as Express.Multer.File;
+    const files = (req.files || {}) as Record<string, Express.Multer.File[]>;
+    const file = files.logo?.[0] || files.image?.[0];
     const update = { ...req.body };
+    for (const k of ["_id", "__v", "createdAt", "updatedAt", "emailSmtp"]) delete update[k];
     if (file) update.logo = getFileUrl(file);
+    else if (update.logo === "") delete update.logo;
+    if (typeof update.socialLinks === "string") {
+      try { update.socialLinks = JSON.parse(update.socialLinks); } catch { delete update.socialLinks; }
+    }
+    for (const k of ["adminDashboardCards", "staffDashboardCards", "siteContent"]) {
+      if (typeof update[k] === "string") {
+        try { update[k] = JSON.parse(update[k]); } catch { delete update[k]; }
+      }
+    }
 
     const company = await Company.findOneAndUpdate({}, update, { upsert: true, new: true });
     res.json({ success: true, data: company });
+  })
+);
+
+router.post(
+  "/upload-image",
+  protect,
+  restrictTo("superadmin", "admin"),
+  uploadLogo,
+  asyncHandler(async (req: Request, res: Response) => {
+    const files = (req.files || {}) as Record<string, Express.Multer.File[]>;
+    const file = files.image?.[0] || files.logo?.[0];
+    if (!file) throw new AppError("No image uploaded", 400);
+    res.json({ success: true, url: getFileUrl(file) });
   })
 );
 

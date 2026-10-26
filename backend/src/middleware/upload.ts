@@ -10,11 +10,17 @@ const DOC_DIR = path.join(UPLOAD_DIR, "documents");
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
+const imageOnly = (_req: any, file: Express.Multer.File, cb: any) => {
+  if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) cb(null, true);
+  else cb(new Error("Only image/video files are allowed") as any);
+};
+
 const createStorage = (dest: string) =>
   multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, dest),
     filename: (_req, file, cb) => {
-      const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
+      const ext = path.extname(file.originalname).toLowerCase().replace(/[^a-z0-9.]/g, "").slice(0, 6);
+      const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
       cb(null, unique);
     },
   });
@@ -22,40 +28,58 @@ const createStorage = (dest: string) =>
 export const uploadPhotos = multer({
   storage: createStorage(PHOTO_DIR),
   limits: { fileSize: 20 * 1024 * 1024 },
+  fileFilter: imageOnly,
 }).array("photos", 20);
 
 export const uploadReportPhotos = multer({
   storage: createStorage(PHOTO_DIR),
   limits: { fileSize: 20 * 1024 * 1024 },
+  fileFilter: imageOnly,
 }).fields([
-  { name: "beforePhotos", maxCount: 10 },
-  { name: "workingPhotos", maxCount: 10 },
-  { name: "afterPhotos", maxCount: 10 },
+  { name: "beforePhotos", maxCount: 30 },
+  { name: "workingPhotos", maxCount: 30 },
+  { name: "afterPhotos", maxCount: 30 },
+  { name: "billPhotos", maxCount: 30 },
 ]);
 
 export const uploadDocs = multer({
   storage: createStorage(DOC_DIR),
   limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: imageOnly,
 }).fields([
   { name: "photo", maxCount: 1 },
   { name: "aadharFront", maxCount: 1 },
   { name: "aadharBack", maxCount: 1 },
   { name: "pan", maxCount: 1 },
   { name: "drivingLicense", maxCount: 1 },
+  { name: "drivingLicenseBack", maxCount: 1 },
 ]);
 
 export const uploadSingle = multer({
   storage: createStorage(PHOTO_DIR),
   limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: imageOnly,
 }).single("image");
+
+export const uploadLogo = multer({
+  storage: createStorage(PHOTO_DIR),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only image files allowed for logo") as any);
+  },
+}).fields([
+  { name: "logo", maxCount: 1 },
+  { name: "image", maxCount: 1 },
+]);
 
 export const uploadServiceImage = multer({
   storage: createStorage(PHOTO_DIR),
   limits: { fileSize: 20 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml"];
+    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml", "image/webp"];
     if (allowed.includes(file.mimetype)) cb(null, true);
-    else cb(new Error("Only PNG, JPG, JPEG, SVG allowed") as any);
+    else cb(new Error("Only PNG, JPG, JPEG, SVG, WEBP allowed") as any);
   },
 }).single("image");
 

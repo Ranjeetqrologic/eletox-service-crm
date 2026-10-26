@@ -33,7 +33,7 @@ router.post(
     const file = req.file as Express.Multer.File;
     if (!file) throw new AppError("Gallery image is required", 400);
     const item = await Gallery.create({
-      ...req.body,
+      ...Object.fromEntries(Object.entries(req.body).filter(([k]) => !["_id", "__v", "createdAt", "updatedAt"].includes(k))),
       image: getFileUrl(file),
     });
     res.status(201).json({ success: true, data: item });
@@ -48,6 +48,7 @@ router.put(
   asyncHandler(async (req: Request, res: Response) => {
     const file = req.file as Express.Multer.File;
     const update = { ...req.body };
+    for (const k of ["_id", "__v", "createdAt", "updatedAt"]) delete update[k];
     if (file) update.image = getFileUrl(file);
     const item = await Gallery.findByIdAndUpdate(req.params.id, update, { new: true });
     if (!item) throw new AppError("Gallery item not found", 404);

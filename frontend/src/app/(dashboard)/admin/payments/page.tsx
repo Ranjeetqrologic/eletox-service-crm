@@ -10,6 +10,26 @@ export default function PaymentsPage() {
   const [search, setSearch] = useState("");
   const [form, setForm] = useState<any>({ lead: "", amount: "", mode: "cash", status: "received", transactionId: "", notes: "" });
   const [editing, setEditing] = useState<string | null>(null);
+  const [listSearch, setListSearch] = useState("");
+  const [filterMode, setFilterMode] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [history, setHistory] = useState<any[]>([]);
+  const todayStr = new Date().toLocaleDateString("en-CA");
+  const [histFrom, setHistFrom] = useState(todayStr);
+  const [histTo, setHistTo] = useState(todayStr);
+  const [range, setRange] = useState("today");
+
+  const applyRange = (r: string) => {
+    setRange(r);
+    const now = new Date();
+    const fmt = (d: Date) => d.toLocaleDateString("en-CA");
+    if (r === "today") { setHistFrom(fmt(now)); setHistTo(fmt(now)); }
+    else if (r === "week") { const d = new Date(now); d.setDate(now.getDate() - 6); setHistFrom(fmt(d)); setHistTo(fmt(now)); }
+    else if (r === "month") { setHistFrom(fmt(new Date(now.getFullYear(), now.getMonth(), 1))); setHistTo(fmt(now)); }
+    else if (r === "all") { setHistFrom(""); setHistTo(""); }
+  };
 
   useEffect(() => {
     fetchPayments();
@@ -18,7 +38,17 @@ export default function PaymentsPage() {
 
   const fetchPayments = () => {
     api.get("/payments").then((res) => setPayments(res.data.data));
+    api.get("/payments/history").then((res) => setHistory(res.data.data));
   };
+
+  const filteredHistory = history.filter((h) => {
+    const d = h.date ? new Date(h.date).toLocaleDateString("en-CA") : "";
+    return (!histFrom || d >= histFrom) && (!histTo || d <= histTo);
+  });
+  const hist = filteredHistory.reduce(
+    (t, r) => ({ bill: t.bill + r.bill, received: t.received + r.received, expenses: t.expenses + r.expenses, pending: t.pending + r.pending }),
+    { bill: 0, received: 0, expenses: 0, pending: 0 }
+  );
 
   const fetchLeads = () => {
     api.get("/leads").then((res) => setLeads(res.data.data));
@@ -69,17 +99,66 @@ export default function PaymentsPage() {
     }
   };
 
-  const totalReceived = payments.filter((p) => p.status === "received").reduce((sum, p) => sum + p.amount, 0);
-  const totalAdvance = payments.filter((p) => p.status === "advance").reduce((sum, p) => sum + p.amount, 0);
+  const filteredPayments = payments.filter((p) => {
+    const q = listSearch.toLowerCase();
+    const matchesSearch = !q || [p.lead?.customerName, p.lead?.mobile, p.lead?.leadId, p.transactionId].some((x: string) => x?.toLowerCase().includes(q));
+    const matchesMode = !filterMode || p.mode === filterMode;
+    const matchesStatus = !filterStatus || p.status === filterStatus;
+    const created = p.createdAt ? p.createdAt.split("T")[0] : "";
+    const matchesDate = (!fromDate || created >= fromDate) && (!toDate || created <= toDate);
+    return matchesSearch && matchesMode && matchesStatus && matchesDate;
+  });
+
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Payments</h1>
 
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-green-500 text-white p-4 rounded-xl">Total Received: ₹{totalReceived}</div>
-        <div className="bg-blue-500 text-white p-4 rounded-xl">Advance: ₹{totalAdvance}</div>
-        <div className="bg-purple-500 text-white p-4 rounded-xl">Total: ₹{totalReceived + totalAdvance}</div>
+        <div className="bg-purple-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Total Bill{range === "today" ? " (Today)" : ""}</div><div className="text-2xl font-bold">₹{hist.bill}</div></div>
+        <div className="bg-green-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Received (Aaya){range === "today" ? " (Today)" : ""}</div><div className="text-2xl font-bold">₹{hist.received}</div></div>
+        <div className="bg-orange-500 text-white p-4 rounded-xl"><div className="text-sm opacity-90">Pending{range === "today" ? " (Today)" : ""}</div><div className="text-2xl font-bold">₹{hist.pending}</div></div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow">
+        <div className="p-4 flex flex-wrap items-center gap-2 border-b">
+          <h2 className="font-semibold text-lg flex-1">Payment History (Job wise){range === "today" ? " — Today" : ""}</h2>
+          <select className="border p-2 rounded" value={range} onChange={(e) => applyRange(e.target.value)}>
+            <option value="today">Today</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">This Month</option>
+            <option value="all">All Time</option>
+            <option value="custom">Custom</option>
+          </select>
+          <input type="date" className="border p-2 rounded" value={histFrom} onChange={(e) => { setRange("custom"); setHistFrom(e.target.value); }} title="From date" />
+          <input type="date" className="border p-2 rounded" value={histTo} onChange={(e) => { setRange("custom"); setHistTo(e.target.value); }} title="To date" />
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100">
+              <tr><th className="p-3 text-left">Date</th><th className="p-3 text-left">Lead</th><th className="p-3 text-left">Staff</th><th className="p-3 text-left">Status</th><th className="p-3 text-right">Bill</th><th className="p-3 text-right">Received</th><th className="p-3 text-right">Pending</th></tr>
+            </thead>
+            <tbody>
+              {filteredHistory.length === 0 && <tr><td colSpan={7} className="p-4 text-center text-gray-500">No history</td></tr>}
+              {filteredHistory.map((h) => (
+                <tr key={h._id} className="border-t">
+                  <td className="p-3">{h.date ? new Date(h.date).toLocaleDateString() : "-"}</td>
+                  <td className="p-3">{h.lead?.customerName} ({h.lead?.leadId})<div className="text-xs text-gray-500">{h.lead?.mobile}{h.lead?.service ? ` · ${h.lead.service}` : ""}</div></td>
+                  <td className="p-3">{h.staff?.name || "-"}</td>
+                  <td className="p-3 capitalize">{h.status}</td>
+                  <td className="p-3 text-right">₹{h.bill}</td>
+                  <td className="p-3 text-right text-green-700">₹{h.received}</td>
+                  <td className="p-3 text-right font-semibold text-orange-700">₹{h.pending}</td>
+                </tr>
+              ))}
+            </tbody>
+            {filteredHistory.length > 0 && (
+              <tfoot className="bg-gray-50 font-semibold">
+                <tr><td className="p-3" colSpan={4}>Total</td><td className="p-3 text-right">₹{hist.bill}</td><td className="p-3 text-right text-green-700">₹{hist.received}</td><td className="p-3 text-right text-orange-700">₹{hist.pending}</td></tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
@@ -113,13 +192,33 @@ export default function PaymentsPage() {
         </div>
       </form>
 
+      <h2 className="font-semibold text-lg">Recorded Payments</h2>
+      <div className="bg-white p-4 rounded-xl shadow flex flex-wrap gap-2">
+        <input className="border p-2 rounded flex-1 min-w-[160px]" placeholder="Search customer, mobile, lead ID, txn..." value={listSearch} onChange={(e) => setListSearch(e.target.value)} />
+        <select className="border p-2 rounded" value={filterMode} onChange={(e) => setFilterMode(e.target.value)}>
+          <option value="">All Modes</option>
+          <option value="cash">Cash</option>
+          <option value="upi">UPI</option>
+          <option value="card">Card</option>
+          <option value="online">Online</option>
+        </select>
+        <select className="border p-2 rounded" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+          <option value="">All Status</option>
+          <option value="received">Received</option>
+          <option value="advance">Advance</option>
+          <option value="pending">Pending</option>
+        </select>
+        <input type="date" className="border p-2 rounded" value={fromDate} onChange={(e) => setFromDate(e.target.value)} title="From date" />
+        <input type="date" className="border p-2 rounded" value={toDate} onChange={(e) => setToDate(e.target.value)} title="To date" />
+      </div>
+
       <div className="bg-white rounded-xl shadow overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-100">
             <tr><th className="p-3 text-left">Date</th><th className="p-3 text-left">Lead</th><th className="p-3 text-left">Amount</th><th className="p-3 text-left">Mode</th><th className="p-3 text-left">Status</th><th className="p-3 text-left">Txn ID</th><th className="p-3 text-left">Actions</th></tr>
           </thead>
           <tbody>
-            {payments.map((p) => (
+            {filteredPayments.map((p) => (
               <tr key={p._id} className="border-t">
                 <td className="p-3">{new Date(p.createdAt).toLocaleDateString()}</td>
                 <td className="p-3">{p.lead?.customerName} ({p.lead?.leadId})</td>

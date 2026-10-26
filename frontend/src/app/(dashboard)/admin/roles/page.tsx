@@ -22,6 +22,8 @@ export default function RolesPage() {
   const [roles, setRoles] = useState<any[]>([]);
   const [form, setForm] = useState<any>({ name: "", permissions: [], isDefault: false });
   const [editing, setEditing] = useState<any>(null);
+  const [search, setSearch] = useState("");
+  const filteredRoles = roles.filter((r) => !search || r.name?.toLowerCase().includes(search.toLowerCase()));
 
   const fetchRoles = () => api.get("/roles/all").then((res) => setRoles(res.data.data));
 
@@ -72,7 +74,12 @@ export default function RolesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Role Management</h1>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 className="text-2xl font-bold">Role Management</h1>
+        <div className="flex flex-wrap gap-2">
+          <input className="border p-2 rounded min-w-[200px]" placeholder="Search role..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-4 rounded-xl shadow space-y-4">
         <div className="grid md:grid-cols-3 gap-4">
@@ -110,7 +117,7 @@ export default function RolesPage() {
             </tr>
           </thead>
           <tbody>
-            {roles.map((r) => (
+            {filteredRoles.map((r) => (
               <tr key={r._id} className="border-t">
                 <td className="p-3 capitalize">{r.name}</td>
                 <td className="p-3">{(r.permissions || []).join(", ")}</td>

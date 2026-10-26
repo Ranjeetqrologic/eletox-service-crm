@@ -7,6 +7,16 @@ import { uploadServiceImage, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
 
+const parseJsonFields = (body: any) => {
+  for (const k of ["content", "packages"]) {
+    if (typeof body[k] === "string") {
+      try { body[k] = JSON.parse(body[k]); } catch { delete body[k]; }
+    }
+  }
+  if (body.visitCharge === "") delete body.visitCharge;
+  return body;
+};
+
 router.get(
   "/public",
   asyncHandler(async (_req: Request, res: Response) => {
@@ -52,7 +62,7 @@ router.post(
     const existing = await Service.findOne({ slug: req.body.slug });
     if (existing) throw new AppError("Service slug already exists", 400);
 
-    const body = { ...req.body };
+    const body = parseJsonFields({ ...req.body });
     if (req.file) body.image = getFileUrl(req.file);
 
     const service = await Service.create(body);
@@ -66,11 +76,23 @@ router.put(
   restrictTo("superadmin", "admin", "manager"),
   uploadServiceImage,
   asyncHandler(async (req: Request, res: Response) => {
-    const body = { ...req.body };
+    const body = parseJsonFields({ ...req.body });
+    delete body._id;
     if (req.file) body.image = getFileUrl(req.file);
     const service = await Service.findByIdAndUpdate(req.params.id, body, { new: true });
     if (!service) throw new AppError("Service not found", 404);
     res.json({ success: true, data: service });
+  })
+);
+
+router.post(
+  "/upload-image",
+  protect,
+  restrictTo("superadmin", "admin", "manager"),
+  uploadServiceImage,
+  asyncHandler(async (req: Request, res: Response) => {
+    if (!req.file) throw new AppError("No image uploaded", 400);
+    res.json({ success: true, url: getFileUrl(req.file) });
   })
 );
 

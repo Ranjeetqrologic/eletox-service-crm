@@ -13,6 +13,7 @@ export interface IStaff extends Document {
   aadharFront?: string;
   aadharBack?: string;
   pan?: string;
+  drivingLicenseBack?: string;
   drivingLicense?: string;
   bankDetails?: {
     bankName?: string;
@@ -22,6 +23,7 @@ export interface IStaff extends Document {
   };
   emergencyContact?: string;
   joiningDate?: Date;
+  deletedAt?: Date | null;
   role: string;
   roleId?: mongoose.Types.ObjectId;
   documents: { name: string; url: string; type?: string }[];
@@ -44,6 +46,7 @@ const StaffSchema = new Schema<IStaff>(
     aadharFront: { type: String },
     aadharBack: { type: String },
     pan: { type: String },
+    drivingLicenseBack: { type: String },
     drivingLicense: { type: String },
     bankDetails: {
       bankName: { type: String },
@@ -53,6 +56,7 @@ const StaffSchema = new Schema<IStaff>(
     },
     emergencyContact: { type: String },
     joiningDate: { type: Date },
+    deletedAt: { type: Date, default: null },
     role: { type: String, default: "technician" },
     roleId: { type: Schema.Types.ObjectId, ref: "Role" },
     documents: [{ name: String, url: String, type: String }],

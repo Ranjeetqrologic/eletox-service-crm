@@ -2,7 +2,9 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IJob extends Document {
   lead: mongoose.Types.ObjectId;
-  staff: mongoose.Types.ObjectId;
+  staff?: mongoose.Types.ObjectId;
+  outsideTechnician?: string;
+  closedByAdmin?: boolean;
   status: "assigned" | "accepted" | "started" | "working" | "half_done" | "need_parts" | "pending" | "follow_up" | "completed" | "cancelled";
   acceptedAt?: Date;
   checkIn: {
@@ -18,6 +20,7 @@ export interface IJob extends Document {
     time: Date;
   };
   beforePhotos: string[];
+  billPhotos: string[];
   workingPhotos: string[];
   afterPhotos: string[];
   videos: string[];
@@ -29,12 +32,16 @@ export interface IJob extends Document {
   workDescription?: string;
   gasFilled?: string;
   repairNotes?: string;
+  adminRemark?: string;
+  servicesDone: string[];
+  machineSerialNo?: string;
   billAmount: number;
   receivedAmount: number;
   paymentMode?: "cash" | "upi" | "card" | "online";
   pendingAmount: number;
   customerFeedback?: string;
   rating?: number;
+  clientExperience?: string;
   startedAt?: Date;
   completedAt?: Date;
   createdAt: Date;
@@ -44,7 +51,9 @@ export interface IJob extends Document {
 const JobSchema = new Schema<IJob>(
   {
     lead: { type: Schema.Types.ObjectId, ref: "Lead", required: true, unique: true },
-    staff: { type: Schema.Types.ObjectId, ref: "Staff", required: true },
+    staff: { type: Schema.Types.ObjectId, ref: "Staff" },
+    outsideTechnician: { type: String },
+    closedByAdmin: { type: Boolean, default: false },
     status: {
       type: String,
       enum: ["assigned", "accepted", "started", "working", "half_done", "need_parts", "pending", "follow_up", "completed", "cancelled"],
@@ -64,6 +73,7 @@ const JobSchema = new Schema<IJob>(
       time: { type: Date },
     },
     beforePhotos: [{ type: String }],
+    billPhotos: [{ type: String }],
     workingPhotos: [{ type: String }],
     afterPhotos: [{ type: String }],
     videos: [{ type: String }],
@@ -75,11 +85,15 @@ const JobSchema = new Schema<IJob>(
     workDescription: { type: String },
     gasFilled: { type: String },
     repairNotes: { type: String },
+    adminRemark: { type: String },
+    servicesDone: [{ type: String }],
+    machineSerialNo: { type: String },
     billAmount: { type: Number, default: 0 },
     receivedAmount: { type: Number, default: 0 },
     paymentMode: { type: String, enum: ["cash", "upi", "card", "online"] },
     pendingAmount: { type: Number, default: 0 },
     customerFeedback: { type: String },
+    clientExperience: { type: String, trim: true },
     rating: { type: Number, min: 1, max: 5 },
     startedAt: { type: Date },
     completedAt: { type: Date },

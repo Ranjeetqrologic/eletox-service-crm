@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
+const isProd = process.env.NODE_ENV === "production";
+
 const nextConfig = {
-  output: "export",
-  distDir: "out",
+  ...(isProd ? { output: "export", distDir: "out" } : {}),
   trailingSlash: true,
   reactStrictMode: true,
   images: {

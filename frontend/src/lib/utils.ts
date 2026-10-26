@@ -8,3 +8,7 @@ export const getImageUrl = (src?: string) => {
   if (src.startsWith("/uploads/")) return origin ? `${origin}${src}` : src;
   return src;
 };
+
+export const ADMIN_ROLES = ["superadmin", "admin", "manager"];
+export const isAdminRole = (role?: string) => !!role && ADMIN_ROLES.includes(role);
+export const homeForRole = (role?: string) => (isAdminRole(role) ? "/admin/" : "/staff/");

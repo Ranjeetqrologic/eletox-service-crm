@@ -16,6 +16,8 @@ export interface ILead extends Document {
   lng?: number;
   source: string;
   service: string;
+  subService?: string;
+  locationLink?: string;
   acType?: string;
   problem?: string;
   priority: "low" | "medium" | "high" | "urgent";
@@ -24,15 +26,19 @@ export interface ILead extends Document {
   remarks?: string;
   status: LeadStatus;
   assignedStaff?: mongoose.Types.ObjectId;
+  outsideTechnician?: string;
   assignedAt?: Date;
   acceptedAt?: Date;
   startedAt?: Date;
   completedAt?: Date;
   closedAt?: Date;
+  finalCompleted: boolean;
   createdBy?: mongoose.Types.ObjectId;
   cancelledReason?: string;
+  cancelledAt?: Date;
   followUpDate?: Date;
   followUpNote?: string;
+  machineSerialNo?: string;
   nextCallDate?: Date;
   images: string[];
   createdAt: Date;
@@ -58,6 +64,8 @@ const LeadSchema = new Schema<ILead>(
       default: "manual",
     },
     service: { type: String, required: true },
+    subService: { type: String, trim: true },
+    locationLink: { type: String, trim: true },
     acType: { type: String },
     problem: { type: String },
     priority: { type: String, enum: ["low", "medium", "high", "urgent"], default: "medium" },
@@ -69,15 +77,19 @@ const LeadSchema = new Schema<ILead>(
       default: "new",
     },
     assignedStaff: { type: Schema.Types.ObjectId, ref: "Staff" },
+    outsideTechnician: { type: String },
     assignedAt: { type: Date },
     acceptedAt: { type: Date },
     startedAt: { type: Date },
     completedAt: { type: Date },
     closedAt: { type: Date },
+    finalCompleted: { type: Boolean, default: false },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     cancelledReason: { type: String },
+    cancelledAt: { type: Date },
     followUpDate: { type: Date },
     followUpNote: { type: String },
+    machineSerialNo: { type: String, trim: true },
     nextCallDate: { type: Date },
     images: [{ type: String }],
   },

@@ -3,6 +3,8 @@ dotenv.config();
 
 import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import morgan from "morgan";
 import connectDB from "./config/db";
 import { seedLeadStatuses } from "./config/seed";
@@ -26,12 +28,34 @@ import galleryRoutes from "./routes/gallery";
 import { errorHandler } from "./middleware/errorHandler";
 import path from "path";
 
-const app: Application = express();
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 16) {
+  console.error("FATAL: JWT_SECRET missing or too short in .env");
+  process.exit(1);
+}
 
-app.use(cors());
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+const app: Application = express();
+app.set("trust proxy", 1);
+app.disable("x-powered-by");
+
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "https://eletox.com,https://www.eletox.com").split(",").map((o) => o.trim());
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || ALLOWED_ORIGINS.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return cb(null, true);
+      return cb(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" }, contentSecurityPolicy: false }));
+app.use(
+  "/uploads",
+  (_req, res, next) => { res.setHeader("Content-Disposition", "inline"); res.setHeader("X-Content-Type-Options", "nosniff"); next(); },
+  express.static(path.join(process.cwd(), "uploads"), { index: false, dotfiles: "deny" })
+);
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+app.use("/api", rateLimit({ windowMs: 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false }));
 app.use(morgan("dev"));
 
 connectDB();
