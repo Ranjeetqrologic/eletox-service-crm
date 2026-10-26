@@ -7,6 +7,12 @@ import { protect, restrictTo, isStaffRole } from "../middleware/auth";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
 import { staffHideOldCompleted } from "../utils/staffVisibility";
 import { generateLeadId } from "../utils/leadId";
+import { publicFormLimiter } from "../middleware/limiters";
+
+const PROTECTED_LEAD_FIELDS = ["_id", "leadId", "finalCompleted", "createdBy", "closedAt", "completedAt", "acceptedAt", "assignedAt", "cancelledAt", "__v"];
+const PUBLIC_LEAD_FIELDS = ["customerName", "mobile", "email", "address", "city", "pin", "service", "subService", "acType", "preferredDate", "preferredTime", "problem", "lat", "lng", "locationLink"];
+const pick = (obj: any, keys: string[]) => Object.fromEntries(Object.entries(obj || {}).filter(([k]) => keys.includes(k)));
+const omit = (obj: any, keys: string[]) => Object.fromEntries(Object.entries(obj || {}).filter(([k]) => !keys.includes(k)));
 import { uploadSingle, uploadPhotos, getFileUrl } from "../middleware/upload";
 
 const router = express.Router();
@@ -148,7 +154,7 @@ router.post(
     const images = files.map((f) => getFileUrl(f));
 
     const lead = await Lead.create({
-      ...req.body,
+      ...pick(req.body, PUBLIC_LEAD_FIELDS),
       leadId: await generateLeadId(),
       images,
       createdBy: req.user?._id,
@@ -160,6 +166,7 @@ router.post(
 
 router.post(
   "/public-inquiry",
+  publicFormLimiter,
   uploadSingle,
   [
     body("customerName").notEmpty(),
@@ -174,7 +181,7 @@ router.post(
 
     const file = req.file as Express.Multer.File;
     const lead = await Lead.create({
-      ...req.body,
+      ...omit(req.body, [...PROTECTED_LEAD_FIELDS, "status", "assignedStaff"]),
       leadId: await generateLeadId(),
       source: "website",
       images: file ? [getFileUrl(file)] : [],

@@ -7,13 +7,14 @@ import Staff from "../models/Staff";
 import { isMailConfigured, sendMail } from "../config/mailer";
 import { AppError, asyncHandler } from "../middleware/errorHandler";
 import { protect, restrictTo } from "../middleware/auth";
+import { loginLimiter, otpLimiter } from "../middleware/limiters";
 
 const router = express.Router();
 
 const signToken = (id: string) => {
   return jwt.sign(
     { id },
-    process.env.JWT_SECRET || "secret",
+    process.env.JWT_SECRET as string,
     { expiresIn: (process.env.JWT_EXPIRES_IN || "7d") as jwt.SignOptions["expiresIn"] }
   );
 };
@@ -78,6 +79,7 @@ const checkPortal = (user: IUser, portal?: string) => {
 
 router.post(
   "/login",
+  loginLimiter,
   [body("email").isEmail().normalizeEmail(), body("password").notEmpty()],
   asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -114,6 +116,7 @@ router.post(
 
 router.post(
   "/verify-otp",
+  otpLimiter,
   [body("email").isEmail().normalizeEmail(), body("otp").notEmpty(), body("deviceId").notEmpty()],
   asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -135,6 +138,7 @@ router.post(
 
 router.post(
   "/forgot-password",
+  otpLimiter,
   [body("email").isEmail().normalizeEmail()],
   asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -154,6 +158,7 @@ router.post(
 
 router.post(
   "/reset-password",
+  otpLimiter,
   [body("email").isEmail().normalizeEmail(), body("otp").notEmpty(), body("password").isLength({ min: 6 })],
   asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);

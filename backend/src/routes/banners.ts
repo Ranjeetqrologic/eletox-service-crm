@@ -33,7 +33,7 @@ router.post(
     const file = req.file as Express.Multer.File;
     if (!file) throw new AppError("Banner image is required", 400);
     const banner = await Banner.create({
-      ...req.body,
+      ...Object.fromEntries(Object.entries(req.body).filter(([k]) => !["_id", "__v", "createdAt", "updatedAt"].includes(k))),
       image: getFileUrl(file),
     });
     res.status(201).json({ success: true, data: banner });
@@ -48,6 +48,7 @@ router.put(
   asyncHandler(async (req: Request, res: Response) => {
     const file = req.file as Express.Multer.File;
     const update = { ...req.body };
+    for (const k of ["_id", "__v", "createdAt", "updatedAt"]) delete update[k];
     if (file) update.image = getFileUrl(file);
     const banner = await Banner.findByIdAndUpdate(req.params.id, update, { new: true });
     if (!banner) throw new AppError("Banner not found", 404);
